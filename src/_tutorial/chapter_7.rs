@@ -625,13 +625,12 @@
 //!         // customized as well to better fit your needs.
 //!         let message = error.inner().to_string();
 //!         let input = input.to_owned();
-//!         let start = error.offset();
 //!         // Assume the error span is only for the first `char`.
 //!         // Semantic errors are free to choose the entire span returned by `Parser::with_span`.
-//!         let end = (start + 1..).find(|e| input.is_char_boundary(*e)).unwrap_or(start);
+//!         let span = error.char_span();
 //!         Self {
 //!             message,
-//!             span: start..end,
+//!             span,
 //!             input,
 //!         }
 //!     }
