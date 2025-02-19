@@ -103,7 +103,7 @@ where
     trace("crlf", "\r\n").parse_next(input)
 }
 
-/// Recognizes a string of any char except `"\r\n"` or `"\n"`.
+/// Recognizes a string of 0+ characters until `"\r\n"`, `"\n"`, or eof.
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
