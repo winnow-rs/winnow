@@ -674,6 +674,9 @@ impl ErrorConvert<()> for () {
 }
 
 /// Accumulate context while backtracking errors
+///
+/// See the [tutorial][crate::_tutorial::chapter_7#error-adaptation-and-rendering]
+/// for an example of how to adapt this to an application error with custom rendering.
 #[derive(Debug)]
 pub struct ContextError<C = StrContext> {
     #[cfg(feature = "alloc")]
