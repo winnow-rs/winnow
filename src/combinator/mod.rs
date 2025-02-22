@@ -165,6 +165,9 @@ mod debug;
 mod multi;
 mod sequence;
 
+pub mod shunting_yard;
+pub mod precedence;
+
 #[cfg(test)]
 mod tests;
 
