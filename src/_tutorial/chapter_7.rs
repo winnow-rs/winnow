@@ -604,7 +604,7 @@
 //! #              })
 //! #             .map(Hex)
 //!             .parse(input)
-//!             .map_err(|e| HexError::from_parse(e, input))
+//!             .map_err(|e| HexError::from_parse(e))
 //!     }
 //! }
 //!
@@ -620,11 +620,11 @@
 //! }
 //!
 //! impl HexError {
-//!     fn from_parse(error: ParseError<&str, ContextError>, input: &str) -> Self {
+//!     fn from_parse(error: ParseError<&str, ContextError>) -> Self {
 //!         // The default renderer for `ContextError` is still used but that can be
 //!         // customized as well to better fit your needs.
 //!         let message = error.inner().to_string();
-//!         let input = input.to_owned();
+//!         let input = (*error.input()).to_owned();
 //!         // Assume the error span is only for the first `char`.
 //!         // Semantic errors are free to choose the entire span returned by `Parser::with_span`.
 //!         let span = error.char_span();
