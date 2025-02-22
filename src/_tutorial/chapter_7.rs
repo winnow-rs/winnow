@@ -713,6 +713,9 @@
 //! ```
 //!
 //! To add spans to your parsed data for inclusion in semantic errors, see [`Parser::with_span`].
+//!
+//! For richer syntactic with spans,
+//! consider separating lexing and parsing and annotating your tokens with [`Parser::with_span`].
 
 #![allow(unused_imports)]
 use super::chapter_1;
