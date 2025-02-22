@@ -17,41 +17,11 @@ use winnow::{
     token::one_of,
 };
 
-#[derive(Debug, Clone)]
-pub(crate) enum Expr {
-    Value(i64),
-    Add(Box<Expr>, Box<Expr>),
-    Sub(Box<Expr>, Box<Expr>),
-    Mul(Box<Expr>, Box<Expr>),
-    Div(Box<Expr>, Box<Expr>),
-    Paren(Box<Expr>),
-}
-
-impl Expr {
-    pub(crate) fn eval(&self) -> i64 {
-        match self {
-            Self::Value(v) => *v,
-            Self::Add(lhs, rhs) => lhs.eval() + rhs.eval(),
-            Self::Sub(lhs, rhs) => lhs.eval() - rhs.eval(),
-            Self::Mul(lhs, rhs) => lhs.eval() * rhs.eval(),
-            Self::Div(lhs, rhs) => lhs.eval() / rhs.eval(),
-            Self::Paren(expr) => expr.eval(),
-        }
-    }
-}
-
-impl Display for Expr {
-    fn fmt(&self, format: &mut Formatter<'_>) -> fmt::Result {
-        use Expr::{Add, Div, Mul, Paren, Sub, Value};
-        match *self {
-            Value(val) => write!(format, "{val}"),
-            Add(ref left, ref right) => write!(format, "{left} + {right}"),
-            Sub(ref left, ref right) => write!(format, "{left} - {right}"),
-            Mul(ref left, ref right) => write!(format, "{left} * {right}"),
-            Div(ref left, ref right) => write!(format, "{left} / {right}"),
-            Paren(ref expr) => write!(format, "({expr})"),
-        }
-    }
+/// Lex and parse
+#[allow(dead_code)]
+pub(crate) fn expr2(i: &mut &str) -> Result<Expr> {
+    let tokens = tokens.parse_next(i)?;
+    expr.parse_next(&mut tokens.as_slice())
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -98,13 +68,9 @@ impl<const LEN: usize> winnow::stream::ContainsToken<Token> for [Token; LEN] {
     }
 }
 
-#[allow(dead_code)]
-pub(crate) fn expr2(i: &mut &str) -> Result<Expr> {
-    let tokens = tokens.parse_next(i)?;
-    expr.parse_next(&mut tokens.as_slice())
-}
-
 /// Lex tokens
+///
+/// See [`expr`] to parse the tokens
 pub(crate) fn tokens(i: &mut &str) -> Result<Vec<Token>> {
     preceded(multispaces, repeat(1.., terminated(token, multispaces))).parse_next(i)
 }
@@ -123,6 +89,44 @@ fn token(i: &mut &str) -> Result<Token> {
     .parse_next(i)
 }
 
+#[derive(Debug, Clone)]
+pub(crate) enum Expr {
+    Value(i64),
+    Add(Box<Expr>, Box<Expr>),
+    Sub(Box<Expr>, Box<Expr>),
+    Mul(Box<Expr>, Box<Expr>),
+    Div(Box<Expr>, Box<Expr>),
+    Paren(Box<Expr>),
+}
+
+impl Expr {
+    pub(crate) fn eval(&self) -> i64 {
+        match self {
+            Self::Value(v) => *v,
+            Self::Add(lhs, rhs) => lhs.eval() + rhs.eval(),
+            Self::Sub(lhs, rhs) => lhs.eval() - rhs.eval(),
+            Self::Mul(lhs, rhs) => lhs.eval() * rhs.eval(),
+            Self::Div(lhs, rhs) => lhs.eval() / rhs.eval(),
+            Self::Paren(expr) => expr.eval(),
+        }
+    }
+}
+
+impl Display for Expr {
+    fn fmt(&self, format: &mut Formatter<'_>) -> fmt::Result {
+        use Expr::{Add, Div, Mul, Paren, Sub, Value};
+        match *self {
+            Value(val) => write!(format, "{val}"),
+            Add(ref left, ref right) => write!(format, "{left} + {right}"),
+            Sub(ref left, ref right) => write!(format, "{left} - {right}"),
+            Mul(ref left, ref right) => write!(format, "{left} * {right}"),
+            Div(ref left, ref right) => write!(format, "{left} / {right}"),
+            Paren(ref expr) => write!(format, "({expr})"),
+        }
+    }
+}
+
+/// Parse the tokens lexed in [`tokens`]
 pub(crate) fn expr(i: &mut &[Token]) -> Result<Expr> {
     let init = term.parse_next(i)?;
 
