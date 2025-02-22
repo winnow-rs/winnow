@@ -13,7 +13,10 @@ use winnow::{
     combinator::peek,
     combinator::repeat,
     combinator::{delimited, preceded, terminated},
+    error::ContextError,
+    stream::TokenSlice,
     token::any,
+    token::literal,
     token::one_of,
 };
 
@@ -21,7 +24,8 @@ use winnow::{
 #[allow(dead_code)]
 pub(crate) fn expr2(i: &mut &str) -> Result<Expr> {
     let tokens = tokens.parse_next(i)?;
-    expr.parse_next(&mut tokens.as_slice())
+    let mut tokens = Tokens::new(&tokens);
+    expr.parse_next(&mut tokens)
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -32,6 +36,12 @@ pub enum Token {
     CloseParen,
 }
 
+impl<'i> Parser<Tokens<'i>, &'i Token, ContextError> for Token {
+    fn parse_next(&mut self, input: &mut Tokens<'i>) -> Result<&'i Token> {
+        literal(*self).parse_next(input).map(|t| &t[0])
+    }
+}
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Oper {
     Add,
@@ -40,31 +50,31 @@ pub enum Oper {
     Div,
 }
 
-impl winnow::stream::ContainsToken<Token> for Token {
+impl winnow::stream::ContainsToken<&'_ Token> for Token {
     #[inline(always)]
-    fn contains_token(&self, token: Token) -> bool {
-        *self == token
+    fn contains_token(&self, token: &'_ Token) -> bool {
+        self == token
     }
 }
 
-impl winnow::stream::ContainsToken<Token> for &'_ [Token] {
+impl winnow::stream::ContainsToken<&'_ Token> for &'_ [Token] {
     #[inline]
-    fn contains_token(&self, token: Token) -> bool {
-        self.iter().any(|t| *t == token)
+    fn contains_token(&self, token: &'_ Token) -> bool {
+        self.iter().any(|t| t == token)
     }
 }
 
-impl<const LEN: usize> winnow::stream::ContainsToken<Token> for &'_ [Token; LEN] {
+impl<const LEN: usize> winnow::stream::ContainsToken<&'_ Token> for &'_ [Token; LEN] {
     #[inline]
-    fn contains_token(&self, token: Token) -> bool {
-        self.iter().any(|t| *t == token)
+    fn contains_token(&self, token: &'_ Token) -> bool {
+        self.iter().any(|t| t == token)
     }
 }
 
-impl<const LEN: usize> winnow::stream::ContainsToken<Token> for [Token; LEN] {
+impl<const LEN: usize> winnow::stream::ContainsToken<&'_ Token> for [Token; LEN] {
     #[inline]
-    fn contains_token(&self, token: Token) -> bool {
-        self.iter().any(|t| *t == token)
+    fn contains_token(&self, token: &'_ Token) -> bool {
+        self.iter().any(|t| t == token)
     }
 }
 
@@ -126,8 +136,10 @@ impl Display for Expr {
     }
 }
 
+pub(crate) type Tokens<'i> = TokenSlice<'i, Token>;
+
 /// Parse the tokens lexed in [`tokens`]
-pub(crate) fn expr(i: &mut &[Token]) -> Result<Expr> {
+pub(crate) fn expr(i: &mut Tokens<'_>) -> Result<Expr> {
     let init = term.parse_next(i)?;
 
     repeat(
@@ -139,8 +151,8 @@ pub(crate) fn expr(i: &mut &[Token]) -> Result<Expr> {
     )
     .fold(
         move || init.clone(),
-        |acc, (op, val): (Token, Expr)| {
-            if op == Token::Oper(Oper::Add) {
+        |acc, (op, val): (&Token, Expr)| {
+            if *op == Token::Oper(Oper::Add) {
                 Expr::Add(Box::new(acc), Box::new(val))
             } else {
                 Expr::Sub(Box::new(acc), Box::new(val))
@@ -150,7 +162,7 @@ pub(crate) fn expr(i: &mut &[Token]) -> Result<Expr> {
     .parse_next(i)
 }
 
-pub(crate) fn term(i: &mut &[Token]) -> Result<Expr> {
+pub(crate) fn term(i: &mut Tokens<'_>) -> Result<Expr> {
     let init = factor.parse_next(i)?;
 
     repeat(
@@ -162,8 +174,8 @@ pub(crate) fn term(i: &mut &[Token]) -> Result<Expr> {
     )
     .fold(
         move || init.clone(),
-        |acc, (op, val): (Token, Expr)| {
-            if op == Token::Oper(Oper::Mul) {
+        |acc, (op, val): (&Token, Expr)| {
+            if *op == Token::Oper(Oper::Mul) {
                 Expr::Mul(Box::new(acc), Box::new(val))
             } else {
                 Expr::Div(Box::new(acc), Box::new(val))
@@ -173,10 +185,10 @@ pub(crate) fn term(i: &mut &[Token]) -> Result<Expr> {
     .parse_next(i)
 }
 
-pub(crate) fn factor(i: &mut &[Token]) -> Result<Expr> {
+pub(crate) fn factor(i: &mut Tokens<'_>) -> Result<Expr> {
     alt((
-        one_of(|t| matches!(t, Token::Value(_))).map(|t| match t {
-            Token::Value(v) => Expr::Value(v),
+        one_of(|t: &_| matches!(t, Token::Value(_))).map(|t: &_| match t {
+            Token::Value(v) => Expr::Value(*v),
             _ => unreachable!(),
         }),
         parens,
@@ -184,8 +196,8 @@ pub(crate) fn factor(i: &mut &[Token]) -> Result<Expr> {
     .parse_next(i)
 }
 
-fn parens(i: &mut &[Token]) -> Result<Expr> {
-    delimited(one_of(Token::OpenParen), expr, one_of(Token::CloseParen))
+fn parens(i: &mut Tokens<'_>) -> Result<Expr> {
+    delimited(Token::OpenParen, expr, Token::CloseParen)
         .map(|e| Expr::Paren(Box::new(e)))
         .parse_next(i)
 }

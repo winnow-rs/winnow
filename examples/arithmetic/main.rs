@@ -39,7 +39,8 @@ fn calc(
         Impl::Lexer => {
             let tokens = parser_lexer::tokens.parse(input)?;
             println!("  {tokens:#?}");
-            let result = parser_lexer::expr.parse(tokens.as_slice()).unwrap();
+            let tokens = parser_lexer::Tokens::new(&tokens);
+            let result = parser_lexer::expr.parse(tokens).unwrap();
             println!("  {:#?}={}", result, result.eval());
         }
     }

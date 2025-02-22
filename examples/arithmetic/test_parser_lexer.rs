@@ -116,7 +116,14 @@ fn factor_test() {
     let expected = str![[r#"
 Ok(
     (
-        [],
+        TokenSlice {
+            initial: [
+                Value(
+                    3,
+                ),
+            ],
+            input: [],
+        },
         Value(
             3,
         ),
@@ -125,13 +132,21 @@ Ok(
 
 "#]];
     let input = tokens.parse(input).unwrap();
-    assert_data_eq!(factor.parse_peek(&input).to_debug(), expected);
+    let input = Tokens::new(&input);
+    assert_data_eq!(factor.parse_peek(input).to_debug(), expected);
 
     let input = " 12";
     let expected = str![[r#"
 Ok(
     (
-        [],
+        TokenSlice {
+            initial: [
+                Value(
+                    12,
+                ),
+            ],
+            input: [],
+        },
         Value(
             12,
         ),
@@ -140,13 +155,21 @@ Ok(
 
 "#]];
     let input = tokens.parse(input).unwrap();
-    assert_data_eq!(factor.parse_peek(&input).to_debug(), expected);
+    let input = Tokens::new(&input);
+    assert_data_eq!(factor.parse_peek(input).to_debug(), expected);
 
     let input = "537 ";
     let expected = str![[r#"
 Ok(
     (
-        [],
+        TokenSlice {
+            initial: [
+                Value(
+                    537,
+                ),
+            ],
+            input: [],
+        },
         Value(
             537,
         ),
@@ -155,13 +178,21 @@ Ok(
 
 "#]];
     let input = tokens.parse(input).unwrap();
-    assert_data_eq!(factor.parse_peek(&input).to_debug(), expected);
+    let input = Tokens::new(&input);
+    assert_data_eq!(factor.parse_peek(input).to_debug(), expected);
 
     let input = "  24     ";
     let expected = str![[r#"
 Ok(
     (
-        [],
+        TokenSlice {
+            initial: [
+                Value(
+                    24,
+                ),
+            ],
+            input: [],
+        },
         Value(
             24,
         ),
@@ -170,7 +201,8 @@ Ok(
 
 "#]];
     let input = tokens.parse(input).unwrap();
-    assert_data_eq!(factor.parse_peek(&input).to_debug(), expected);
+    let input = Tokens::new(&input);
+    assert_data_eq!(factor.parse_peek(input).to_debug(), expected);
 }
 
 #[test]
@@ -179,7 +211,26 @@ fn term_test() {
     let expected = str![[r#"
 Ok(
     (
-        [],
+        TokenSlice {
+            initial: [
+                Value(
+                    12,
+                ),
+                Oper(
+                    Mul,
+                ),
+                Value(
+                    2,
+                ),
+                Oper(
+                    Div,
+                ),
+                Value(
+                    3,
+                ),
+            ],
+            input: [],
+        },
         Div(
             Mul(
                 Value(
@@ -198,13 +249,33 @@ Ok(
 
 "#]];
     let input = tokens.parse(input).unwrap();
-    assert_data_eq!(term.parse_peek(&input).to_debug(), expected);
+    let input = Tokens::new(&input);
+    assert_data_eq!(term.parse_peek(input).to_debug(), expected);
 
     let input = " 12 *2 /  3";
     let expected = str![[r#"
 Ok(
     (
-        [],
+        TokenSlice {
+            initial: [
+                Value(
+                    12,
+                ),
+                Oper(
+                    Mul,
+                ),
+                Value(
+                    2,
+                ),
+                Oper(
+                    Div,
+                ),
+                Value(
+                    3,
+                ),
+            ],
+            input: [],
+        },
         Div(
             Mul(
                 Value(
@@ -223,13 +294,45 @@ Ok(
 
 "#]];
     let input = tokens.parse(input).unwrap();
-    assert_data_eq!(term.parse_peek(&input).to_debug(), expected);
+    let input = Tokens::new(&input);
+    assert_data_eq!(term.parse_peek(input).to_debug(), expected);
 
     let input = " 2* 3  *2 *2 /  3";
     let expected = str![[r#"
 Ok(
     (
-        [],
+        TokenSlice {
+            initial: [
+                Value(
+                    2,
+                ),
+                Oper(
+                    Mul,
+                ),
+                Value(
+                    3,
+                ),
+                Oper(
+                    Mul,
+                ),
+                Value(
+                    2,
+                ),
+                Oper(
+                    Mul,
+                ),
+                Value(
+                    2,
+                ),
+                Oper(
+                    Div,
+                ),
+                Value(
+                    3,
+                ),
+            ],
+            input: [],
+        },
         Div(
             Mul(
                 Mul(
@@ -258,13 +361,33 @@ Ok(
 
 "#]];
     let input = tokens.parse(input).unwrap();
-    assert_data_eq!(term.parse_peek(&input).to_debug(), expected);
+    let input = Tokens::new(&input);
+    assert_data_eq!(term.parse_peek(input).to_debug(), expected);
 
     let input = " 48 /  3/2";
     let expected = str![[r#"
 Ok(
     (
-        [],
+        TokenSlice {
+            initial: [
+                Value(
+                    48,
+                ),
+                Oper(
+                    Div,
+                ),
+                Value(
+                    3,
+                ),
+                Oper(
+                    Div,
+                ),
+                Value(
+                    2,
+                ),
+            ],
+            input: [],
+        },
         Div(
             Div(
                 Value(
@@ -283,7 +406,8 @@ Ok(
 
 "#]];
     let input = tokens.parse(input).unwrap();
-    assert_data_eq!(term.parse_peek(&input).to_debug(), expected);
+    let input = Tokens::new(&input);
+    assert_data_eq!(term.parse_peek(input).to_debug(), expected);
 }
 
 #[test]
@@ -303,7 +427,8 @@ Ok(
 
 "#]];
     let input = tokens.parse(input).unwrap();
-    assert_data_eq!(expr.parse(&input).to_debug(), expected);
+    let input = Tokens::new(&input);
+    assert_data_eq!(expr.parse(input).to_debug(), expected);
 
     let input = " 12 + 6 - 4+  3";
     let expected = str![[r#"
@@ -330,7 +455,8 @@ Ok(
 
 "#]];
     let input = tokens.parse(input).unwrap();
-    assert_data_eq!(expr.parse(&input).to_debug(), expected);
+    let input = Tokens::new(&input);
+    assert_data_eq!(expr.parse(input).to_debug(), expected);
 
     let input = " 1 + 2*3 + 4";
     let expected = str![[r#"
@@ -357,7 +483,8 @@ Ok(
 
 "#]];
     let input = tokens.parse(input).unwrap();
-    assert_data_eq!(expr.parse(&input).to_debug(), expected);
+    let input = Tokens::new(&input);
+    assert_data_eq!(expr.parse(input).to_debug(), expected);
 }
 
 #[test]
@@ -374,7 +501,8 @@ Ok(
 
 "#]];
     let input = tokens.parse(input).unwrap();
-    assert_data_eq!(expr.parse(&input).to_debug(), expected);
+    let input = Tokens::new(&input);
+    assert_data_eq!(expr.parse(input).to_debug(), expected);
 
     let input = " 2* (  3 + 4 ) ";
     let expected = str![[r#"
@@ -398,7 +526,8 @@ Ok(
 
 "#]];
     let input = tokens.parse(input).unwrap();
-    assert_data_eq!(expr.parse(&input).to_debug(), expected);
+    let input = Tokens::new(&input);
+    assert_data_eq!(expr.parse(input).to_debug(), expected);
 
     let input = "  2*2 / ( 5 - 1) + 3";
     let expected = str![[r#"
@@ -432,5 +561,6 @@ Ok(
 
 "#]];
     let input = tokens.parse(input).unwrap();
-    assert_data_eq!(expr.parse(&input).to_debug(), expected);
+    let input = Tokens::new(&input);
+    assert_data_eq!(expr.parse(input).to_debug(), expected);
 }
