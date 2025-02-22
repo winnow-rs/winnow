@@ -627,7 +627,6 @@
 //!         let message = error.inner().to_string();
 //!         let input = (*error.input()).to_owned();
 //!         // Assume the error span is only for the first `char`.
-//!         // Semantic errors are free to choose the entire span returned by `Parser::with_span`.
 //!         let span = error.char_span();
 //!         Self {
 //!             message,
@@ -712,6 +711,8 @@
 //!     assert_eq!(input.parse::<Hex>().unwrap_err().to_string(), error);
 //! }
 //! ```
+//!
+//! To add spans to your parsed data for inclusion in semantic errors, see [`Parser::with_span`].
 
 #![allow(unused_imports)]
 use super::chapter_1;
