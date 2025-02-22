@@ -100,11 +100,12 @@ impl<const LEN: usize> winnow::stream::ContainsToken<Token> for [Token; LEN] {
 
 #[allow(dead_code)]
 pub(crate) fn expr2(i: &mut &str) -> Result<Expr> {
-    let tokens = lex.parse_next(i)?;
+    let tokens = tokens.parse_next(i)?;
     expr.parse_next(&mut tokens.as_slice())
 }
 
-pub(crate) fn lex(i: &mut &str) -> Result<Vec<Token>> {
+/// Lex tokens
+pub(crate) fn tokens(i: &mut &str) -> Result<Vec<Token>> {
     preceded(multispaces, repeat(1.., terminated(token, multispaces))).parse_next(i)
 }
 

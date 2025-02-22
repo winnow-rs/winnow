@@ -21,7 +21,7 @@ Ok(
 )
 
 "#]];
-    assert_data_eq!(lex.parse_peek(input).to_debug(), expected);
+    assert_data_eq!(tokens.parse_peek(input).to_debug(), expected);
 
     let input = "  24     ";
     let expected = str![[r#"
@@ -37,7 +37,7 @@ Ok(
 )
 
 "#]];
-    assert_data_eq!(lex.parse_peek(input).to_debug(), expected);
+    assert_data_eq!(tokens.parse_peek(input).to_debug(), expected);
 
     let input = " 12 *2 /  3";
     let expected = str![[r#"
@@ -65,7 +65,7 @@ Ok(
 )
 
 "#]];
-    assert_data_eq!(lex.parse_peek(input).to_debug(), expected);
+    assert_data_eq!(tokens.parse_peek(input).to_debug(), expected);
 
     let input = "  2*2 / ( 5 - 1) + 3";
     let expected = str![[r#"
@@ -107,7 +107,7 @@ Ok(
 )
 
 "#]];
-    assert_data_eq!(lex.parse_peek(input).to_debug(), expected);
+    assert_data_eq!(tokens.parse_peek(input).to_debug(), expected);
 }
 
 #[test]
@@ -124,7 +124,7 @@ Ok(
 )
 
 "#]];
-    let input = lex.parse(input).unwrap();
+    let input = tokens.parse(input).unwrap();
     assert_data_eq!(factor.parse_peek(&input).to_debug(), expected);
 
     let input = " 12";
@@ -139,7 +139,7 @@ Ok(
 )
 
 "#]];
-    let input = lex.parse(input).unwrap();
+    let input = tokens.parse(input).unwrap();
     assert_data_eq!(factor.parse_peek(&input).to_debug(), expected);
 
     let input = "537 ";
@@ -154,7 +154,7 @@ Ok(
 )
 
 "#]];
-    let input = lex.parse(input).unwrap();
+    let input = tokens.parse(input).unwrap();
     assert_data_eq!(factor.parse_peek(&input).to_debug(), expected);
 
     let input = "  24     ";
@@ -169,7 +169,7 @@ Ok(
 )
 
 "#]];
-    let input = lex.parse(input).unwrap();
+    let input = tokens.parse(input).unwrap();
     assert_data_eq!(factor.parse_peek(&input).to_debug(), expected);
 }
 
@@ -197,7 +197,7 @@ Ok(
 )
 
 "#]];
-    let input = lex.parse(input).unwrap();
+    let input = tokens.parse(input).unwrap();
     assert_data_eq!(term.parse_peek(&input).to_debug(), expected);
 
     let input = " 12 *2 /  3";
@@ -222,7 +222,7 @@ Ok(
 )
 
 "#]];
-    let input = lex.parse(input).unwrap();
+    let input = tokens.parse(input).unwrap();
     assert_data_eq!(term.parse_peek(&input).to_debug(), expected);
 
     let input = " 2* 3  *2 *2 /  3";
@@ -257,7 +257,7 @@ Ok(
 )
 
 "#]];
-    let input = lex.parse(input).unwrap();
+    let input = tokens.parse(input).unwrap();
     assert_data_eq!(term.parse_peek(&input).to_debug(), expected);
 
     let input = " 48 /  3/2";
@@ -282,7 +282,7 @@ Ok(
 )
 
 "#]];
-    let input = lex.parse(input).unwrap();
+    let input = tokens.parse(input).unwrap();
     assert_data_eq!(term.parse_peek(&input).to_debug(), expected);
 }
 
@@ -302,7 +302,7 @@ Ok(
 )
 
 "#]];
-    let input = lex.parse(input).unwrap();
+    let input = tokens.parse(input).unwrap();
     assert_data_eq!(expr.parse(&input).to_debug(), expected);
 
     let input = " 12 + 6 - 4+  3";
@@ -329,7 +329,7 @@ Ok(
 )
 
 "#]];
-    let input = lex.parse(input).unwrap();
+    let input = tokens.parse(input).unwrap();
     assert_data_eq!(expr.parse(&input).to_debug(), expected);
 
     let input = " 1 + 2*3 + 4";
@@ -356,7 +356,7 @@ Ok(
 )
 
 "#]];
-    let input = lex.parse(input).unwrap();
+    let input = tokens.parse(input).unwrap();
     assert_data_eq!(expr.parse(&input).to_debug(), expected);
 }
 
@@ -373,7 +373,7 @@ Ok(
 )
 
 "#]];
-    let input = lex.parse(input).unwrap();
+    let input = tokens.parse(input).unwrap();
     assert_data_eq!(expr.parse(&input).to_debug(), expected);
 
     let input = " 2* (  3 + 4 ) ";
@@ -397,7 +397,7 @@ Ok(
 )
 
 "#]];
-    let input = lex.parse(input).unwrap();
+    let input = tokens.parse(input).unwrap();
     assert_data_eq!(expr.parse(&input).to_debug(), expected);
 
     let input = "  2*2 / ( 5 - 1) + 3";
@@ -431,6 +431,6 @@ Ok(
 )
 
 "#]];
-    let input = lex.parse(input).unwrap();
+    let input = tokens.parse(input).unwrap();
     assert_data_eq!(expr.parse(&input).to_debug(), expected);
 }
