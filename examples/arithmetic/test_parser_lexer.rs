@@ -115,50 +115,62 @@ fn factor_test() {
     let input = "3";
     let expected = str![[r#"
 Ok(
-    Value(
-        3,
+    (
+        [],
+        Value(
+            3,
+        ),
     ),
 )
 
 "#]];
     let input = lex.parse(input).unwrap();
-    assert_data_eq!(factor.parse(&input).to_debug(), expected);
+    assert_data_eq!(factor.parse_peek(&input).to_debug(), expected);
 
     let input = " 12";
     let expected = str![[r#"
 Ok(
-    Value(
-        12,
+    (
+        [],
+        Value(
+            12,
+        ),
     ),
 )
 
 "#]];
     let input = lex.parse(input).unwrap();
-    assert_data_eq!(factor.parse(&input).to_debug(), expected);
+    assert_data_eq!(factor.parse_peek(&input).to_debug(), expected);
 
     let input = "537 ";
     let expected = str![[r#"
 Ok(
-    Value(
-        537,
+    (
+        [],
+        Value(
+            537,
+        ),
     ),
 )
 
 "#]];
     let input = lex.parse(input).unwrap();
-    assert_data_eq!(factor.parse(&input).to_debug(), expected);
+    assert_data_eq!(factor.parse_peek(&input).to_debug(), expected);
 
     let input = "  24     ";
     let expected = str![[r#"
 Ok(
-    Value(
-        24,
+    (
+        [],
+        Value(
+            24,
+        ),
     ),
 )
 
 "#]];
     let input = lex.parse(input).unwrap();
-    assert_data_eq!(factor.parse(&input).to_debug(), expected);
+    assert_data_eq!(factor.parse_peek(&input).to_debug(), expected);
 }
 
 #[test]
@@ -166,59 +178,71 @@ fn term_test() {
     let input = " 12 *2 /  3";
     let expected = str![[r#"
 Ok(
-    Div(
-        Mul(
-            Value(
-                12,
+    (
+        [],
+        Div(
+            Mul(
+                Value(
+                    12,
+                ),
+                Value(
+                    2,
+                ),
             ),
             Value(
-                2,
+                3,
             ),
-        ),
-        Value(
-            3,
         ),
     ),
 )
 
 "#]];
     let input = lex.parse(input).unwrap();
-    assert_data_eq!(term.parse(&input).to_debug(), expected);
+    assert_data_eq!(term.parse_peek(&input).to_debug(), expected);
 
     let input = " 12 *2 /  3";
     let expected = str![[r#"
 Ok(
-    Div(
-        Mul(
-            Value(
-                12,
+    (
+        [],
+        Div(
+            Mul(
+                Value(
+                    12,
+                ),
+                Value(
+                    2,
+                ),
             ),
             Value(
-                2,
+                3,
             ),
-        ),
-        Value(
-            3,
         ),
     ),
 )
 
 "#]];
     let input = lex.parse(input).unwrap();
-    assert_data_eq!(term.parse(&input).to_debug(), expected);
+    assert_data_eq!(term.parse_peek(&input).to_debug(), expected);
 
     let input = " 2* 3  *2 *2 /  3";
     let expected = str![[r#"
 Ok(
-    Div(
-        Mul(
+    (
+        [],
+        Div(
             Mul(
                 Mul(
-                    Value(
-                        2,
+                    Mul(
+                        Value(
+                            2,
+                        ),
+                        Value(
+                            3,
+                        ),
                     ),
                     Value(
-                        3,
+                        2,
                     ),
                 ),
                 Value(
@@ -226,40 +250,40 @@ Ok(
                 ),
             ),
             Value(
-                2,
+                3,
             ),
-        ),
-        Value(
-            3,
         ),
     ),
 )
 
 "#]];
     let input = lex.parse(input).unwrap();
-    assert_data_eq!(term.parse(&input).to_debug(), expected);
+    assert_data_eq!(term.parse_peek(&input).to_debug(), expected);
 
     let input = " 48 /  3/2";
     let expected = str![[r#"
 Ok(
-    Div(
+    (
+        [],
         Div(
-            Value(
-                48,
+            Div(
+                Value(
+                    48,
+                ),
+                Value(
+                    3,
+                ),
             ),
             Value(
-                3,
+                2,
             ),
-        ),
-        Value(
-            2,
         ),
     ),
 )
 
 "#]];
     let input = lex.parse(input).unwrap();
-    assert_data_eq!(term.parse(&input).to_debug(), expected);
+    assert_data_eq!(term.parse_peek(&input).to_debug(), expected);
 }
 
 #[test]
