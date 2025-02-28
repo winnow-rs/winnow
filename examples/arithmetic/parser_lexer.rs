@@ -18,6 +18,7 @@ use winnow::{
     token::any,
     token::literal,
     token::one_of,
+    token::take_till,
 };
 
 /// Lex and parse
@@ -46,6 +47,7 @@ pub enum TokenKind {
     Oper(Oper),
     OpenParen,
     CloseParen,
+    Unknown,
     Eof,
 }
 
@@ -117,7 +119,8 @@ fn token<'s>(i: &mut &'s str) -> Result<Token<'s>> {
         '-' => '-'.value(TokenKind::Oper(Oper::Sub)),
         '*' => '*'.value(TokenKind::Oper(Oper::Mul)),
         '/' => '/'.value(TokenKind::Oper(Oper::Div)),
-        _ => fail,
+        ' '| '\t'| '\r'| '\n' => fail,
+        _ => take_till(.., ('0'..='9', '(', ')', '+', '-', '*', '/')).value(TokenKind::Unknown),
     }
     .with_taken()
     .map(|(kind, raw)| Token { kind, raw })
