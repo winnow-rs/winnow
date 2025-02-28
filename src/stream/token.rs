@@ -15,6 +15,13 @@ use crate::stream::StreamIsPartial;
 use crate::stream::UpdateSlice;
 
 /// Specialized input for parsing lexed tokens
+///
+/// Helpful impls
+/// - Any `PartialEq` type (e.g. a `TokenKind` or `&str`) can be used with
+///   [`literal`][crate::token::literal]
+/// - A `PartialEq` for `&str` allows for using `&str` as a parser for tokens
+///
+/// See also [Lexing and Parsing][crate::_topic::lexing].
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct TokenSlice<'t, T> {
     initial: &'t [T],
