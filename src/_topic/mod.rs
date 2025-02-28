@@ -15,6 +15,7 @@
 //!   - [Implementing `FromStr`][fromstr]
 //!   - [Performance][performance]
 //!   - [Parsing Partial Input][partial]
+//!   - [Lexing and Parsing][lexing]
 //!   - [Custom stream or token][stream]
 //!   - [Custom errors][error]
 //!   - [Debugging][crate::_tutorial::chapter_8]
@@ -32,6 +33,7 @@ pub mod http;
 pub mod ini;
 pub mod json;
 pub mod language;
+pub mod lexing;
 pub mod nom;
 pub mod partial;
 pub mod performance;
