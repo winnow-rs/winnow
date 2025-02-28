@@ -17,6 +17,10 @@ Ok(
                 kind: Value,
                 raw: "3",
             },
+            Token {
+                kind: Eof,
+                raw: "",
+            },
         ],
     ),
 )
@@ -33,6 +37,10 @@ Ok(
             Token {
                 kind: Value,
                 raw: "24",
+            },
+            Token {
+                kind: Eof,
+                raw: "",
             },
         ],
     ),
@@ -70,6 +78,10 @@ Ok(
             Token {
                 kind: Value,
                 raw: "3",
+            },
+            Token {
+                kind: Eof,
+                raw: "",
             },
         ],
     ),
@@ -136,6 +148,10 @@ Ok(
                 kind: Value,
                 raw: "3",
             },
+            Token {
+                kind: Eof,
+                raw: "",
+            },
         ],
     ),
 )
@@ -156,8 +172,17 @@ Ok(
                     kind: Value,
                     raw: "3",
                 },
+                Token {
+                    kind: Eof,
+                    raw: "",
+                },
             ],
-            input: [],
+            input: [
+                Token {
+                    kind: Eof,
+                    raw: "",
+                },
+            ],
         },
         Value(
             3,
@@ -180,8 +205,17 @@ Ok(
                     kind: Value,
                     raw: "12",
                 },
+                Token {
+                    kind: Eof,
+                    raw: "",
+                },
             ],
-            input: [],
+            input: [
+                Token {
+                    kind: Eof,
+                    raw: "",
+                },
+            ],
         },
         Value(
             12,
@@ -204,8 +238,17 @@ Ok(
                     kind: Value,
                     raw: "537",
                 },
+                Token {
+                    kind: Eof,
+                    raw: "",
+                },
             ],
-            input: [],
+            input: [
+                Token {
+                    kind: Eof,
+                    raw: "",
+                },
+            ],
         },
         Value(
             537,
@@ -228,8 +271,17 @@ Ok(
                     kind: Value,
                     raw: "24",
                 },
+                Token {
+                    kind: Eof,
+                    raw: "",
+                },
             ],
-            input: [],
+            input: [
+                Token {
+                    kind: Eof,
+                    raw: "",
+                },
+            ],
         },
         Value(
             24,
@@ -275,8 +327,17 @@ Ok(
                     kind: Value,
                     raw: "3",
                 },
+                Token {
+                    kind: Eof,
+                    raw: "",
+                },
             ],
-            input: [],
+            input: [
+                Token {
+                    kind: Eof,
+                    raw: "",
+                },
+            ],
         },
         Div(
             Mul(
@@ -329,8 +390,17 @@ Ok(
                     kind: Value,
                     raw: "3",
                 },
+                Token {
+                    kind: Eof,
+                    raw: "",
+                },
             ],
-            input: [],
+            input: [
+                Token {
+                    kind: Eof,
+                    raw: "",
+                },
+            ],
         },
         Div(
             Mul(
@@ -403,8 +473,17 @@ Ok(
                     kind: Value,
                     raw: "3",
                 },
+                Token {
+                    kind: Eof,
+                    raw: "",
+                },
             ],
-            input: [],
+            input: [
+                Token {
+                    kind: Eof,
+                    raw: "",
+                },
+            ],
         },
         Div(
             Mul(
@@ -467,8 +546,17 @@ Ok(
                     kind: Value,
                     raw: "2",
                 },
+                Token {
+                    kind: Eof,
+                    raw: "",
+                },
             ],
-            input: [],
+            input: [
+                Token {
+                    kind: Eof,
+                    raw: "",
+                },
+            ],
         },
         Div(
             Div(

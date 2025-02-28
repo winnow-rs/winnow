@@ -7,7 +7,9 @@ use winnow::{
     ascii::{digit1 as digits, multispace0 as multispaces},
     combinator::alt,
     combinator::dispatch,
+    combinator::eof,
     combinator::fail,
+    combinator::opt,
     combinator::peek,
     combinator::repeat,
     combinator::{delimited, preceded, terminated},
@@ -44,6 +46,7 @@ pub enum TokenKind {
     Oper(Oper),
     OpenParen,
     CloseParen,
+    Eof,
 }
 
 impl<'i> Parser<Tokens<'i>, &'i Token<'i>, ContextError> for TokenKind {
@@ -92,7 +95,17 @@ impl<const LEN: usize> winnow::stream::ContainsToken<&'_ Token<'_>> for [TokenKi
 ///
 /// See [`expr`] to parse the tokens
 pub(crate) fn tokens<'s>(i: &mut &'s str) -> Result<Vec<Token<'s>>> {
-    preceded(multispaces, repeat(1.., terminated(token, multispaces))).parse_next(i)
+    let mut tokens: Vec<_> =
+        preceded(multispaces, repeat(1.., terminated(token, multispaces))).parse_next(i)?;
+    if let Some(eof) = opt(eof.map(|raw| Token {
+        kind: TokenKind::Eof,
+        raw,
+    }))
+    .parse_next(i)?
+    {
+        tokens.push(eof);
+    }
+    Ok(tokens)
 }
 
 fn token<'s>(i: &mut &'s str) -> Result<Token<'s>> {
@@ -154,7 +167,7 @@ pub(crate) type Tokens<'i> = TokenSlice<'i, Token<'i>>;
 pub(crate) fn expr(i: &mut Tokens<'_>) -> Result<Expr> {
     let init = term.parse_next(i)?;
 
-    repeat(
+    let expr = repeat(
         0..,
         (
             one_of([TokenKind::Oper(Oper::Add), TokenKind::Oper(Oper::Sub)]),
@@ -171,7 +184,11 @@ pub(crate) fn expr(i: &mut Tokens<'_>) -> Result<Expr> {
             }
         },
     )
-    .parse_next(i)
+    .parse_next(i)?;
+
+    opt(TokenKind::Eof).parse_next(i)?;
+
+    Ok(expr)
 }
 
 pub(crate) fn term(i: &mut Tokens<'_>) -> Result<Expr> {
