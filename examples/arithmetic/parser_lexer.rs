@@ -1,8 +1,6 @@
 use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 
-use std::str::FromStr;
-
 use winnow::prelude::*;
 use winnow::Result;
 use winnow::{
@@ -28,16 +26,28 @@ pub(crate) fn expr2(i: &mut &str) -> Result<Expr> {
     expr.parse_next(&mut tokens)
 }
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Token<'s> {
+    kind: TokenKind,
+    raw: &'s str,
+}
+
+impl PartialEq<TokenKind> for Token<'_> {
+    fn eq(&self, other: &TokenKind) -> bool {
+        self.kind == *other
+    }
+}
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum Token {
-    Value(i64),
+pub enum TokenKind {
+    Value,
     Oper(Oper),
     OpenParen,
     CloseParen,
 }
 
-impl<'i> Parser<Tokens<'i>, &'i Token, ContextError> for Token {
-    fn parse_next(&mut self, input: &mut Tokens<'i>) -> Result<&'i Token> {
+impl<'i> Parser<Tokens<'i>, &'i Token<'i>, ContextError> for TokenKind {
+    fn parse_next(&mut self, input: &mut Tokens<'i>) -> Result<&'i Token<'i>> {
         literal(*self).parse_next(input).map(|t| &t[0])
     }
 }
@@ -50,52 +60,54 @@ pub enum Oper {
     Div,
 }
 
-impl winnow::stream::ContainsToken<&'_ Token> for Token {
+impl winnow::stream::ContainsToken<&'_ Token<'_>> for TokenKind {
     #[inline(always)]
-    fn contains_token(&self, token: &'_ Token) -> bool {
-        self == token
+    fn contains_token(&self, token: &'_ Token<'_>) -> bool {
+        *self == token.kind
     }
 }
 
-impl winnow::stream::ContainsToken<&'_ Token> for &'_ [Token] {
+impl winnow::stream::ContainsToken<&'_ Token<'_>> for &'_ [TokenKind] {
     #[inline]
-    fn contains_token(&self, token: &'_ Token) -> bool {
-        self.iter().any(|t| t == token)
+    fn contains_token(&self, token: &'_ Token<'_>) -> bool {
+        self.iter().any(|t| *t == token.kind)
     }
 }
 
-impl<const LEN: usize> winnow::stream::ContainsToken<&'_ Token> for &'_ [Token; LEN] {
+impl<const LEN: usize> winnow::stream::ContainsToken<&'_ Token<'_>> for &'_ [TokenKind; LEN] {
     #[inline]
-    fn contains_token(&self, token: &'_ Token) -> bool {
-        self.iter().any(|t| t == token)
+    fn contains_token(&self, token: &'_ Token<'_>) -> bool {
+        self.iter().any(|t| *t == token.kind)
     }
 }
 
-impl<const LEN: usize> winnow::stream::ContainsToken<&'_ Token> for [Token; LEN] {
+impl<const LEN: usize> winnow::stream::ContainsToken<&'_ Token<'_>> for [TokenKind; LEN] {
     #[inline]
-    fn contains_token(&self, token: &'_ Token) -> bool {
-        self.iter().any(|t| t == token)
+    fn contains_token(&self, token: &'_ Token<'_>) -> bool {
+        self.iter().any(|t| *t == token.kind)
     }
 }
 
 /// Lex tokens
 ///
 /// See [`expr`] to parse the tokens
-pub(crate) fn tokens(i: &mut &str) -> Result<Vec<Token>> {
+pub(crate) fn tokens<'s>(i: &mut &'s str) -> Result<Vec<Token<'s>>> {
     preceded(multispaces, repeat(1.., terminated(token, multispaces))).parse_next(i)
 }
 
-fn token(i: &mut &str) -> Result<Token> {
+fn token<'s>(i: &mut &'s str) -> Result<Token<'s>> {
     dispatch! {peek(any);
-        '0'..='9' => digits.try_map(FromStr::from_str).map(Token::Value),
-        '(' => '('.value(Token::OpenParen),
-        ')' => ')'.value(Token::CloseParen),
-        '+' => '+'.value(Token::Oper(Oper::Add)),
-        '-' => '-'.value(Token::Oper(Oper::Sub)),
-        '*' => '*'.value(Token::Oper(Oper::Mul)),
-        '/' => '/'.value(Token::Oper(Oper::Div)),
+        '0'..='9' => digits.value(TokenKind::Value),
+        '(' => '('.value(TokenKind::OpenParen),
+        ')' => ')'.value(TokenKind::CloseParen),
+        '+' => '+'.value(TokenKind::Oper(Oper::Add)),
+        '-' => '-'.value(TokenKind::Oper(Oper::Sub)),
+        '*' => '*'.value(TokenKind::Oper(Oper::Mul)),
+        '/' => '/'.value(TokenKind::Oper(Oper::Div)),
         _ => fail,
     }
+    .with_taken()
+    .map(|(kind, raw)| Token { kind, raw })
     .parse_next(i)
 }
 
@@ -136,7 +148,7 @@ impl Display for Expr {
     }
 }
 
-pub(crate) type Tokens<'i> = TokenSlice<'i, Token>;
+pub(crate) type Tokens<'i> = TokenSlice<'i, Token<'i>>;
 
 /// Parse the tokens lexed in [`tokens`]
 pub(crate) fn expr(i: &mut Tokens<'_>) -> Result<Expr> {
@@ -145,14 +157,14 @@ pub(crate) fn expr(i: &mut Tokens<'_>) -> Result<Expr> {
     repeat(
         0..,
         (
-            one_of([Token::Oper(Oper::Add), Token::Oper(Oper::Sub)]),
+            one_of([TokenKind::Oper(Oper::Add), TokenKind::Oper(Oper::Sub)]),
             term,
         ),
     )
     .fold(
         move || init.clone(),
-        |acc, (op, val): (&Token, Expr)| {
-            if *op == Token::Oper(Oper::Add) {
+        |acc, (op, val): (&Token<'_>, Expr)| {
+            if op.kind == TokenKind::Oper(Oper::Add) {
                 Expr::Add(Box::new(acc), Box::new(val))
             } else {
                 Expr::Sub(Box::new(acc), Box::new(val))
@@ -168,14 +180,14 @@ pub(crate) fn term(i: &mut Tokens<'_>) -> Result<Expr> {
     repeat(
         0..,
         (
-            one_of([Token::Oper(Oper::Mul), Token::Oper(Oper::Div)]),
+            one_of([TokenKind::Oper(Oper::Mul), TokenKind::Oper(Oper::Div)]),
             factor,
         ),
     )
     .fold(
         move || init.clone(),
-        |acc, (op, val): (&Token, Expr)| {
-            if *op == Token::Oper(Oper::Mul) {
+        |acc, (op, val): (&Token<'_>, Expr)| {
+            if op.kind == TokenKind::Oper(Oper::Mul) {
                 Expr::Mul(Box::new(acc), Box::new(val))
             } else {
                 Expr::Div(Box::new(acc), Box::new(val))
@@ -187,17 +199,14 @@ pub(crate) fn term(i: &mut Tokens<'_>) -> Result<Expr> {
 
 pub(crate) fn factor(i: &mut Tokens<'_>) -> Result<Expr> {
     alt((
-        one_of(|t: &_| matches!(t, Token::Value(_))).map(|t: &_| match t {
-            Token::Value(v) => Expr::Value(*v),
-            _ => unreachable!(),
-        }),
+        TokenKind::Value.try_map(|t: &Token<'_>| t.raw.parse::<i64>().map(Expr::Value)),
         parens,
     ))
     .parse_next(i)
 }
 
 fn parens(i: &mut Tokens<'_>) -> Result<Expr> {
-    delimited(Token::OpenParen, expr, Token::CloseParen)
+    delimited(TokenKind::OpenParen, expr, TokenKind::CloseParen)
         .map(|e| Expr::Paren(Box::new(e)))
         .parse_next(i)
 }

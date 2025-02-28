@@ -13,9 +13,10 @@ Ok(
     (
         "",
         [
-            Value(
-                3,
-            ),
+            Token {
+                kind: Value,
+                raw: "3",
+            },
         ],
     ),
 )
@@ -29,9 +30,10 @@ Ok(
     (
         "",
         [
-            Value(
-                24,
-            ),
+            Token {
+                kind: Value,
+                raw: "24",
+            },
         ],
     ),
 )
@@ -45,21 +47,30 @@ Ok(
     (
         "",
         [
-            Value(
-                12,
-            ),
-            Oper(
-                Mul,
-            ),
-            Value(
-                2,
-            ),
-            Oper(
-                Div,
-            ),
-            Value(
-                3,
-            ),
+            Token {
+                kind: Value,
+                raw: "12",
+            },
+            Token {
+                kind: Oper(
+                    Mul,
+                ),
+                raw: "*",
+            },
+            Token {
+                kind: Value,
+                raw: "2",
+            },
+            Token {
+                kind: Oper(
+                    Div,
+                ),
+                raw: "/",
+            },
+            Token {
+                kind: Value,
+                raw: "3",
+            },
         ],
     ),
 )
@@ -73,35 +84,58 @@ Ok(
     (
         "",
         [
-            Value(
-                2,
-            ),
-            Oper(
-                Mul,
-            ),
-            Value(
-                2,
-            ),
-            Oper(
-                Div,
-            ),
-            OpenParen,
-            Value(
-                5,
-            ),
-            Oper(
-                Sub,
-            ),
-            Value(
-                1,
-            ),
-            CloseParen,
-            Oper(
-                Add,
-            ),
-            Value(
-                3,
-            ),
+            Token {
+                kind: Value,
+                raw: "2",
+            },
+            Token {
+                kind: Oper(
+                    Mul,
+                ),
+                raw: "*",
+            },
+            Token {
+                kind: Value,
+                raw: "2",
+            },
+            Token {
+                kind: Oper(
+                    Div,
+                ),
+                raw: "/",
+            },
+            Token {
+                kind: OpenParen,
+                raw: "(",
+            },
+            Token {
+                kind: Value,
+                raw: "5",
+            },
+            Token {
+                kind: Oper(
+                    Sub,
+                ),
+                raw: "-",
+            },
+            Token {
+                kind: Value,
+                raw: "1",
+            },
+            Token {
+                kind: CloseParen,
+                raw: ")",
+            },
+            Token {
+                kind: Oper(
+                    Add,
+                ),
+                raw: "+",
+            },
+            Token {
+                kind: Value,
+                raw: "3",
+            },
         ],
     ),
 )
@@ -118,9 +152,10 @@ Ok(
     (
         TokenSlice {
             initial: [
-                Value(
-                    3,
-                ),
+                Token {
+                    kind: Value,
+                    raw: "3",
+                },
             ],
             input: [],
         },
@@ -141,9 +176,10 @@ Ok(
     (
         TokenSlice {
             initial: [
-                Value(
-                    12,
-                ),
+                Token {
+                    kind: Value,
+                    raw: "12",
+                },
             ],
             input: [],
         },
@@ -164,9 +200,10 @@ Ok(
     (
         TokenSlice {
             initial: [
-                Value(
-                    537,
-                ),
+                Token {
+                    kind: Value,
+                    raw: "537",
+                },
             ],
             input: [],
         },
@@ -187,9 +224,10 @@ Ok(
     (
         TokenSlice {
             initial: [
-                Value(
-                    24,
-                ),
+                Token {
+                    kind: Value,
+                    raw: "24",
+                },
             ],
             input: [],
         },
@@ -213,21 +251,30 @@ Ok(
     (
         TokenSlice {
             initial: [
-                Value(
-                    12,
-                ),
-                Oper(
-                    Mul,
-                ),
-                Value(
-                    2,
-                ),
-                Oper(
-                    Div,
-                ),
-                Value(
-                    3,
-                ),
+                Token {
+                    kind: Value,
+                    raw: "12",
+                },
+                Token {
+                    kind: Oper(
+                        Mul,
+                    ),
+                    raw: "*",
+                },
+                Token {
+                    kind: Value,
+                    raw: "2",
+                },
+                Token {
+                    kind: Oper(
+                        Div,
+                    ),
+                    raw: "/",
+                },
+                Token {
+                    kind: Value,
+                    raw: "3",
+                },
             ],
             input: [],
         },
@@ -258,21 +305,30 @@ Ok(
     (
         TokenSlice {
             initial: [
-                Value(
-                    12,
-                ),
-                Oper(
-                    Mul,
-                ),
-                Value(
-                    2,
-                ),
-                Oper(
-                    Div,
-                ),
-                Value(
-                    3,
-                ),
+                Token {
+                    kind: Value,
+                    raw: "12",
+                },
+                Token {
+                    kind: Oper(
+                        Mul,
+                    ),
+                    raw: "*",
+                },
+                Token {
+                    kind: Value,
+                    raw: "2",
+                },
+                Token {
+                    kind: Oper(
+                        Div,
+                    ),
+                    raw: "/",
+                },
+                Token {
+                    kind: Value,
+                    raw: "3",
+                },
             ],
             input: [],
         },
@@ -303,33 +359,50 @@ Ok(
     (
         TokenSlice {
             initial: [
-                Value(
-                    2,
-                ),
-                Oper(
-                    Mul,
-                ),
-                Value(
-                    3,
-                ),
-                Oper(
-                    Mul,
-                ),
-                Value(
-                    2,
-                ),
-                Oper(
-                    Mul,
-                ),
-                Value(
-                    2,
-                ),
-                Oper(
-                    Div,
-                ),
-                Value(
-                    3,
-                ),
+                Token {
+                    kind: Value,
+                    raw: "2",
+                },
+                Token {
+                    kind: Oper(
+                        Mul,
+                    ),
+                    raw: "*",
+                },
+                Token {
+                    kind: Value,
+                    raw: "3",
+                },
+                Token {
+                    kind: Oper(
+                        Mul,
+                    ),
+                    raw: "*",
+                },
+                Token {
+                    kind: Value,
+                    raw: "2",
+                },
+                Token {
+                    kind: Oper(
+                        Mul,
+                    ),
+                    raw: "*",
+                },
+                Token {
+                    kind: Value,
+                    raw: "2",
+                },
+                Token {
+                    kind: Oper(
+                        Div,
+                    ),
+                    raw: "/",
+                },
+                Token {
+                    kind: Value,
+                    raw: "3",
+                },
             ],
             input: [],
         },
@@ -370,21 +443,30 @@ Ok(
     (
         TokenSlice {
             initial: [
-                Value(
-                    48,
-                ),
-                Oper(
-                    Div,
-                ),
-                Value(
-                    3,
-                ),
-                Oper(
-                    Div,
-                ),
-                Value(
-                    2,
-                ),
+                Token {
+                    kind: Value,
+                    raw: "48",
+                },
+                Token {
+                    kind: Oper(
+                        Div,
+                    ),
+                    raw: "/",
+                },
+                Token {
+                    kind: Value,
+                    raw: "3",
+                },
+                Token {
+                    kind: Oper(
+                        Div,
+                    ),
+                    raw: "/",
+                },
+                Token {
+                    kind: Value,
+                    raw: "2",
+                },
             ],
             input: [],
         },
