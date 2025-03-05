@@ -85,7 +85,7 @@
 //!
 //! ## Remaining combinators
 //!
-//! - [`empty`]: Returns a value without consuming any input, always succeeds
+//! - [`empty`]: Succeed, consuming no input
 //! - [`fail`]: Inversion of [`empty`]. Always fails.
 //! - [`Parser::by_ref`]: Allow moving `&mut impl Parser` into other parsers
 //!
