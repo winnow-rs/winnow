@@ -156,7 +156,7 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   combinator::alt,
-//!   combinator::{repeat},
+//!   combinator::repeat,
 //!   combinator::{preceded, terminated},
 //!   token::one_of,
 //! };
@@ -177,7 +177,7 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   combinator::alt,
-//!   combinator::{repeat},
+//!   combinator::repeat,
 //!   combinator::{preceded, terminated},
 //!   token::one_of,
 //! };
@@ -202,7 +202,7 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   combinator::alt,
-//!   combinator::{repeat},
+//!   combinator::repeat,
 //!   combinator::{preceded, terminated},
 //!   token::one_of,
 //! };
@@ -223,7 +223,7 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   combinator::alt,
-//!   combinator::{repeat},
+//!   combinator::repeat,
 //!   combinator::{preceded, terminated},
 //!   token::one_of,
 //! };
@@ -243,7 +243,7 @@
 //! ```rust
 //! use winnow::prelude::*;
 //! use winnow::{
-//!   combinator::{repeat},
+//!   combinator::repeat,
 //!   combinator::terminated,
 //!   token::one_of,
 //! };
@@ -267,7 +267,7 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   combinator::alt,
-//!   combinator::{repeat},
+//!   combinator::repeat,
 //!   combinator::opt,
 //!   combinator::{preceded, terminated},
 //!   token::one_of,
