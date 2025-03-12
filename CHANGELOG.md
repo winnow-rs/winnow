@@ -3,6 +3,13 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Documentation
+
+- Clarify `empty`
+- Clarify `dispatch!`
+- *(cookbook)* Discuss lexing
+- *(tutorial)* Iterate on how we discuss errors
+
 ## [0.7.3] - 2025-02-19
 
 ### Features
