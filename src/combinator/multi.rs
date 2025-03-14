@@ -4,6 +4,7 @@ use crate::combinator::trace;
 use crate::error::FromExternalError;
 use crate::error::ParserError;
 use crate::stream::Accumulate;
+use crate::stream::Offset;
 use crate::stream::Range;
 use crate::stream::Stream;
 use crate::Parser;
@@ -1607,4 +1608,98 @@ where
     }
 
     Ok(acc)
+}
+
+/// Call the `repeat` parser until the `end` parser produces a result.
+///
+/// Then, return the input consumed until the `end` parser was called, and the result of the `end`
+/// parser.
+///
+/// # Example
+///
+/// ```rust
+/// # #[cfg(feature = "std")] {
+/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
+/// use winnow::ascii::digit1;
+/// use winnow::combinator::recognize_till;
+///
+/// fn parser(s: &str) -> IResult<&str, (&str, char)> {
+///   recognize_till(
+///     digit1,
+///     ' ',
+///   ).parse_peek(s)
+/// }
+///
+/// assert_eq!(parser("123 "), Ok(("", ("123", ' '))));
+/// assert_eq!(parser("0 a"), Ok(("a", ("0", ' '))));
+/// assert_eq!(parser("123a"), Err(ErrMode::Backtrack(InputError::new("a", ErrorKind::Slice))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Slice))));
+/// # }
+/// ```
+///
+/// ```rust
+/// # #[cfg(feature = "std")] {
+/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
+/// use winnow::combinator::alt;
+/// use winnow::combinator::preceded;
+/// use winnow::combinator::recognize_till;
+/// use winnow::token::take_till;
+///
+/// fn parser(s: &str) -> IResult<&str, &str> {
+///   preceded(
+///     '\'',
+///     recognize_till(
+///       alt((
+///         preceded('\'', take_till(0.., '\'')),
+///         take_till(1.., '\''),
+///       )),
+///       "' ",
+///     ).map(|(name, _end_quote)| name)
+///   ).parse_peek(s)
+/// }
+///
+/// assert_eq!(parser("'Puppy' "), Ok(("", "Puppy")));
+/// assert_eq!(parser("'Dog'' "), Ok(("", "Dog'")));
+/// assert_eq!(parser("'Isn't' that nice?"), Ok(("that nice?", "Isn't")));
+/// assert_eq!(parser("'' after"), Ok(("after", "")));
+///
+/// assert_eq!(parser("'Puppy'dog"), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Slice))));
+/// # }
+/// ```
+pub fn recognize_till<I, Discard, O, E>(
+    mut repeat: impl Parser<I, Discard, E>,
+    mut end: impl Parser<I, O, E>,
+) -> impl Parser<I, (<I as Stream>::Slice, O), E>
+where
+    I: Stream,
+    E: ParserError<I>,
+{
+    move |input: &mut I| {
+        let start = input.checkpoint();
+
+        loop {
+            let before_end = input.checkpoint();
+            match end.parse_next(input) {
+                Ok(end_parsed) => {
+                    let after_end = input.checkpoint();
+
+                    input.reset(&start);
+                    let input_until_end = input.next_slice(before_end.offset_from(&start));
+                    input.reset(&after_end);
+
+                    return Ok((input_until_end, end_parsed));
+                }
+                Err(ErrMode::Backtrack(_)) => {
+                    input.reset(&before_end);
+                    match repeat.parse_next(input) {
+                        Ok(_) => {}
+                        Err(e) => return Err(e.append(input, &before_end, ErrorKind::Many)),
+                    }
+                }
+                Err(e) => return Err(e),
+            }
+        }
+    }
 }
