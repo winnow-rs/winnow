@@ -450,93 +450,49 @@ where
         } = self.occurrences;
         trace("repeat", move |i: &mut I| {
             match (start_inclusive, end_inclusive) {
-                (0, None) => repeat0_(&mut self.parser, i),
-                (1, None) => repeat1_(&mut self.parser, i),
-                (start, end) if Some(start) == end => repeat_n_(start, &mut self.parser, i),
-                (start, end) => repeat_m_n_(start, end.unwrap_or(usize::MAX), &mut self.parser, i),
+                (0, None) => fold_repeat0_(
+                    &mut self.parser,
+                    &mut || C::initial(None),
+                    &mut |mut acc, o| {
+                        acc.accumulate(o);
+                        acc
+                    },
+                    i,
+                ),
+                (1, None) => fold_repeat1_(
+                    &mut self.parser,
+                    &mut || C::initial(None),
+                    &mut |mut acc, o| {
+                        acc.accumulate(o);
+                        acc
+                    },
+                    i,
+                ),
+                (start, end) if Some(start) == end => fold_repeat_n_(
+                    start,
+                    &mut self.parser,
+                    &mut || C::initial(Some(start)),
+                    &mut |mut acc, o| {
+                        acc.accumulate(o);
+                        acc
+                    },
+                    i,
+                ),
+                (start, end) => fold_repeat_m_n_(
+                    start,
+                    end.unwrap_or(usize::MAX),
+                    &mut self.parser,
+                    &mut || C::initial(Some(start)),
+                    &mut |mut acc, o| {
+                        acc.accumulate(o);
+                        acc
+                    },
+                    i,
+                ),
             }
         })
         .parse_next(i)
     }
-}
-
-#[inline(always)]
-fn repeat0_<I, O, C, E, F>(f: &mut F, i: &mut I) -> Result<C, E>
-where
-    I: Stream,
-    C: Accumulate<O>,
-    F: Parser<I, O, E>,
-    E: ParserError<I>,
-{
-    fold_repeat0_(
-        f,
-        &mut || C::initial(None),
-        &mut |mut acc, o| {
-            acc.accumulate(o);
-            acc
-        },
-        i,
-    )
-}
-
-#[inline(always)]
-fn repeat1_<I, O, C, E, F>(f: &mut F, i: &mut I) -> Result<C, E>
-where
-    I: Stream,
-    C: Accumulate<O>,
-    F: Parser<I, O, E>,
-    E: ParserError<I>,
-{
-    fold_repeat1_(
-        f,
-        &mut || C::initial(None),
-        &mut |mut acc, o| {
-            acc.accumulate(o);
-            acc
-        },
-        i,
-    )
-}
-
-#[inline(always)]
-fn repeat_n_<I, O, C, E, F>(count: usize, f: &mut F, i: &mut I) -> Result<C, E>
-where
-    I: Stream,
-    C: Accumulate<O>,
-    F: Parser<I, O, E>,
-    E: ParserError<I>,
-{
-    fold_repeat_n_(
-        count,
-        f,
-        &mut || C::initial(Some(count)),
-        &mut |mut acc, o| {
-            acc.accumulate(o);
-            acc
-        },
-        i,
-    )
-}
-
-#[inline(always)]
-fn repeat_m_n_<I, O, C, E, F>(min: usize, max: usize, parse: &mut F, input: &mut I) -> Result<C, E>
-where
-    I: Stream,
-    C: Accumulate<O>,
-    F: Parser<I, O, E>,
-    E: ParserError<I>,
-{
-    fold_repeat_m_n_(
-        min,
-        max,
-        parse,
-        &mut || C::initial(Some(min)),
-        &mut |mut acc, o| {
-            acc.accumulate(o);
-            acc
-        },
-        input,
-    )
 }
 
 fn fold_repeat0_<I, O, E, F, G, H, R>(
