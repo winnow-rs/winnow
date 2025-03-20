@@ -468,21 +468,21 @@ where
                     },
                     i,
                 ),
-                (start, end) if Some(start) == end => fold_repeat_n_(
-                    start,
+                (min, end) if Some(min) == end => fold_repeat_n_(
+                    min,
                     &mut self.parser,
-                    &mut || C::initial(Some(start)),
+                    &mut || C::initial(Some(min)),
                     &mut |mut acc, o| {
                         acc.accumulate(o);
                         acc
                     },
                     i,
                 ),
-                (start, end) => fold_repeat_m_n_(
-                    start,
+                (min, end) => fold_repeat_m_n_(
+                    min,
                     end.unwrap_or(usize::MAX),
                     &mut self.parser,
-                    &mut || C::initial(Some(start)),
+                    &mut || C::initial(Some(min)),
                     &mut |mut acc, o| {
                         acc.accumulate(o);
                         acc
@@ -495,17 +495,17 @@ where
     }
 }
 
-fn fold_repeat0_<I, O, E, F, G, H, R>(
-    f: &mut F,
-    init: &mut H,
-    g: &mut G,
+fn fold_repeat0_<I, O, E, P, N, F, R>(
+    parser: &mut P,
+    init: &mut N,
+    fold: &mut F,
     input: &mut I,
 ) -> Result<R, E>
 where
     I: Stream,
-    F: Parser<I, O, E>,
-    G: FnMut(R, O) -> R,
-    H: FnMut() -> R,
+    P: Parser<I, O, E>,
+    N: FnMut() -> R,
+    F: FnMut(R, O) -> R,
     E: ParserError<I>,
 {
     let mut res = init();
@@ -513,8 +513,8 @@ where
     loop {
         let start = input.checkpoint();
         let len = input.eof_offset();
-        match f.parse_next(input) {
-            Ok(o) => {
+        match parser.parse_next(input) {
+            Ok(output) => {
                 // infinite loop check: the parser must always consume
                 if input.eof_offset() == len {
                     return Err(ParserError::assert(
@@ -523,49 +523,49 @@ where
                     ));
                 }
 
-                res = g(res, o);
+                res = fold(res, output);
             }
-            Err(e) if e.is_backtrack() => {
+            Err(err) if err.is_backtrack() => {
                 input.reset(&start);
                 return Ok(res);
             }
-            Err(e) => {
-                return Err(e);
+            Err(err) => {
+                return Err(err);
             }
         }
     }
 }
 
-fn fold_repeat1_<I, O, E, F, G, H, R>(
-    f: &mut F,
-    init: &mut H,
-    g: &mut G,
+fn fold_repeat1_<I, O, E, P, N, F, R>(
+    parser: &mut P,
+    init: &mut N,
+    fold: &mut F,
     input: &mut I,
 ) -> Result<R, E>
 where
     I: Stream,
-    F: Parser<I, O, E>,
-    G: FnMut(R, O) -> R,
-    H: FnMut() -> R,
+    P: Parser<I, O, E>,
+    N: FnMut() -> R,
+    F: FnMut(R, O) -> R,
     E: ParserError<I>,
 {
     let start = input.checkpoint();
-    match f.parse_next(input) {
-        Err(e) => Err(e.append(input, &start)),
-        Ok(o1) => {
+    match parser.parse_next(input) {
+        Err(err) => Err(err.append(input, &start)),
+        Ok(output) => {
             let init = init();
-            let mut acc = g(init, o1);
+            let mut res = fold(init, output);
 
             loop {
                 let start = input.checkpoint();
                 let len = input.eof_offset();
-                match f.parse_next(input) {
-                    Err(e) if e.is_backtrack() => {
+                match parser.parse_next(input) {
+                    Err(err) if err.is_backtrack() => {
                         input.reset(&start);
                         break;
                     }
-                    Err(e) => return Err(e),
-                    Ok(o) => {
+                    Err(err) => return Err(err),
+                    Ok(output) => {
                         // infinite loop check: the parser must always consume
                         if input.eof_offset() == len {
                             return Err(ParserError::assert(
@@ -574,37 +574,37 @@ where
                             ));
                         }
 
-                        acc = g(acc, o);
+                        res = fold(res, output);
                     }
                 }
             }
 
-            Ok(acc)
+            Ok(res)
         }
     }
 }
 
-fn fold_repeat_n_<I, O, E, F, G, H, R>(
+fn fold_repeat_n_<I, O, E, P, N, F, R>(
     count: usize,
-    parse: &mut F,
-    init: &mut H,
-    fold: &mut G,
+    parse: &mut P,
+    init: &mut N,
+    fold: &mut F,
     input: &mut I,
 ) -> Result<R, E>
 where
     I: Stream,
-    F: Parser<I, O, E>,
-    G: FnMut(R, O) -> R,
-    H: FnMut() -> R,
+    P: Parser<I, O, E>,
+    N: FnMut() -> R,
+    F: FnMut(R, O) -> R,
     E: ParserError<I>,
 {
-    let mut acc = init();
+    let mut res = init();
 
     for _ in 0..count {
         let start = input.checkpoint();
         let len = input.eof_offset();
         match parse.parse_next(input) {
-            Ok(value) => {
+            Ok(output) => {
                 // infinite loop check: the parser must always consume
                 if input.eof_offset() == len {
                     return Err(ParserError::assert(
@@ -613,30 +613,30 @@ where
                     ));
                 }
 
-                acc = fold(acc, value);
+                res = fold(res, output);
             }
-            Err(e) => {
-                return Err(e.append(input, &start));
+            Err(err) => {
+                return Err(err.append(input, &start));
             }
         }
     }
 
-    Ok(acc)
+    Ok(res)
 }
 
-fn fold_repeat_m_n_<I, O, E, F, G, H, R>(
+fn fold_repeat_m_n_<I, O, E, P, N, F, R>(
     min: usize,
     max: usize,
-    parse: &mut F,
-    init: &mut H,
-    fold: &mut G,
+    parse: &mut P,
+    init: &mut N,
+    fold: &mut F,
     input: &mut I,
 ) -> Result<R, E>
 where
     I: Stream,
-    F: Parser<I, O, E>,
-    G: FnMut(R, O) -> R,
-    H: FnMut() -> R,
+    P: Parser<I, O, E>,
+    N: FnMut() -> R,
+    F: FnMut(R, O) -> R,
     E: ParserError<I>,
 {
     if min > max {
@@ -646,12 +646,12 @@ where
         ));
     }
 
-    let mut acc = init();
+    let mut res = init();
     for count in 0..max {
         let start = input.checkpoint();
         let len = input.eof_offset();
         match parse.parse_next(input) {
-            Ok(value) => {
+            Ok(output) => {
                 // infinite loop check: the parser must always consume
                 if input.eof_offset() == len {
                     return Err(ParserError::assert(
@@ -660,7 +660,7 @@ where
                     ));
                 }
 
-                acc = fold(acc, value);
+                res = fold(res, output);
             }
             //FInputXMError: handle failure properly
             Err(err) if err.is_backtrack() => {
@@ -671,26 +671,26 @@ where
                     break;
                 }
             }
-            Err(e) => return Err(e),
+            Err(err) => return Err(err),
         }
     }
 
-    Ok(acc)
+    Ok(res)
 }
 
-fn verify_fold_m_n<I, O, E, F, G, H, R>(
+fn verify_fold_m_n<I, O, E, P, N, F, R>(
     min: usize,
     max: usize,
-    parse: &mut F,
-    init: &mut H,
-    fold: &mut G,
+    parse: &mut P,
+    init: &mut N,
+    fold: &mut F,
     input: &mut I,
 ) -> Result<R, E>
 where
     I: Stream,
-    F: Parser<I, O, E>,
-    G: FnMut(R, O) -> Option<R>,
-    H: FnMut() -> R,
+    P: Parser<I, O, E>,
+    N: FnMut() -> R,
+    F: FnMut(R, O) -> Option<R>,
     E: ParserError<I>,
 {
     if min > max {
@@ -700,12 +700,12 @@ where
         ));
     }
 
-    let mut acc = init();
+    let mut res = init();
     for count in 0..max {
         let start = input.checkpoint();
         let len = input.eof_offset();
         match parse.parse_next(input) {
-            Ok(value) => {
+            Ok(output) => {
                 // infinite loop check: the parser must always consume
                 if input.eof_offset() == len {
                     return Err(ParserError::assert(
@@ -714,13 +714,13 @@ where
                     ));
                 }
 
-                let Some(tmp) = fold(acc, value) else {
+                let Some(res_) = fold(res, output) else {
                     input.reset(&start);
                     let res = Err(ParserError::from_input(input));
                     super::debug::trace_result("verify_fold", &res);
                     return res;
                 };
-                acc = tmp;
+                res = res_;
             }
             //FInputXMError: handle failure properly
             Err(err) if err.is_backtrack() => {
@@ -731,27 +731,27 @@ where
                     break;
                 }
             }
-            Err(e) => return Err(e),
+            Err(err) => return Err(err),
         }
     }
 
-    Ok(acc)
+    Ok(res)
 }
 
-fn try_fold_m_n<I, O, E, F, G, H, R, GE>(
+fn try_fold_m_n<I, O, E, P, N, F, R, RE>(
     min: usize,
     max: usize,
-    parse: &mut F,
-    init: &mut H,
-    fold: &mut G,
+    parse: &mut P,
+    init: &mut N,
+    fold: &mut F,
     input: &mut I,
 ) -> Result<R, E>
 where
     I: Stream,
-    F: Parser<I, O, E>,
-    G: FnMut(R, O) -> Result<R, GE>,
-    H: FnMut() -> R,
-    E: ParserError<I> + FromExternalError<I, GE>,
+    P: Parser<I, O, E>,
+    N: FnMut() -> R,
+    F: FnMut(R, O) -> Result<R, RE>,
+    E: ParserError<I> + FromExternalError<I, RE>,
 {
     if min > max {
         return Err(ParserError::assert(
@@ -760,12 +760,12 @@ where
         ));
     }
 
-    let mut acc = init();
+    let mut res = init();
     for count in 0..max {
         let start = input.checkpoint();
         let len = input.eof_offset();
         match parse.parse_next(input) {
-            Ok(value) => {
+            Ok(output) => {
                 // infinite loop check: the parser must always consume
                 if input.eof_offset() == len {
                     return Err(ParserError::assert(
@@ -774,11 +774,11 @@ where
                     ));
                 }
 
-                match fold(acc, value) {
-                    Ok(tmp) => acc = tmp,
-                    Err(e) => {
+                match fold(res, output) {
+                    Ok(res_) => res = res_,
+                    Err(err) => {
                         input.reset(&start);
-                        let res = Err(E::from_external_error(input, e));
+                        let res = Err(E::from_external_error(input, err));
                         super::debug::trace_result("try_fold", &res);
                         return res;
                     }
@@ -793,11 +793,11 @@ where
                     break;
                 }
             }
-            Err(e) => return Err(e),
+            Err(err) => return Err(err),
         }
     }
 
-    Ok(acc)
+    Ok(res)
 }
 
 /// [`Accumulate`] the output of parser `f` into a container, like `Vec`, until the parser `g`
