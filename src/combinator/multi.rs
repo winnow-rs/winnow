@@ -270,6 +270,9 @@ where
             match (start_inclusive, end_inclusive) {
                 (0, None) => fold_repeat0_(&mut self.parser, &mut init, &mut op, i),
                 (1, None) => fold_repeat1_(&mut self.parser, &mut init, &mut op, i),
+                (start, end) if Some(start) == end => {
+                    fold_repeat_n_(start, &mut self.parser, &mut init, &mut op, i)
+                }
                 (start, end) => fold_repeat_m_n_(
                     start,
                     end.unwrap_or(usize::MAX),
@@ -696,6 +699,46 @@ where
             Ok(acc)
         }
     }
+}
+
+fn fold_repeat_n_<I, O, E, F, G, H, R>(
+    count: usize,
+    parse: &mut F,
+    init: &mut H,
+    fold: &mut G,
+    input: &mut I,
+) -> Result<R, E>
+where
+    I: Stream,
+    F: Parser<I, O, E>,
+    G: FnMut(R, O) -> R,
+    H: FnMut() -> R,
+    E: ParserError<I>,
+{
+    let mut acc = init();
+
+    for _ in 0..count {
+        let start = input.checkpoint();
+        let len = input.eof_offset();
+        match parse.parse_next(input) {
+            Ok(value) => {
+                // infinite loop check: the parser must always consume
+                if input.eof_offset() == len {
+                    return Err(ParserError::assert(
+                        input,
+                        "`repeat` parsers must always consume",
+                    ));
+                }
+
+                acc = fold(acc, value);
+            }
+            Err(e) => {
+                return Err(e.append(input, &start));
+            }
+        }
+    }
+
+    Ok(acc)
 }
 
 fn fold_repeat_m_n_<I, O, E, F, G, H, R>(
