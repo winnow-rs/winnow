@@ -752,7 +752,6 @@ where
     Ok(acc)
 }
 
-#[inline(always)]
 fn verify_fold_m_n<I, O, E, F, G, H, R>(
     min: usize,
     max: usize,
@@ -813,7 +812,6 @@ where
     Ok(acc)
 }
 
-#[inline(always)]
 fn try_fold_m_n<I, O, E, F, G, H, R, GE>(
     min: usize,
     max: usize,
