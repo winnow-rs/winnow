@@ -666,11 +666,11 @@ where
     H: FnMut() -> R,
     E: ParserError<I>,
 {
-    let init = init();
     let start = input.checkpoint();
     match f.parse_next(input) {
         Err(e) => Err(e.append(input, &start)),
         Ok(o1) => {
+            let init = init();
             let mut acc = g(init, o1);
 
             loop {
