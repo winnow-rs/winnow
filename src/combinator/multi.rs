@@ -460,6 +460,7 @@ where
     }
 }
 
+#[inline(always)]
 fn repeat0_<I, O, C, E, F>(f: &mut F, i: &mut I) -> Result<C, E>
 where
     I: Stream,
@@ -467,31 +468,18 @@ where
     F: Parser<I, O, E>,
     E: ParserError<I>,
 {
-    let mut acc = C::initial(None);
-    loop {
-        let start = i.checkpoint();
-        let len = i.eof_offset();
-        match f.parse_next(i) {
-            Err(e) if e.is_backtrack() => {
-                i.reset(&start);
-                return Ok(acc);
-            }
-            Err(e) => return Err(e),
-            Ok(o) => {
-                // infinite loop check: the parser must always consume
-                if i.eof_offset() == len {
-                    return Err(ParserError::assert(
-                        i,
-                        "`repeat` parsers must always consume",
-                    ));
-                }
-
-                acc.accumulate(o);
-            }
-        }
-    }
+    fold_repeat0_(
+        f,
+        &mut || C::initial(None),
+        &mut |mut acc, o| {
+            acc.accumulate(o);
+            acc
+        },
+        i,
+    )
 }
 
+#[inline(always)]
 fn repeat1_<I, O, C, E, F>(f: &mut F, i: &mut I) -> Result<C, E>
 where
     I: Stream,
@@ -499,39 +487,18 @@ where
     F: Parser<I, O, E>,
     E: ParserError<I>,
 {
-    let start = i.checkpoint();
-    match f.parse_next(i) {
-        Err(e) => Err(e.append(i, &start)),
-        Ok(o) => {
-            let mut acc = C::initial(None);
+    fold_repeat1_(
+        f,
+        &mut || C::initial(None),
+        &mut |mut acc, o| {
             acc.accumulate(o);
-
-            loop {
-                let start = i.checkpoint();
-                let len = i.eof_offset();
-                match f.parse_next(i) {
-                    Err(e) if e.is_backtrack() => {
-                        i.reset(&start);
-                        return Ok(acc);
-                    }
-                    Err(e) => return Err(e),
-                    Ok(o) => {
-                        // infinite loop check: the parser must always consume
-                        if i.eof_offset() == len {
-                            return Err(ParserError::assert(
-                                i,
-                                "`repeat` parsers must always consume",
-                            ));
-                        }
-
-                        acc.accumulate(o);
-                    }
-                }
-            }
-        }
-    }
+            acc
+        },
+        i,
+    )
 }
 
+#[inline(always)]
 fn repeat_n_<I, O, C, E, F>(count: usize, f: &mut F, i: &mut I) -> Result<C, E>
 where
     I: Stream,
@@ -539,32 +506,19 @@ where
     F: Parser<I, O, E>,
     E: ParserError<I>,
 {
-    let mut res = C::initial(Some(count));
-
-    for _ in 0..count {
-        let start = i.checkpoint();
-        let len = i.eof_offset();
-        match f.parse_next(i) {
-            Ok(o) => {
-                // infinite loop check: the parser must always consume
-                if i.eof_offset() == len {
-                    return Err(ParserError::assert(
-                        i,
-                        "`repeat` parsers must always consume",
-                    ));
-                }
-
-                res.accumulate(o);
-            }
-            Err(e) => {
-                return Err(e.append(i, &start));
-            }
-        }
-    }
-
-    Ok(res)
+    fold_repeat_n_(
+        count,
+        f,
+        &mut || C::initial(Some(count)),
+        &mut |mut acc, o| {
+            acc.accumulate(o);
+            acc
+        },
+        i,
+    )
 }
 
+#[inline(always)]
 fn repeat_m_n_<I, O, C, E, F>(min: usize, max: usize, parse: &mut F, input: &mut I) -> Result<C, E>
 where
     I: Stream,
@@ -572,44 +526,17 @@ where
     F: Parser<I, O, E>,
     E: ParserError<I>,
 {
-    if min > max {
-        return Err(ParserError::assert(
-            input,
-            "range should be ascending, rather than descending",
-        ));
-    }
-
-    let mut res = C::initial(Some(min));
-    for count in 0..max {
-        let start = input.checkpoint();
-        let len = input.eof_offset();
-        match parse.parse_next(input) {
-            Ok(value) => {
-                // infinite loop check: the parser must always consume
-                if input.eof_offset() == len {
-                    return Err(ParserError::assert(
-                        input,
-                        "`repeat` parsers must always consume",
-                    ));
-                }
-
-                res.accumulate(value);
-            }
-            Err(e) if e.is_backtrack() => {
-                if count < min {
-                    return Err(e.append(input, &start));
-                } else {
-                    input.reset(&start);
-                    return Ok(res);
-                }
-            }
-            Err(e) => {
-                return Err(e);
-            }
-        }
-    }
-
-    Ok(res)
+    fold_repeat_m_n_(
+        min,
+        max,
+        parse,
+        &mut || C::initial(Some(min)),
+        &mut |mut acc, o| {
+            acc.accumulate(o);
+            acc
+        },
+        input,
+    )
 }
 
 fn fold_repeat0_<I, O, E, F, G, H, R>(
