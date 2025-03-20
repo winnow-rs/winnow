@@ -165,8 +165,8 @@ where
     ///
     /// <div class="warning">
     ///
-    /// **Warning:** If the parser passed to `fold` accepts empty inputs
-    /// (like `alpha0` or `digit0`), `fold_repeat` will return an error,
+    /// **Warning:** If the parser passed to [`repeat`] accepts empty inputs
+    /// (like `alpha0` or `digit0`), `fold` will return an error,
     /// to prevent going into an infinite loop.
     ///
     /// </div>
@@ -295,7 +295,7 @@ where
     ///
     /// <div class="warning">
     ///
-    /// **Warning:** If the parser passed to `repeat` accepts empty inputs
+    /// **Warning:** If the parser passed to [`repeat`] accepts empty inputs
     /// (like `alpha0` or `digit0`), `verify_fold` will return an error,
     /// to prevent going into an infinite loop.
     ///
@@ -371,7 +371,7 @@ where
     ///
     /// <div class="warning">
     ///
-    /// **Warning:** If the parser passed to `repeat` accepts empty inputs
+    /// **Warning:** If the parser passed to [`repeat`] accepts empty inputs
     /// (like `alpha0` or `digit0`), `try_fold` will return an error,
     /// to prevent going into an infinite loop.
     ///
