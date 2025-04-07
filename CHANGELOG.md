@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add `TokenSlice::previous_tokens`
+
 ## [0.7.5] - 2025-04-07
 
 ### Features
