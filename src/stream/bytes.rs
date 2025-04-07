@@ -109,8 +109,7 @@ impl<'i> Stream for &'i Bytes {
     }
     #[inline(always)]
     fn peek_slice(&self, offset: usize) -> Self::Slice {
-        let (slice, _next) = self.split_at(offset);
-        slice
+        &self[..offset]
     }
 
     #[inline(always)]
