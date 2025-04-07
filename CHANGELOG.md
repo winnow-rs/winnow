@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add `Stream::next_slice_unchecked` and `Stream::peek_slice_unchecked`
+
 ## [0.7.4] - 2025-03-12
 
 ### Documentation
