@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.7.5] - 2025-04-07
+
 ### Features
 
 - Add `Stream::next_slice_unchecked` and `Stream::peek_slice_unchecked`
@@ -2562,7 +2564,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.7.4...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.7.5...HEAD
+[0.7.5]: https://github.com/winnow-rs/winnow/compare/v0.7.4...v0.7.5
 [0.7.4]: https://github.com/winnow-rs/winnow/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/winnow-rs/winnow/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/winnow-rs/winnow/compare/v0.7.1...v0.7.2
