@@ -108,8 +108,28 @@ impl<'i> Stream for &'i Bytes {
         slice
     }
     #[inline(always)]
+    unsafe fn next_slice_unchecked(&mut self, offset: usize) -> Self::Slice {
+        #[cfg(debug_assertions)]
+        self.peek_slice(offset);
+
+        // SAFETY: `Stream::next_slice_unchecked` requires `offset` to be in bounds
+        let slice = unsafe { self.0.get_unchecked(..offset) };
+        // SAFETY: `Stream::next_slice_unchecked` requires `offset` to be in bounds
+        let next = unsafe { self.0.get_unchecked(offset..) };
+        *self = Bytes::from_bytes(next);
+        slice
+    }
+    #[inline(always)]
     fn peek_slice(&self, offset: usize) -> Self::Slice {
-        let (slice, _next) = self.split_at(offset);
+        &self[..offset]
+    }
+    #[inline(always)]
+    unsafe fn peek_slice_unchecked(&self, offset: usize) -> Self::Slice {
+        #[cfg(debug_assertions)]
+        self.peek_slice(offset);
+
+        // SAFETY: `Stream::next_slice_unchecked` requires `offset` to be in bounds
+        let slice = unsafe { self.0.get_unchecked(..offset) };
         slice
     }
 

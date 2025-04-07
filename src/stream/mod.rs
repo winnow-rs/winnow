@@ -189,7 +189,45 @@ pub trait Stream: Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::D
     ///
     fn next_slice(&mut self, offset: usize) -> Self::Slice;
     /// Split off a slice of tokens from the input
+    ///
+    /// <div class="warning">
+    ///
+    /// **Note:** For inputs with variable width tokens, like `&str`'s `char`, `offset` might not correspond
+    /// with the number of tokens. To get a valid offset, use:
+    /// - [`Stream::eof_offset`]
+    /// - [`Stream::iter_offsets`]
+    /// - [`Stream::offset_for`]
+    /// - [`Stream::offset_at`]
+    ///
+    /// </div>
+    ///
+    /// # Safety
+    ///
+    /// Callers of this function are responsible that these preconditions are satisfied:
+    ///
+    /// * Indexes must be within bounds of the original input;
+    /// * Indexes must uphold invariants of the stream, like for `str` they must lie on UTF-8
+    ///   sequence boundaries.
+    ///
+    unsafe fn next_slice_unchecked(&mut self, offset: usize) -> Self::Slice {
+        // Inherent impl to allow callers to have `unsafe`-free code
+        self.next_slice(offset)
+    }
+    /// Split off a slice of tokens from the input
     fn peek_slice(&self, offset: usize) -> Self::Slice;
+    /// Split off a slice of tokens from the input
+    ///
+    /// # Safety
+    ///
+    /// Callers of this function are responsible that these preconditions are satisfied:
+    ///
+    /// * Indexes must be within bounds of the original input;
+    /// * Indexes must uphold invariants of the stream, like for `str` they must lie on UTF-8
+    ///   sequence boundaries.
+    unsafe fn peek_slice_unchecked(&self, offset: usize) -> Self::Slice {
+        // Inherent impl to allow callers to have `unsafe`-free code
+        self.peek_slice(offset)
+    }
 
     /// Advance to the end of the stream
     #[inline(always)]
@@ -276,8 +314,28 @@ where
         slice
     }
     #[inline(always)]
+    unsafe fn next_slice_unchecked(&mut self, offset: usize) -> Self::Slice {
+        #[cfg(debug_assertions)]
+        self.peek_slice(offset);
+
+        // SAFETY: `Stream::next_slice_unchecked` requires `offset` to be in bounds
+        let slice = unsafe { self.get_unchecked(..offset) };
+        // SAFETY: `Stream::next_slice_unchecked` requires `offset` to be in bounds
+        let next = unsafe { self.get_unchecked(offset..) };
+        *self = next;
+        slice
+    }
+    #[inline(always)]
     fn peek_slice(&self, offset: usize) -> Self::Slice {
-        let (slice, _next) = self.split_at(offset);
+        &self[..offset]
+    }
+    #[inline(always)]
+    unsafe fn peek_slice_unchecked(&self, offset: usize) -> Self::Slice {
+        #[cfg(debug_assertions)]
+        self.peek_slice(offset);
+
+        // SAFETY: `Stream::next_slice_unchecked` requires `offset` to be in bounds
+        let slice = unsafe { self.get_unchecked(..offset) };
         slice
     }
 
@@ -361,8 +419,30 @@ impl<'i> Stream for &'i str {
         slice
     }
     #[inline(always)]
+    unsafe fn next_slice_unchecked(&mut self, offset: usize) -> Self::Slice {
+        #[cfg(debug_assertions)]
+        self.peek_slice(offset);
+
+        // SAFETY: `Stream::next_slice_unchecked` requires `offset` to be in bounds and on a UTF-8
+        // sequence boundary
+        let slice = unsafe { self.get_unchecked(..offset) };
+        // SAFETY: `Stream::next_slice_unchecked` requires `offset` to be in bounds and on a UTF-8
+        // sequence boundary
+        let next = unsafe { self.get_unchecked(offset..) };
+        *self = next;
+        slice
+    }
+    #[inline(always)]
     fn peek_slice(&self, offset: usize) -> Self::Slice {
-        let (slice, _next) = self.split_at(offset);
+        &self[..offset]
+    }
+    #[inline(always)]
+    unsafe fn peek_slice_unchecked(&self, offset: usize) -> Self::Slice {
+        #[cfg(debug_assertions)]
+        self.peek_slice(offset);
+
+        // SAFETY: `Stream::next_slice_unchecked` requires `offset` to be in bounds
+        let slice = unsafe { self.get_unchecked(..offset) };
         slice
     }
 
