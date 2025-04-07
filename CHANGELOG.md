@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.7.6] - 2025-04-07
+
 ### Features
 
 - Add `TokenSlice::previous_tokens`
@@ -2568,7 +2570,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.7.5...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.7.6...HEAD
+[0.7.6]: https://github.com/winnow-rs/winnow/compare/v0.7.5...v0.7.6
 [0.7.5]: https://github.com/winnow-rs/winnow/compare/v0.7.4...v0.7.5
 [0.7.4]: https://github.com/winnow-rs/winnow/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/winnow-rs/winnow/compare/v0.7.2...v0.7.3
