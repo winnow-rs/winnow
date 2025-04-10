@@ -52,6 +52,7 @@
 #![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
 #![warn(missing_docs)]
 #![warn(clippy::std_instead_of_core)]
+#![warn(clippy::std_instead_of_alloc)]
 #![warn(clippy::print_stderr)]
 #![warn(clippy::print_stdout)]
 
@@ -93,6 +94,7 @@ pub(crate) mod lib {
     /// internal std exports for `no_std` compatibility
     pub(crate) mod std {
         #![allow(clippy::std_instead_of_core)]
+        #![allow(clippy::std_instead_of_alloc)]
         #[doc(hidden)]
         pub(crate) use std::{
             borrow, boxed, cmp, collections, convert, fmt, hash, iter, mem, ops, result, slice,
