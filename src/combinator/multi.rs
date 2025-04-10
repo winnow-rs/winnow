@@ -161,7 +161,7 @@ where
     /// # Arguments
     /// * `init` A function returning the initial value.
     /// * `op` The function that combines a result of `f` with
-    ///       the current accumulator.
+    ///   the current accumulator.
     ///
     /// <div class="warning">
     ///
@@ -294,7 +294,7 @@ where
     /// # Arguments
     /// * `init` A function returning the initial value.
     /// * `op` The function that combines a result of `f` with
-    ///       the current accumulator.
+    ///   the current accumulator.
     ///
     /// <div class="warning">
     ///
@@ -370,7 +370,7 @@ where
     /// # Arguments
     /// * `init` A function returning the initial value.
     /// * `op` The function that combines a result of `f` with
-    ///       the current accumulator.
+    ///   the current accumulator.
     ///
     /// <div class="warning">
     ///
