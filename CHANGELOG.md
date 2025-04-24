@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.7.7] - 2025-04-24
+
 ### Fixes
 
 - Ensure `LocatedSlice` and `Stateful`s `Stream::raw` gets the inner input
@@ -2574,7 +2576,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.7.6...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.7.7...HEAD
+[0.7.7]: https://github.com/winnow-rs/winnow/compare/v0.7.6...v0.7.7
 [0.7.6]: https://github.com/winnow-rs/winnow/compare/v0.7.5...v0.7.6
 [0.7.5]: https://github.com/winnow-rs/winnow/compare/v0.7.4...v0.7.5
 [0.7.4]: https://github.com/winnow-rs/winnow/compare/v0.7.3...v0.7.4
