@@ -174,7 +174,7 @@ impl<I: Stream> Stream for LocatingSlice<I> {
 
     #[inline(always)]
     fn raw(&self) -> &dyn crate::lib::std::fmt::Debug {
-        &self.input
+        self.input.raw()
     }
 }
 
