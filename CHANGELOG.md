@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Ensure `LocatedSlice` and `Stateful`s `Stream::raw` gets the inner input
+
 ## [0.7.6] - 2025-04-07
 
 ### Features
