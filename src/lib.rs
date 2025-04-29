@@ -17,8 +17,8 @@
 //! In roughly priority order:
 //! 1. Support writing parser declaratively while not getting in the way of imperative-style
 //!    parsing when needed, working as an open-ended toolbox rather than a close-ended framework.
-//! 2. Flexible enough to be used for any application, including parsing binary data, strings, or
-//!    separate lexing and parsing phases
+//! 2. Flexible enough to be used for any application, including parsing strings, binary data,
+//!    or separate [lexing and parsing phases][_topic::lexing]
 //! 3. Zero-cost abstractions, making it easy to write high performance parsers
 //! 4. Easy to use, making it trivial for one-off uses
 //!
