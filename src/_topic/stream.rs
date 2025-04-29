@@ -6,9 +6,10 @@
 //! - [`Stateful`] for passing state through your parser, like tracking recursion
 //!   depth
 //! - [`LocatingSlice`] for looking up the absolute position of a token
+//! - [`TokenSlice`] for [parsing a series of lexed tokens][lexing]
 //!
 //! But that won't always cut it for your parser. For example, you might lex `&str` into
-//! a series of tokens and then want to parse a `TokenStream`.
+//! a series of tokens and then want to parse the resulting `TokenStream`.
 //!
 //! ## Implementing a custom stream
 //!
@@ -55,11 +56,7 @@
 //! ## Implementing a custom token
 //!
 //! If you are parsing `&[Myitem]`, leaving just the `MyItem` traits.
-//!
-//! For example:
-//! ```rust
-#![doc = include_str!("../../examples/arithmetic/parser_lexer.rs")]
-//! ```
 
-#[allow(unused_imports)] // Here for intra-dock links
+#![allow(unused_imports)] // Here for intra-dock links
+use super::lexing;
 use crate::stream::*;
