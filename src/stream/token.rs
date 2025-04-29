@@ -20,6 +20,8 @@ use crate::stream::UpdateSlice;
 /// - Any `PartialEq` type (e.g. a `TokenKind` or `&str`) can be used with
 ///   [`literal`][crate::token::literal]
 /// - A `PartialEq` for `&str` allows for using `&str` as a parser for tokens
+/// - [`ContainsToken`][crate::stream::ContainsToken] for `T` to for parsing with token sets
+/// - [`Location`] for `T` to extract spans from tokens
 ///
 /// See also [Lexing and Parsing][crate::_topic::lexing].
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
