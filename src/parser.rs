@@ -786,13 +786,7 @@ pub trait Parser<I, O, E> {
         E: ParserError<I>,
         C: Clone + crate::lib::std::fmt::Debug,
     {
-        impls::Context {
-            parser: self,
-            context,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
-        }
+        impls::Context::new(self, context)
     }
 
     /// Transforms [`Incomplete`][crate::error::ErrMode::Incomplete] into [`Backtrack`][crate::error::ErrMode::Backtrack]

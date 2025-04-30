@@ -550,6 +550,9 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::context`]
+///
+/// Contains a single context value.
+#[cfg(not(feature = "std"))]
 pub struct Context<F, I, O, E, C>
 where
     F: Parser<I, O, E>,
@@ -565,6 +568,27 @@ where
     pub(crate) e: core::marker::PhantomData<E>,
 }
 
+#[cfg(not(feature = "std"))]
+impl<F, I, O, E, C> Context<F, I, O, E, C>
+where
+    F: Parser<I, O, E>,
+    I: Stream,
+    E: AddContext<I, C>,
+    E: ParserError<I>,
+    C: Clone + crate::lib::std::fmt::Debug,
+{
+    pub fn new(parser: F, context: C) -> Self {
+        Context {
+            parser,
+            context,
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+        }
+    }
+}
+
+#[cfg(not(feature = "std"))]
 impl<F, I, O, E, C> Parser<I, O, E> for Context<F, I, O, E, C>
 where
     F: Parser<I, O, E>,
@@ -581,6 +605,111 @@ where
             (self.parser)
                 .parse_next(i)
                 .map_err(|err| err.add_context(i, &start, context.clone()))
+        })
+        .parse_next(i)
+    }
+}
+
+/// [`Parser`] implementation for [`Parser::context`]
+///
+/// May contain multiple context values, see [`Context::add_context`] for more detail on this.
+#[cfg(feature = "std")]
+pub struct Context<F, I, O, E, C>
+where
+    F: Parser<I, O, E>,
+    I: Stream,
+    E: AddContext<I, C>,
+    E: ParserError<I>,
+    C: Clone + crate::lib::std::fmt::Debug,
+{
+    pub(crate) parser: F,
+    pub(crate) context: Vec<C>,
+    pub(crate) i: core::marker::PhantomData<I>,
+    pub(crate) o: core::marker::PhantomData<O>,
+    pub(crate) e: core::marker::PhantomData<E>,
+}
+
+#[cfg(feature = "std")]
+impl<F, I, O, E, C> Context<F, I, O, E, C>
+where
+    F: Parser<I, O, E>,
+    I: Stream,
+    E: AddContext<I, C>,
+    E: ParserError<I>,
+    C: Clone + crate::lib::std::fmt::Debug,
+{
+    /// Create a new [Context] parser from another parser with some attached error context.
+    pub fn new(parser: F, context: C) -> Self {
+        Context {
+            parser,
+            context: vec![context],
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+        }
+    }
+
+    /// Attach some error context to this [Context] parser instance, without wrapping it in yet
+    /// another [Context] parser.
+    ///
+    /// This allows for dynamic assignment of context during runtime, without altering the parser
+    /// type.
+    ///
+    /// Example:
+    /// ```
+    /// # use winnow::prelude::*;
+    /// use winnow::token::one_of;
+    /// use winnow::ascii::alpha1;
+    /// use winnow::error::{StrContext, StrContextValue};
+    /// # fn main() {
+    ///
+    /// fn char_parser(input: &mut &str) -> ModalResult<char> {
+    ///     let allowed_characters = ['a', 'b', 'c'];
+    ///     // Create a simple parser that only allows a few chars with some error context.
+    ///     let mut parser = one_of(allowed_characters)
+    ///         .context(StrContext::Label("character"));
+    ///
+    ///     // It's now possible to **add** to that context without another `Context` wrapper.
+    ///     parser.add_context(StrContext::Expected(StrContextValue::Description(
+    ///         "one of the allowed characters",
+    ///     )));
+    ///
+    ///     // Dynamically add context info based on runtime variables.
+    ///     for character in allowed_characters {
+    ///         parser.add_context(StrContext::Expected(StrContextValue::CharLiteral(character)))
+    ///     }
+    ///
+    ///     parser.parse_next(input)
+    /// }
+    ///
+    /// assert_eq!(char_parser.parse("a"), Ok('a'));
+    /// assert!(char_parser.parse("d").is_err());
+    /// # }
+    /// ```
+    pub fn add_context(&mut self, context: C) {
+        self.context.push(context);
+    }
+}
+
+#[cfg(feature = "std")]
+impl<F, I, O, E, C> Parser<I, O, E> for Context<F, I, O, E, C>
+where
+    F: Parser<I, O, E>,
+    I: Stream,
+    E: AddContext<I, C>,
+    E: ParserError<I>,
+    C: Clone + crate::lib::std::fmt::Debug,
+{
+    #[inline]
+    fn parse_next(&mut self, i: &mut I) -> Result<O, E> {
+        trace(DisplayDebug(self.context.clone()), move |i: &mut I| {
+            let start = i.checkpoint();
+            (self.parser).parse_next(i).map_err(|mut err| {
+                for context in &self.context {
+                    err = err.add_context(i, &start, context.clone());
+                }
+                err
+            })
         })
         .parse_next(i)
     }
