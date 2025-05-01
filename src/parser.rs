@@ -745,6 +745,8 @@ pub trait Parser<I, O, E> {
     /// This is used mainly to add user friendly information
     /// to errors when backtracking through a parse tree.
     ///
+    /// See also [tutorial][crate::_tutorial::chapter_7].
+    ///
     /// # Example
     ///
     /// ```rust
