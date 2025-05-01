@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.7.8] - 2025-05-01
+
 ### Features
 
 - Add `ContextError::push`
@@ -2581,7 +2583,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.7.7...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.7.8...HEAD
+[0.7.8]: https://github.com/winnow-rs/winnow/compare/v0.7.7...v0.7.8
 [0.7.7]: https://github.com/winnow-rs/winnow/compare/v0.7.6...v0.7.7
 [0.7.6]: https://github.com/winnow-rs/winnow/compare/v0.7.5...v0.7.6
 [0.7.5]: https://github.com/winnow-rs/winnow/compare/v0.7.4...v0.7.5
