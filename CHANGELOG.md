@@ -3,6 +3,11 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add `ContextError::push`
+- Add `Parser::map_err`
+
 ## [0.7.7] - 2025-04-24
 
 ### Fixes
