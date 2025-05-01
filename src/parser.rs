@@ -786,6 +786,49 @@ pub trait Parser<I, O, E> {
         }
     }
 
+    /// Maps a function over the error of a parser
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use winnow::prelude::*;
+    /// # use winnow::Parser;
+    /// # use winnow::Result;
+    /// # use winnow::ascii::digit1;
+    /// # use winnow::error::StrContext;
+    /// # use winnow::error::AddContext;
+    /// # use winnow::error::ContextError;
+    /// # fn main() {
+    ///
+    /// fn parser<'i>(input: &mut &'i str) -> Result<&'i str> {
+    ///     digit1.map_err(|mut e: ContextError| {
+    ///         for c in "0123456789".chars() {
+    ///             e.push(StrContext::Expected(c.into()));
+    ///         }
+    ///         e
+    ///     }).parse_next(input)
+    /// }
+    ///
+    /// assert_eq!(parser.parse_peek("123456"), Ok(("", "123456")));
+    /// assert!(parser.parse_peek("abc").is_err());
+    /// # }
+    /// ```
+    #[inline(always)]
+    fn map_err<G, E2>(self, map: G) -> impls::MapErr<Self, G, I, O, E, E2>
+    where
+        G: FnMut(E) -> E2,
+        Self: core::marker::Sized,
+    {
+        impls::MapErr {
+            parser: self,
+            map,
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+            e2: Default::default(),
+        }
+    }
+
     /// Transforms [`Incomplete`][crate::error::ErrMode::Incomplete] into [`Backtrack`][crate::error::ErrMode::Backtrack]
     ///
     /// # Example

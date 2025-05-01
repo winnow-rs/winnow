@@ -578,6 +578,34 @@ where
     }
 }
 
+/// [`Parser`] implementation for [`Parser::map_err`]
+pub struct MapErr<F, G, I, O, E, E2>
+where
+    F: Parser<I, O, E>,
+    G: FnMut(E) -> E2,
+{
+    pub(crate) parser: F,
+    pub(crate) map: G,
+    pub(crate) i: core::marker::PhantomData<I>,
+    pub(crate) o: core::marker::PhantomData<O>,
+    pub(crate) e: core::marker::PhantomData<E>,
+    pub(crate) e2: core::marker::PhantomData<E2>,
+}
+
+impl<F, G, I, O, E, E2> Parser<I, O, E2> for MapErr<F, G, I, O, E, E2>
+where
+    F: Parser<I, O, E>,
+    G: FnMut(E) -> E2,
+{
+    #[inline]
+    fn parse_next(&mut self, i: &mut I) -> Result<O, E2> {
+        match self.parser.parse_next(i) {
+            Err(e) => Err((self.map)(e)),
+            Ok(o) => Ok(o),
+        }
+    }
+}
+
 /// [`Parser`] implementation for [`Parser::retry_after`]
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
