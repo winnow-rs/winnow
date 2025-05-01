@@ -744,6 +744,27 @@ pub trait Parser<I, O, E> {
     ///
     /// This is used mainly to add user friendly information
     /// to errors when backtracking through a parse tree.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use winnow::prelude::*;
+    /// # use winnow::{error::ErrMode, Parser};
+    /// # use winnow::ascii::digit1;
+    /// # use winnow::error::StrContext;
+    /// # use winnow::error::StrContextValue;
+    /// # fn main() {
+    ///
+    /// fn parser<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
+    ///     digit1
+    ///       .context(StrContext::Expected(StrContextValue::Description("digit")))
+    ///       .parse_next(input)
+    /// }
+    ///
+    /// assert_eq!(parser.parse_peek("123456"), Ok(("", "123456")));
+    /// assert!(parser.parse_peek("abc").is_err());
+    /// # }
+    /// ```
     #[doc(alias = "labelled")]
     #[inline(always)]
     fn context<C>(self, context: C) -> impls::Context<Self, I, O, E, C>
