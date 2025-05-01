@@ -744,6 +744,29 @@ pub trait Parser<I, O, E> {
     ///
     /// This is used mainly to add user friendly information
     /// to errors when backtracking through a parse tree.
+    ///
+    /// See also [tutorial][crate::_tutorial::chapter_7].
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use winnow::prelude::*;
+    /// # use winnow::{error::ErrMode, Parser};
+    /// # use winnow::ascii::digit1;
+    /// # use winnow::error::StrContext;
+    /// # use winnow::error::StrContextValue;
+    /// # fn main() {
+    ///
+    /// fn parser<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
+    ///     digit1
+    ///       .context(StrContext::Expected(StrContextValue::Description("digit")))
+    ///       .parse_next(input)
+    /// }
+    ///
+    /// assert_eq!(parser.parse_peek("123456"), Ok(("", "123456")));
+    /// assert!(parser.parse_peek("abc").is_err());
+    /// # }
+    /// ```
     #[doc(alias = "labelled")]
     #[inline(always)]
     fn context<C>(self, context: C) -> impls::Context<Self, I, O, E, C>
@@ -760,6 +783,49 @@ pub trait Parser<I, O, E> {
             i: Default::default(),
             o: Default::default(),
             e: Default::default(),
+        }
+    }
+
+    /// Maps a function over the error of a parser
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use winnow::prelude::*;
+    /// # use winnow::Parser;
+    /// # use winnow::Result;
+    /// # use winnow::ascii::digit1;
+    /// # use winnow::error::StrContext;
+    /// # use winnow::error::AddContext;
+    /// # use winnow::error::ContextError;
+    /// # fn main() {
+    ///
+    /// fn parser<'i>(input: &mut &'i str) -> Result<&'i str> {
+    ///     digit1.map_err(|mut e: ContextError| {
+    ///         for c in "0123456789".chars() {
+    ///             e.push(StrContext::Expected(c.into()));
+    ///         }
+    ///         e
+    ///     }).parse_next(input)
+    /// }
+    ///
+    /// assert_eq!(parser.parse_peek("123456"), Ok(("", "123456")));
+    /// assert!(parser.parse_peek("abc").is_err());
+    /// # }
+    /// ```
+    #[inline(always)]
+    fn map_err<G, E2>(self, map: G) -> impls::MapErr<Self, G, I, O, E, E2>
+    where
+        G: FnMut(E) -> E2,
+        Self: core::marker::Sized,
+    {
+        impls::MapErr {
+            parser: self,
+            map,
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+            e2: Default::default(),
         }
     }
 
