@@ -578,6 +578,49 @@ where
     }
 }
 
+/// [`Parser`] implementation for [`Parser::context`]
+pub struct ContextWith<P, I, O, E, F, C, FI>
+where
+    P: Parser<I, O, E>,
+    I: Stream,
+    E: AddContext<I, C>,
+    E: ParserError<I>,
+    F: Fn() -> FI + Clone,
+    C: crate::lib::std::fmt::Debug,
+    FI: Iterator<Item = C>,
+{
+    pub(crate) parser: P,
+    pub(crate) context: F,
+    pub(crate) i: core::marker::PhantomData<I>,
+    pub(crate) o: core::marker::PhantomData<O>,
+    pub(crate) e: core::marker::PhantomData<E>,
+    pub(crate) c: core::marker::PhantomData<C>,
+    pub(crate) fi: core::marker::PhantomData<FI>,
+}
+
+impl<P, I, O, E, F, C, FI> Parser<I, O, E> for ContextWith<P, I, O, E, F, C, FI>
+where
+    P: Parser<I, O, E>,
+    I: Stream,
+    E: AddContext<I, C>,
+    E: ParserError<I>,
+    F: Fn() -> FI + Clone,
+    C: crate::lib::std::fmt::Debug,
+    FI: Iterator<Item = C>,
+{
+    #[inline]
+    fn parse_next(&mut self, i: &mut I) -> Result<O, E> {
+        let context = self.context.clone();
+        let start = i.checkpoint();
+        (self.parser).parse_next(i).map_err(|mut err| {
+            for context in context() {
+                err = err.add_context(i, &start, context);
+            }
+            err
+        })
+    }
+}
+
 /// [`Parser`] implementation for [`Parser::map_err`]
 pub struct MapErr<F, G, I, O, E, E2>
 where
