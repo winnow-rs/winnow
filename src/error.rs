@@ -705,6 +705,13 @@ impl<C> ContextError<C> {
         self.context.push(context);
     }
 
+    /// Add more context
+    #[inline]
+    pub fn extend<I: IntoIterator<Item = C>>(&mut self, context: I) {
+        #[cfg(feature = "alloc")]
+        self.context.extend(context);
+    }
+
     /// Access context from [`Parser::context`]
     #[inline]
     #[cfg(feature = "alloc")]
