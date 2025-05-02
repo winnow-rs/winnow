@@ -1859,5 +1859,6 @@ where
 }
 
 mod sealed {
+    #[allow(unnameable_types)]
     pub struct SealedMarker;
 }
