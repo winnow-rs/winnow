@@ -30,7 +30,7 @@ pub(crate) fn expr2(i: &mut &str) -> Result<Expr> {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Token<'s> {
+pub(crate) struct Token<'s> {
     kind: TokenKind,
     raw: &'s str,
 }
@@ -42,7 +42,7 @@ impl PartialEq<TokenKind> for Token<'_> {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum TokenKind {
+pub(crate) enum TokenKind {
     Value,
     Oper(Oper),
     OpenParen,
@@ -58,7 +58,7 @@ impl<'i> Parser<Tokens<'i>, &'i Token<'i>, ContextError> for TokenKind {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum Oper {
+pub(crate) enum Oper {
     Add,
     Sub,
     Mul,
