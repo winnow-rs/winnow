@@ -3,6 +3,11 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add `ContextError::extend`
+- Add `Parser::context_with`
+
 ## [0.7.8] - 2025-05-01
 
 ### Features
