@@ -802,9 +802,7 @@ pub trait Parser<I, O, E> {
     ///
     /// fn parser<'i>(input: &mut &'i str) -> Result<&'i str> {
     ///     digit1.map_err(|mut e: ContextError| {
-    ///         for c in "0123456789".chars() {
-    ///             e.push(StrContext::Expected(c.into()));
-    ///         }
+    ///         e.extend("0123456789".chars().map(|c| StrContext::Expected(c.into())));
     ///         e
     ///     }).parse_next(input)
     /// }
