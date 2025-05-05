@@ -359,6 +359,10 @@ where
     fn raw(&self) -> &dyn crate::lib::std::fmt::Debug {
         self
     }
+
+    fn trace(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "{self:?}")
+    }
 }
 
 impl<'i> Stream for &'i str {
