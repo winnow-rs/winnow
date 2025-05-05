@@ -104,6 +104,7 @@ pub(crate) mod lib {
 }
 
 pub(crate) mod util {
+    #[allow(dead_code)]
     pub(crate) fn from_fn<F: Fn(&mut core::fmt::Formatter<'_>) -> core::fmt::Result>(
         f: F,
     ) -> FromFn<F> {
