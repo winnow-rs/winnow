@@ -180,7 +180,12 @@ impl<I: Stream> Stream for LocatingSlice<I> {
 
     #[inline(always)]
     fn raw(&self) -> &dyn crate::lib::std::fmt::Debug {
+        #![allow(deprecated)]
         self.input.raw()
+    }
+
+    fn trace(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        self.input.trace(f)
     }
 }
 
