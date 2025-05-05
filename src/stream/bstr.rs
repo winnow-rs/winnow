@@ -446,22 +446,24 @@ mod display {
 #[cfg(all(test, feature = "std"))]
 mod debug {
     use crate::stream::BStr;
+    use snapbox::assert_data_eq;
+    use snapbox::str;
 
     #[test]
     fn test_debug() {
-        assert_eq!(&format!("{:?}", BStr::new(b"abc")), "\"abc\"");
+        let input = BStr::new(b"abc");
+        let expected = str![[r#""abc""#]];
+        assert_data_eq!(&format!("{input:?}"), expected);
 
-        assert_eq!(
-            "\"\\0\\0\\0 ftypisom\\0\\0\\u{2}\\0isomiso2avc1mp\"",
-            format!(
-                "{:?}",
-                BStr::new(b"\0\0\0 ftypisom\0\0\x02\0isomiso2avc1mp")
-            ),
-        );
+        let input = BStr::new(b"\0\0\0 ftypisom\0\0\x02\0isomiso2avc1mp");
+        let expected = str![[r#""/0/0/0 ftypisom/0/0/u{2}/0isomiso2avc1mp""#]];
+        assert_data_eq!(&format!("{input:?}"), expected);
     }
 
     #[test]
     fn test_pretty_debug() {
-        assert_eq!(&format!("{:#?}", BStr::new(b"abc")), "abc");
+        let input = BStr::new(b"abc");
+        let expected = str!["abc"];
+        assert_data_eq!(&format!("{input:#?}"), expected);
     }
 }

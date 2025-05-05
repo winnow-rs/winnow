@@ -461,25 +461,21 @@ mod display {
 #[cfg(all(test, feature = "std"))]
 mod debug {
     use crate::stream::Bytes;
+    use snapbox::assert_data_eq;
+    use snapbox::str;
 
     #[test]
     fn test_debug() {
-        assert_eq!(
-            "000000206674797069736F6D0000020069736F6D69736F32617663316D70",
-            format!(
-                "{:?}",
-                Bytes::new(b"\0\0\0 ftypisom\0\0\x02\0isomiso2avc1mp")
-            ),
-        );
+        let input = Bytes::new(b"\0\0\0 ftypisom\0\0\x02\0isomiso2avc1mp");
+        let expected = str!["000000206674797069736F6D0000020069736F6D69736F32617663316D70"];
+        assert_data_eq!(&format!("{input:?}"), expected);
     }
 
     #[test]
     fn test_pretty_debug() {
-        // Output can change from run-to-run
-        let _ = format!(
-            "{:#?}",
-            Bytes::new(b"\0\0\0 ftypisom\0\0\x02\0isomiso2avc1mp")
-        );
+        let input = Bytes::new(b"\0\0\0 ftypisom\0\0\x02\0isomiso2avc1mp");
+        let expected = str!["000000206674797069736F6D0000020069736F6D69736F32617663316D70"];
+        assert_data_eq!(&format!("{input:#?}").replace('_', ""), expected);
     }
 
     #[test]
