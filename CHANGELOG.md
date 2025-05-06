@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.7.10] - 2025-05-06
+
 ### Compatibility
 
 - Deprecated `Stream::raw`
@@ -2603,7 +2605,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.7.9...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.7.10...HEAD
+[0.7.10]: https://github.com/winnow-rs/winnow/compare/v0.7.9...v0.7.10
 [0.7.9]: https://github.com/winnow-rs/winnow/compare/v0.7.8...v0.7.9
 [0.7.8]: https://github.com/winnow-rs/winnow/compare/v0.7.7...v0.7.8
 [0.7.7]: https://github.com/winnow-rs/winnow/compare/v0.7.6...v0.7.7
