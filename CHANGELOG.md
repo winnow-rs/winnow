@@ -3,6 +3,19 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Compatibility
+
+- Deprecated `Stream::raw`
+
+### Features
+
+- Added `Stream::trace` for better customization of `trace` parsers
+
+### Fixes
+
+- Remove `initial` from `TokenSlice` / `LocatingSlice`s Debug impl
+- `Stream::trace` prints non-pretty output for `&[T]` and `TokenSlice<T>`
+
 ## [0.7.9] - 2025-05-02
 
 ### Features
