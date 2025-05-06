@@ -166,24 +166,12 @@ fn factor_test() {
     let expected = str![[r#"
 Ok(
     (
-        TokenSlice {
-            initial: [
-                Token {
-                    kind: Value,
-                    raw: "3",
-                },
-                Token {
-                    kind: Eof,
-                    raw: "",
-                },
-            ],
-            input: [
-                Token {
-                    kind: Eof,
-                    raw: "",
-                },
-            ],
-        },
+        [
+            Token {
+                kind: Eof,
+                raw: "",
+            },
+        ],
         Value(
             3,
         ),
@@ -199,24 +187,12 @@ Ok(
     let expected = str![[r#"
 Ok(
     (
-        TokenSlice {
-            initial: [
-                Token {
-                    kind: Value,
-                    raw: "12",
-                },
-                Token {
-                    kind: Eof,
-                    raw: "",
-                },
-            ],
-            input: [
-                Token {
-                    kind: Eof,
-                    raw: "",
-                },
-            ],
-        },
+        [
+            Token {
+                kind: Eof,
+                raw: "",
+            },
+        ],
         Value(
             12,
         ),
@@ -232,24 +208,12 @@ Ok(
     let expected = str![[r#"
 Ok(
     (
-        TokenSlice {
-            initial: [
-                Token {
-                    kind: Value,
-                    raw: "537",
-                },
-                Token {
-                    kind: Eof,
-                    raw: "",
-                },
-            ],
-            input: [
-                Token {
-                    kind: Eof,
-                    raw: "",
-                },
-            ],
-        },
+        [
+            Token {
+                kind: Eof,
+                raw: "",
+            },
+        ],
         Value(
             537,
         ),
@@ -265,24 +229,12 @@ Ok(
     let expected = str![[r#"
 Ok(
     (
-        TokenSlice {
-            initial: [
-                Token {
-                    kind: Value,
-                    raw: "24",
-                },
-                Token {
-                    kind: Eof,
-                    raw: "",
-                },
-            ],
-            input: [
-                Token {
-                    kind: Eof,
-                    raw: "",
-                },
-            ],
-        },
+        [
+            Token {
+                kind: Eof,
+                raw: "",
+            },
+        ],
         Value(
             24,
         ),
@@ -301,44 +253,12 @@ fn term_test() {
     let expected = str![[r#"
 Ok(
     (
-        TokenSlice {
-            initial: [
-                Token {
-                    kind: Value,
-                    raw: "12",
-                },
-                Token {
-                    kind: Oper(
-                        Mul,
-                    ),
-                    raw: "*",
-                },
-                Token {
-                    kind: Value,
-                    raw: "2",
-                },
-                Token {
-                    kind: Oper(
-                        Div,
-                    ),
-                    raw: "/",
-                },
-                Token {
-                    kind: Value,
-                    raw: "3",
-                },
-                Token {
-                    kind: Eof,
-                    raw: "",
-                },
-            ],
-            input: [
-                Token {
-                    kind: Eof,
-                    raw: "",
-                },
-            ],
-        },
+        [
+            Token {
+                kind: Eof,
+                raw: "",
+            },
+        ],
         Div(
             Mul(
                 Value(
@@ -364,44 +284,12 @@ Ok(
     let expected = str![[r#"
 Ok(
     (
-        TokenSlice {
-            initial: [
-                Token {
-                    kind: Value,
-                    raw: "12",
-                },
-                Token {
-                    kind: Oper(
-                        Mul,
-                    ),
-                    raw: "*",
-                },
-                Token {
-                    kind: Value,
-                    raw: "2",
-                },
-                Token {
-                    kind: Oper(
-                        Div,
-                    ),
-                    raw: "/",
-                },
-                Token {
-                    kind: Value,
-                    raw: "3",
-                },
-                Token {
-                    kind: Eof,
-                    raw: "",
-                },
-            ],
-            input: [
-                Token {
-                    kind: Eof,
-                    raw: "",
-                },
-            ],
-        },
+        [
+            Token {
+                kind: Eof,
+                raw: "",
+            },
+        ],
         Div(
             Mul(
                 Value(
@@ -427,64 +315,12 @@ Ok(
     let expected = str![[r#"
 Ok(
     (
-        TokenSlice {
-            initial: [
-                Token {
-                    kind: Value,
-                    raw: "2",
-                },
-                Token {
-                    kind: Oper(
-                        Mul,
-                    ),
-                    raw: "*",
-                },
-                Token {
-                    kind: Value,
-                    raw: "3",
-                },
-                Token {
-                    kind: Oper(
-                        Mul,
-                    ),
-                    raw: "*",
-                },
-                Token {
-                    kind: Value,
-                    raw: "2",
-                },
-                Token {
-                    kind: Oper(
-                        Mul,
-                    ),
-                    raw: "*",
-                },
-                Token {
-                    kind: Value,
-                    raw: "2",
-                },
-                Token {
-                    kind: Oper(
-                        Div,
-                    ),
-                    raw: "/",
-                },
-                Token {
-                    kind: Value,
-                    raw: "3",
-                },
-                Token {
-                    kind: Eof,
-                    raw: "",
-                },
-            ],
-            input: [
-                Token {
-                    kind: Eof,
-                    raw: "",
-                },
-            ],
-        },
+        [
+            Token {
+                kind: Eof,
+                raw: "",
+            },
+        ],
         Div(
             Mul(
                 Mul(
@@ -520,44 +356,12 @@ Ok(
     let expected = str![[r#"
 Ok(
     (
-        TokenSlice {
-            initial: [
-                Token {
-                    kind: Value,
-                    raw: "48",
-                },
-                Token {
-                    kind: Oper(
-                        Div,
-                    ),
-                    raw: "/",
-                },
-                Token {
-                    kind: Value,
-                    raw: "3",
-                },
-                Token {
-                    kind: Oper(
-                        Div,
-                    ),
-                    raw: "/",
-                },
-                Token {
-                    kind: Value,
-                    raw: "2",
-                },
-                Token {
-                    kind: Eof,
-                    raw: "",
-                },
-            ],
-            input: [
-                Token {
-                    kind: Eof,
-                    raw: "",
-                },
-            ],
-        },
+        [
+            Token {
+                kind: Eof,
+                raw: "",
+            },
+        ],
         Div(
             Div(
                 Value(
