@@ -25,7 +25,7 @@ use crate::stream::UpdateSlice;
 /// byte offsets to line numbers.
 ///
 /// See [`Parser::span`][crate::Parser::span] and [`Parser::with_span`][crate::Parser::with_span] for more details
-#[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Default, PartialEq, Eq, PartialOrd, Ord)]
 #[doc(alias = "LocatingSliceSpan")]
 #[doc(alias = "Located")]
 pub struct LocatingSlice<I> {
@@ -78,6 +78,12 @@ impl<I> AsRef<I> for LocatingSlice<I> {
     #[inline(always)]
     fn as_ref(&self) -> &I {
         &self.input
+    }
+}
+
+impl<I: core::fmt::Debug> core::fmt::Debug for LocatingSlice<I> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        self.input.fmt(f)
     }
 }
 
@@ -174,7 +180,12 @@ impl<I: Stream> Stream for LocatingSlice<I> {
 
     #[inline(always)]
     fn raw(&self) -> &dyn crate::lib::std::fmt::Debug {
+        #![allow(deprecated)]
         self.input.raw()
+    }
+
+    fn trace(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        self.input.trace(f)
     }
 }
 
