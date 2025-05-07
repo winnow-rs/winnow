@@ -1572,7 +1572,7 @@ dependencies = [
  "automod",
  "circular",
  "criterion",
- "is-terminal",
+ "is_terminal_polyfill",
  "lexopt",
  "memchr",
  "proptest",
