@@ -14,7 +14,6 @@ include = [
   "Cargo.lock",
   "LICENSE*",
   "README.md",
-  "benches/**/*",
   "examples/**/*"
 ]
 
@@ -94,6 +93,7 @@ panic = "abort"
 panic = "abort"
 codegen-units = 1
 lto = true
+# debug = "line-tables-only"  # requires Cargo 1.71
 
 [package]
 name = "winnow"
