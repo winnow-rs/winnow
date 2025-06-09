@@ -408,7 +408,23 @@ impl PartialEq<BStr> for BStr {
     }
 }
 
-impl_partial_eq!(BStr, [u8]);
+// impl_partial_eq base case
+impl PartialEq<[u8]> for BStr {
+    #[inline]
+    fn eq(&self, other: &[u8]) -> bool {
+        let l = self;
+        let r: &Self = other.as_ref();
+        PartialEq::eq(l, r)
+    }
+}
+// impl_partial_eq base case
+impl PartialEq<BStr> for [u8] {
+    #[inline]
+    fn eq(&self, other: &BStr) -> bool {
+        PartialEq::eq(other, self)
+    }
+}
+
 impl_partial_eq!(BStr, &'a [u8]);
 impl_partial_eq!(BStr, str);
 impl_partial_eq!(BStr, &'a str);
@@ -427,7 +443,23 @@ impl Ord for BStr {
     }
 }
 
-impl_partial_ord!(BStr, [u8]);
+// impl_partial_ord base case
+impl PartialOrd<[u8]> for BStr {
+    #[inline]
+    fn partial_cmp(&self, other: &[u8]) -> Option<Ordering> {
+        let l = self;
+        let r: &Self = other.as_ref();
+        PartialOrd::partial_cmp(l, r)
+    }
+}
+// impl_partial_ord base case
+impl PartialOrd<BStr> for [u8] {
+    #[inline]
+    fn partial_cmp(&self, other: &BStr) -> Option<Ordering> {
+        PartialOrd::partial_cmp(other, self)
+    }
+}
+
 impl_partial_ord!(BStr, &'a [u8]);
 impl_partial_ord!(BStr, str);
 impl_partial_ord!(BStr, &'a str);
@@ -476,5 +508,61 @@ mod debug {
             crate::util::from_fn(|f| input.trace(f)).to_string(),
             expected
         );
+    }
+
+    #[test]
+    fn partial_eq_bstr_bytes() {
+        let str = b"foo".as_slice();
+        let bstr = BStr::new(str);
+        assert!(bstr == str);
+    }
+
+    #[test]
+    fn partial_eq_bytes_bstr() {
+        let str = b"foo".as_slice();
+        let bstr = BStr::new(str);
+        assert!(str == bstr);
+    }
+
+    #[test]
+    fn partial_eq_bstr_str() {
+        let str = "foo";
+        let bstr = BStr::new(str);
+        assert!(bstr == str);
+    }
+
+    #[test]
+    fn partial_eq_str_bstr() {
+        let str = "foo";
+        let bstr = BStr::new(str);
+        assert!(str == bstr);
+    }
+
+    #[test]
+    fn partial_ord_bstr_bytes() {
+        let str = b"foo".as_slice();
+        let bstr = BStr::new(str);
+        assert!(bstr.partial_cmp(str) == Some(core::cmp::Ordering::Equal));
+    }
+
+    #[test]
+    fn partial_ord_bytes_bstr() {
+        let str = b"foo".as_slice();
+        let bstr = BStr::new(str);
+        assert!(str.partial_cmp(bstr) == Some(core::cmp::Ordering::Equal));
+    }
+
+    #[test]
+    fn partial_ord_bstr_str() {
+        let str = "foo";
+        let bstr = BStr::new(str);
+        assert!(bstr.partial_cmp(str) == Some(core::cmp::Ordering::Equal));
+    }
+
+    #[test]
+    fn partial_ord_str_bstr() {
+        let str = "foo";
+        let bstr = BStr::new(str);
+        assert!(str.partial_cmp(bstr) == Some(core::cmp::Ordering::Equal));
     }
 }
