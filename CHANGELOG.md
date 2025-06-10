@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.7.11] - 2025-06-10
+
 ### Fixes
 
 - Remove a stackoverflow in `PartialEq` and `PartialOrd` with `Bytes` and `BStr`
@@ -2609,7 +2611,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.7.10...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.7.11...HEAD
+[0.7.11]: https://github.com/winnow-rs/winnow/compare/v0.7.10...v0.7.11
 [0.7.10]: https://github.com/winnow-rs/winnow/compare/v0.7.9...v0.7.10
 [0.7.9]: https://github.com/winnow-rs/winnow/compare/v0.7.8...v0.7.9
 [0.7.8]: https://github.com/winnow-rs/winnow/compare/v0.7.7...v0.7.8
