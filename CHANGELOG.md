@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Remove a stackoverflow in `PartialEq` and `PartialOrd` with `Bytes` and `BStr`
+
 ## [0.7.10] - 2025-05-06
 
 ### Compatibility
