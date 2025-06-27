@@ -47,6 +47,18 @@ use crate::stream::{Recover, Recoverable};
 /// - `&[u8]` and `&str`, see [`winnow::token::literal`][crate::token::literal]
 pub trait Parser<I, O, E> {
     /// Parse all of `input`, generating `O` from it
+    ///
+    /// This is intended for integrating your parser into the rest of your application.
+    ///
+    /// For one [`Parser`] to drive another [`Parser`] forward or for
+    /// [incremental parsing][StreamIsPartial], see instead [`Parser::parse_next`].
+    ///
+    /// This assumes the [`Parser`] intends to read all of `input` and will return an
+    /// [`eof`][crate::combinator::eof] error if it does not
+    /// To ignore trailing `input`, combine your parser with a [`rest`][crate::token::rest]
+    /// (e.g. `(parser, rest).parse(input)`).
+    ///
+    /// See also the [tutorial][crate::_tutorial::chapter_6].
     #[inline]
     fn parse(&mut self, mut input: I) -> Result<O, ParseError<I, <E as ParserError<I>>::Inner>>
     where
@@ -76,9 +88,12 @@ pub trait Parser<I, O, E> {
 
     /// Take tokens from the [`Stream`], turning it into the output
     ///
-    /// This includes advancing the [`Stream`] to the next location.
+    /// This includes advancing the input [`Stream`] to the next location.
     ///
     /// On error, `input` will be left pointing at the error location.
+    ///
+    /// This is intended for a [`Parser`] to drive another [`Parser`] forward or for
+    /// [incremental parsing][StreamIsPartial]
     fn parse_next(&mut self, input: &mut I) -> Result<O, E>;
 
     /// Take tokens from the [`Stream`], turning it into the output
