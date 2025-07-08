@@ -384,9 +384,9 @@ impl<'i> Stream for &'i str {
 
     #[inline(always)]
     fn next_token(&mut self) -> Option<Self::Token> {
-        let c = self.chars().next()?;
-        let offset = c.len();
-        *self = &self[offset..];
+        let mut iter = self.chars();
+        let c = iter.next()?;
+        *self = iter.as_str();
         Some(c)
     }
 
