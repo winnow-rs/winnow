@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add `impl Accumulate for VecDeque`
+
 ## [0.7.11] - 2025-06-10
 
 ### Fixes
