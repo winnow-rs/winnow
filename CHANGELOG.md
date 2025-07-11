@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.7.12] - 2025-07-11
+
 ### Features
 
 - Add `impl Accumulate for VecDeque`
@@ -2615,7 +2617,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.7.11...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.7.12...HEAD
+[0.7.12]: https://github.com/winnow-rs/winnow/compare/v0.7.11...v0.7.12
 [0.7.11]: https://github.com/winnow-rs/winnow/compare/v0.7.10...v0.7.11
 [0.7.10]: https://github.com/winnow-rs/winnow/compare/v0.7.9...v0.7.10
 [0.7.9]: https://github.com/winnow-rs/winnow/compare/v0.7.8...v0.7.9
