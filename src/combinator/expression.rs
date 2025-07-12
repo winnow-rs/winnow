@@ -1,3 +1,8 @@
+//! Expression parsing support
+//!
+//! When writing an expression parser it is necessary to first define its operands and
+//! their associativity.
+
 use core::marker::PhantomData;
 
 use crate::{
@@ -43,6 +48,7 @@ where
     }
 }
 
+/// Concrete type for the expression parser
 pub struct Expression<I, O, ParseOperand, Pre, Post, Pix, E>
 where
     I: Stream + StreamIsPartial,
@@ -65,6 +71,7 @@ where
     I: Stream + StreamIsPartial,
     E: ParserError<I>,
 {
+    /// Declare the unary prefix operator for the current expression
     #[inline(always)]
     pub fn prefix<NewParsePrefix>(
         self,
@@ -85,6 +92,7 @@ where
         }
     }
 
+    /// Declare the unary postfix operator for the current expression
     #[inline(always)]
     pub fn postfix<NewParsePostfix>(
         self,
@@ -105,6 +113,7 @@ where
         }
     }
 
+    /// Declare the binary infix operator for the current expression
     #[inline(always)]
     pub fn infix<NewParseInfix>(
         self,
@@ -125,6 +134,7 @@ where
         }
     }
 
+    /// Set the precedence level for the current expression
     #[inline(always)]
     pub fn current_precedence_level(
         mut self,
@@ -249,6 +259,7 @@ where
     Ok(operand)
 }
 
+/// Unary prefix operator
 pub struct Prefix<I, O, E>(pub i64, pub fn(&mut I, O) -> Result<O, E>);
 
 impl<I, O, E> Clone for Prefix<I, O, E> {
@@ -265,6 +276,7 @@ impl<I: Stream, O, E: ParserError<I>> Parser<I, Prefix<I, O, E>, E> for Prefix<I
     }
 }
 
+/// Unary postfix operator
 pub struct Postfix<I, O, E>(pub i64, pub fn(&mut I, O) -> Result<O, E>);
 
 impl<I, O, E> Clone for Postfix<I, O, E> {
@@ -283,9 +295,23 @@ impl<I: Stream, O, E: ParserError<I>> Parser<I, Postfix<I, O, E>, E>
     }
 }
 
+/// Binary infix operator
 pub enum Infix<I, O, E> {
+    /// Left-associative operator
+    ///
+    /// It is valuated from the leftmost term, moving rightward
+    /// e.g. `a + b + c + d`
     Left(i64, fn(&mut I, O, O) -> Result<O, E>),
+    /// Right-associative operator
+    ///
+    /// It is evaluated from the rightmost term, moving leftward
+    ///
+    /// e.g. `a ^ b ^ c ^ d`
     Right(i64, fn(&mut I, O, O) -> Result<O, E>),
+    /// Non-associative operator
+    ///
+    /// Its evaluation does not fold neither left-to-right nor right-to-left.
+    /// e.g. `a == b == c`
     Neither(i64, fn(&mut I, O, O) -> Result<O, E>),
 }
 
