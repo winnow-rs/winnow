@@ -9,6 +9,59 @@ use crate::stream::Stream;
 use crate::stream::StreamIsPartial;
 
 /// Parses an expression based on operator precedence.
+///
+/// It uses a Pratt parsing algorithm, where operators are
+/// associated with a binding power. The higher the power,
+/// the more tightly an operator will bind to its operands.
+///
+/// This method returns an [`Expression`], which configures
+/// the Pratt parser.
+///
+/// Each operator type is configured with [`Prefix`], [`Postfix`],
+/// and [`Infix`]. These describe the operator's binding power,
+/// a function that applies the operator to its operand, and the
+/// operator's associativity (infix only).
+///
+/// # Example
+///
+/// Parsing a simple arithmetic expression without parenthesis.
+///
+/// ```rust
+/// # use winnow::prelude::*;
+/// # use winnow::error::ContextError;
+/// # use winnow::ascii::digit1;
+/// # use winnow::combinator::{dispatch, fail};
+/// # use winnow::token::any;
+/// use winnow::combinator::expression;
+/// use winnow::combinator::{Prefix, Postfix, Infix};
+///
+/// fn parser<'i>() -> impl Parser<&'i str, i32, ContextError> {
+///     move |i: &mut &str| {
+///         use Infix::*;
+///         expression(digit1.parse_to::<i32>()) // operands are 32-bit integers
+///             .prefix(dispatch! {any;
+///                 '-' => Prefix(12, |_, a: i32| Ok(-a)),
+///                 _ => fail,
+///             })
+///             .infix(dispatch! {any;
+///                 '+' => Left(5, |_, a, b| Ok(a + b)),
+///                 '-' => Left(5, |_, a, b| Ok(a - b)),
+///                 '*' => Left(7, |_, a, b| Ok(a * b)),
+///                 '/' => Left(7, |_, a: i32, b| Ok(a.checked_div(b).unwrap_or_default())),
+///                 _ => fail,
+///             })
+///             .postfix(dispatch! {any;
+///                 '!' => Postfix(15, |_, a| if a < 1 { Ok(1) } else { Ok((1..=a).fold(1, |acc, a| acc*a)) }),
+///                 _ => fail,
+///             })
+///             .parse_next(i)
+///     }
+/// }
+///
+/// assert_eq!(parser().parse("1+1"), Ok(2));
+/// assert_eq!(parser().parse("0!"), Ok(1));
+/// assert_eq!(parser().parse("-1*5*2*10+30/3!"), Ok(-95));
+/// ```
 #[doc(alias = "pratt")]
 #[doc(alias = "separated")]
 #[doc(alias = "shunting_yard")]
@@ -42,6 +95,15 @@ where
     }
 }
 
+/// A helper struct for [`expression()`].
+///
+/// Holds the configuration for the Pratt parser, including
+/// the operator and operand parsers. A precedence level can
+/// also be set, which is useful to disambiguate parse trees
+/// based on the parent operator's precedence.
+///
+/// Implements [`Parser`]. When parsing an input, it applies
+/// the Pratt parser.
 pub struct Expression<I, O, ParseOperand, Pre, Post, Pix, E>
 where
     I: Stream + StreamIsPartial,
@@ -64,6 +126,12 @@ where
     I: Stream + StreamIsPartial,
     E: ParserError<I>,
 {
+    /// Sets the prefix operator parser.
+    ///
+    /// The parser should parse the input to a [`Prefix`],
+    /// which contains the operator's binding power and
+    /// a fold function which applies the operator to its
+    /// operands.
     #[inline(always)]
     pub fn prefix<NewParsePrefix>(
         self,
@@ -84,6 +152,12 @@ where
         }
     }
 
+    /// Sets the prefix operator parser.
+    ///
+    /// The parser should parse the input to a [`Postfix`],
+    /// which contains the operator's binding power and
+    /// a fold function which applies the operator to its
+    /// operands.
     #[inline(always)]
     pub fn postfix<NewParsePostfix>(
         self,
@@ -104,6 +178,12 @@ where
         }
     }
 
+    /// Sets the prefix operator parser.
+    ///
+    /// The parser should parse the input to a [`Infix`],
+    /// which contains the operator's binding power and
+    /// a fold function which applies the operator to its
+    /// operands.
     #[inline(always)]
     pub fn infix<NewParseInfix>(
         self,
@@ -124,6 +204,10 @@ where
         }
     }
 
+    /// Sets the precedence level of the parser.
+    ///
+    /// This is useful to disambiguate grammars based on the parent operator's
+    /// precedence.
     #[inline(always)]
     pub fn precedence_level(
         mut self,
@@ -159,6 +243,7 @@ where
     }
 }
 
+/// Opaque implementation of the Pratt parser.
 fn expression_impl<I, O, Pop, Pre, Post, Pix, E>(
     i: &mut I,
     parse_operand: &mut Pop,
@@ -248,6 +333,12 @@ where
     Ok(operand)
 }
 
+/// A helper struct for [`expression()`].
+///
+/// Represents a prefix operator.
+///
+/// It requires an operator binding power, as well as a
+/// fold function which applies the operator.
 pub struct Prefix<I, O, E>(pub i64, pub fn(&mut I, O) -> Result<O, E>);
 
 impl<I, O, E> Clone for Prefix<I, O, E> {
@@ -264,6 +355,12 @@ impl<I: Stream, O, E: ParserError<I>> Parser<I, Prefix<I, O, E>, E> for Prefix<I
     }
 }
 
+/// A helper struct for [`expression()`].
+///
+/// Represents a postfix operator.
+///
+/// It requires an operator binding power, as well as a
+/// fold function which applies the operator.
 pub struct Postfix<I, O, E>(pub i64, pub fn(&mut I, O) -> Result<O, E>);
 
 impl<I, O, E> Clone for Postfix<I, O, E> {
@@ -280,9 +377,22 @@ impl<I: Stream, O, E: ParserError<I>> Parser<I, Postfix<I, O, E>, E> for Postfix
     }
 }
 
+/// A helper struct for [`expression()`].
+///
+/// Represents a prefix operator.
+///
+/// It requires an operator binding power, as well as a
+/// fold function which applies the operator.
+///
+/// Infix operators also have an associativity. Left-associative
+/// operators will bind more tightly to their rightmost operands,
+/// and it is the opposite for right-associative operators.
 pub enum Infix<I, O, E> {
+    /// Left-associative operator.
     Left(i64, fn(&mut I, O, O) -> Result<O, E>),
+    /// Right-associative operator.
     Right(i64, fn(&mut I, O, O) -> Result<O, E>),
+    /// Neither left or right associative.
     Neither(i64, fn(&mut I, O, O) -> Result<O, E>),
 }
 
