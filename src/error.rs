@@ -678,7 +678,7 @@ impl ErrorConvert<()> for () {
 /// See the [tutorial][crate::_tutorial::chapter_7#error-adaptation-and-rendering]
 /// for an example of how to adapt this to an application error with custom rendering.
 #[derive(Debug)]
-pub struct ContextError<C = StrContext> {
+pub struct ContextError<C = StrContext<'static>> {
     #[cfg(feature = "alloc")]
     context: crate::lib::std::vec::Vec<C>,
     #[cfg(not(feature = "alloc"))]
@@ -831,7 +831,7 @@ impl<C: core::cmp::PartialEq> core::cmp::PartialEq for ContextError<C> {
     }
 }
 
-impl crate::lib::std::fmt::Display for ContextError<StrContext> {
+impl<'a> crate::lib::std::fmt::Display for ContextError<StrContext<'a>> {
     fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
         #[cfg(feature = "alloc")]
         {
@@ -894,14 +894,14 @@ impl<C> ErrorConvert<ContextError<C>> for ContextError<C> {
 /// Additional parse context for [`ContextError`] added via [`Parser::context`]
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[non_exhaustive]
-pub enum StrContext {
+pub enum StrContext<'a> {
     /// Description of what is currently being parsed
-    Label(&'static str),
+    Label(&'a str),
     /// Grammar item that was expected
-    Expected(StrContextValue),
+    Expected(StrContextValue<'a>),
 }
 
-impl crate::lib::std::fmt::Display for StrContext {
+impl<'a> crate::lib::std::fmt::Display for StrContext<'a> {
     fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
         match self {
             Self::Label(name) => write!(f, "invalid {name}"),
@@ -913,30 +913,30 @@ impl crate::lib::std::fmt::Display for StrContext {
 /// See [`StrContext`]
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[non_exhaustive]
-pub enum StrContextValue {
+pub enum StrContextValue<'a> {
     /// A [`char`] token
     CharLiteral(char),
     /// A [`&str`] token
-    StringLiteral(&'static str),
+    StringLiteral(&'a str),
     /// A description of what was being parsed
-    Description(&'static str),
+    Description(&'a str),
 }
 
-impl From<char> for StrContextValue {
+impl From<char> for StrContextValue<'static> {
     #[inline]
     fn from(inner: char) -> Self {
         Self::CharLiteral(inner)
     }
 }
 
-impl From<&'static str> for StrContextValue {
+impl<'a> From<&'a str> for StrContextValue<'a> {
     #[inline]
-    fn from(inner: &'static str) -> Self {
+    fn from(inner: &'a str) -> Self {
         Self::StringLiteral(inner)
     }
 }
 
-impl crate::lib::std::fmt::Display for StrContextValue {
+impl<'a> crate::lib::std::fmt::Display for StrContextValue<'a> {
     fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
         match self {
             Self::CharLiteral('\n') => "newline".fmt(f),
@@ -954,7 +954,7 @@ impl crate::lib::std::fmt::Display for StrContextValue {
 /// Trace all error paths, particularly for tests
 #[derive(Debug)]
 #[cfg(feature = "std")]
-pub enum TreeError<I, C = StrContext> {
+pub enum TreeError<I, C = StrContext<'static>> {
     /// Initial error that kicked things off
     Base(TreeErrorBase<I>),
     /// Traces added to the error while walking back up the stack
@@ -971,7 +971,7 @@ pub enum TreeError<I, C = StrContext> {
 /// See [`TreeError::Stack`]
 #[derive(Debug)]
 #[cfg(feature = "std")]
-pub enum TreeErrorFrame<I, C = StrContext> {
+pub enum TreeErrorFrame<I, C = StrContext<'static>> {
     /// See [`ParserError::append`]
     Kind(TreeErrorBase<I>),
     /// See [`AddContext::add_context`]
@@ -991,7 +991,7 @@ pub struct TreeErrorBase<I> {
 /// See [`TreeErrorFrame::Context`], [`AddContext::add_context`]
 #[derive(Debug)]
 #[cfg(feature = "std")]
-pub struct TreeErrorContext<I, C = StrContext> {
+pub struct TreeErrorContext<I, C = StrContext<'static>> {
     /// Parsed input, at the location where the error occurred
     pub input: I,
     /// See [`AddContext::add_context`]

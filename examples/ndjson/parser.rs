@@ -27,7 +27,10 @@ pub(crate) enum JsonValue {
 /// Use `Partial` to cause `ErrMode::Incomplete` while parsing
 pub(crate) type Stream<'i> = Partial<&'i str>;
 
-pub(crate) fn ndjson<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
+pub(crate) fn ndjson<
+    'i,
+    E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext<'static>>,
+>(
     input: &mut Stream<'i>,
 ) -> ModalResult<Option<JsonValue>, E> {
     alt((
@@ -41,7 +44,7 @@ pub(crate) fn ndjson<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, Str
 
 /// `alt` is a combinator that tries multiple parsers one by one, until
 /// one of them succeeds
-fn json_value<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
+fn json_value<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext<'static>>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<JsonValue, E> {
     // `alt` combines the each value parser. It returns the result of the first
@@ -82,7 +85,7 @@ fn boolean<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> ModalResul
 
 /// This parser gathers all `char`s up into a `String`with a parse to take the double quote
 /// character, before the string (using `preceded`) and after the string (using `terminated`).
-fn string<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
+fn string<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext<'static>>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<String, E> {
     preceded(
@@ -162,7 +165,7 @@ fn u16_hex<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> ModalResul
 /// accumulating results in a `Vec`, until it encounters an error.
 /// If you want more control on the parser application, check out the `iterator`
 /// combinator (cf `examples/iterator.rs`)
-fn array<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
+fn array<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext<'static>>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<Vec<JsonValue>, E> {
     preceded(
@@ -176,7 +179,7 @@ fn array<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     .parse_next(input)
 }
 
-fn object<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
+fn object<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext<'static>>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<HashMap<String, JsonValue>, E> {
     preceded(
@@ -190,7 +193,7 @@ fn object<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     .parse_next(input)
 }
 
-fn key_value<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
+fn key_value<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext<'static>>>(
     input: &mut Stream<'i>,
 ) -> ModalResult<(String, JsonValue), E> {
     separated_pair(string, cut_err((ws, ':', ws)), json_value).parse_next(input)
