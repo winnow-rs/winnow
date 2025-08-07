@@ -339,7 +339,12 @@ where
 ///
 /// It requires an operator binding power, as well as a
 /// fold function which applies the operator.
-pub struct Prefix<I, O, E>(pub i64, pub fn(&mut I, O) -> Result<O, E>);
+pub struct Prefix<I, O, E>(
+    /// Binding power
+    pub i64,
+    /// Unary operator
+    pub fn(&mut I, O) -> Result<O, E>,
+);
 
 impl<I, O, E> Clone for Prefix<I, O, E> {
     #[inline(always)]
@@ -361,7 +366,12 @@ impl<I: Stream, O, E: ParserError<I>> Parser<I, Prefix<I, O, E>, E> for Prefix<I
 ///
 /// It requires an operator binding power, as well as a
 /// fold function which applies the operator.
-pub struct Postfix<I, O, E>(pub i64, pub fn(&mut I, O) -> Result<O, E>);
+pub struct Postfix<I, O, E>(
+    /// Binding power
+    pub i64,
+    /// Unary operator
+    pub fn(&mut I, O) -> Result<O, E>,
+);
 
 impl<I, O, E> Clone for Postfix<I, O, E> {
     #[inline(always)]
@@ -389,11 +399,26 @@ impl<I: Stream, O, E: ParserError<I>> Parser<I, Postfix<I, O, E>, E> for Postfix
 /// and it is the opposite for right-associative operators.
 pub enum Infix<I, O, E> {
     /// Left-associative operator.
-    Left(i64, fn(&mut I, O, O) -> Result<O, E>),
+    Left(
+        /// Binding power
+        i64,
+        /// Binary operator
+        fn(&mut I, O, O) -> Result<O, E>,
+    ),
     /// Right-associative operator.
-    Right(i64, fn(&mut I, O, O) -> Result<O, E>),
+    Right(
+        /// Binding power
+        i64,
+        /// Binary operator
+        fn(&mut I, O, O) -> Result<O, E>,
+    ),
     /// Neither left or right associative.
-    Neither(i64, fn(&mut I, O, O) -> Result<O, E>),
+    Neither(
+        /// Binding power
+        i64,
+        /// Binary operator
+        fn(&mut I, O, O) -> Result<O, E>,
+    ),
 }
 
 impl<I, O, E> Clone for Infix<I, O, E> {
