@@ -333,9 +333,7 @@ where
     Ok(operand)
 }
 
-/// A helper struct for [`expression()`].
-///
-/// Represents a prefix operator.
+/// Define an [expression()]'s prefix operator
 ///
 /// It requires an operator binding power, as well as a
 /// fold function which applies the operator.
@@ -360,9 +358,7 @@ impl<I: Stream, O, E: ParserError<I>> Parser<I, Prefix<I, O, E>, E> for Prefix<I
     }
 }
 
-/// A helper struct for [`expression()`].
-///
-/// Represents a postfix operator.
+/// Define an [expression()]'s postfix operator
 ///
 /// It requires an operator binding power, as well as a
 /// fold function which applies the operator.
@@ -387,32 +383,39 @@ impl<I: Stream, O, E: ParserError<I>> Parser<I, Postfix<I, O, E>, E> for Postfix
     }
 }
 
-/// A helper struct for [`expression()`].
-///
-/// Represents a prefix operator.
+/// Define an [expression()]'s infix operator
 ///
 /// It requires an operator binding power, as well as a
 /// fold function which applies the operator.
-///
-/// Infix operators also have an associativity. Left-associative
-/// operators will bind more tightly to their rightmost operands,
-/// and it is the opposite for right-associative operators.
 pub enum Infix<I, O, E> {
-    /// Left-associative operator.
+    /// Left-associative operator
+    ///
+    /// The operators will bind more tightly to their rightmost operands.
+    ///
+    /// e.g `A op B op C` -> `(A op B) op C`
     Left(
         /// Binding power
         i64,
         /// Binary operator
         fn(&mut I, O, O) -> Result<O, E>,
     ),
-    /// Right-associative operator.
+    /// Right-associative operator
+    ///
+    /// The operators will bind more tightly to their leftmost operands.
+    ///
+    /// e.g `A op B op C` -> `A op (B op C)`
     Right(
         /// Binding power
         i64,
         /// Binary operator
         fn(&mut I, O, O) -> Result<O, E>,
     ),
-    /// Neither left or right associative.
+    /// Neither left or right associative
+    ///
+    /// `Infix::Neither` has similar associativity rules as `Assoc::Left`, but we stop
+    /// parsing when the next operator is the same as the current one.
+    ///
+    /// e.g. `a == b == c` -> `(a == b)`, fail: `(== c)`
     Neither(
         /// Binding power
         i64,
