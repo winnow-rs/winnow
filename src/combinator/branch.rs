@@ -182,37 +182,78 @@ impl<I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I, O, E> for &mut 
     }
 }
 
-macro_rules! alt_trait(
-  ($first:ident $second:ident $($id: ident)+) => (
-    alt_trait!(__impl $first $second; $($id)+);
-  );
-  (__impl $($current:ident)*; $head:ident $($id: ident)+) => (
-    alt_trait_impl!($($current)*);
-
-    alt_trait!(__impl $($current)* $head; $($id)+);
-  );
-  (__impl $($current:ident)*; $head:ident) => (
-    alt_trait_impl!($($current)*);
-    alt_trait_impl!($($current)* $head);
-  );
-);
-
-macro_rules! alt_trait_impl(
-  ($($id:ident)+) => (
+macro_rules! impl_alt_for_tuple {
+  ($($index:tt $parser:ident),+) => (
     impl<
       I: Stream, Output, Error: ParserError<I>,
-      $($id: Parser<I, Output, Error>),+
-    > Alt<I, Output, Error> for ( $($id),+ ) {
+      $($parser: Parser<I, Output, Error>),+
+    > Alt<I, Output, Error> for ($($parser),+,) {
 
       fn choice(&mut self, input: &mut I) -> Result<Output, Error> {
+        let mut error: Option<Error> = None;
+
         let start = input.checkpoint();
-        match self.0.parse_next(input) {
-          Err(e) if e.is_backtrack() => alt_trait_inner!(1, self, input, start, e, $($id)+),
-          res => res,
+        for branch in [$(&mut self.$index as &mut dyn Parser<I, Output, Error>),+] {
+            input.reset(&start);
+            match branch.parse_next(input) {
+                Err(e) if e.is_backtrack() => {
+                    error = match error {
+                        Some(error) => Some(error.or(e)),
+                        None => Some(e),
+                    };
+                }
+                res => return res,
+            }
+        }
+
+        match error {
+            Some(e) => Err(e.append(input, &start)),
+            None => Err(ParserError::assert(
+                input,
+                "`alt` needs at least one parser",
+            )),
         }
       }
     }
-  );
+  )
+}
+
+macro_rules! impl_alt_for_tuples {
+    ($index1:tt $parser1:ident, $($index:tt $parser:ident),+) => {
+        impl_alt_for_tuples!(__impl $index1 $parser1; $($index $parser),+);
+    };
+    (__impl $($index:tt $parser:ident),+; $index1:tt $parser1:ident $(,$index2:tt $parser2:ident)*) => {
+        impl_alt_for_tuple!($($index $parser),+);
+        impl_alt_for_tuples!(__impl $($index $parser),+, $index1 $parser1; $($index2 $parser2),*);
+    };
+    (__impl $($index:tt $parser:ident),+;) => {
+        impl_alt_for_tuple!($($index $parser),+);
+    }
+}
+
+impl_alt_for_tuples!(
+  0 P0,
+  1 P1,
+  2 P2,
+  3 P3,
+  4 P4,
+  5 P5,
+  6 P6,
+  7 P7,
+  8 P8,
+  9 P9,
+  10 P10,
+  11 P11,
+  12 P12,
+  13 P13,
+  14 P14,
+  15 P15,
+  16 P16,
+  17 P17,
+  18 P18,
+  19 P19,
+  20 P20,
+  21 P21
 );
 
 macro_rules! succ (
@@ -238,31 +279,6 @@ macro_rules! succ (
   (19, $submac:ident ! ($($rest:tt)*)) => ($submac!(20, $($rest)*));
   (20, $submac:ident ! ($($rest:tt)*)) => ($submac!(21, $($rest)*));
 );
-
-macro_rules! alt_trait_inner(
-  ($it:tt, $self:expr, $input:expr, $start:ident, $err:expr, $head:ident $($id:ident)+) => ({
-    $input.reset(&$start);
-    match $self.$it.parse_next($input) {
-      Err(e) if e.is_backtrack() => {
-        let err = $err.or(e);
-        succ!($it, alt_trait_inner!($self, $input, $start, err, $($id)+))
-      }
-      res => res,
-    }
-  });
-  ($it:tt, $self:expr, $input:expr, $start:ident, $err:expr, $head:ident) => ({
-    Err($err.append($input, &$start))
-  });
-);
-
-alt_trait!(Alt2 Alt3 Alt4 Alt5 Alt6 Alt7 Alt8 Alt9 Alt10 Alt11 Alt12 Alt13 Alt14 Alt15 Alt16 Alt17 Alt18 Alt19 Alt20 Alt21 Alt22);
-
-// Manually implement Alt for (A,), the 1-tuple type
-impl<I: Stream, O, E: ParserError<I>, A: Parser<I, O, E>> Alt<I, O, E> for (A,) {
-    fn choice(&mut self, input: &mut I) -> Result<O, E> {
-        self.0.parse_next(input)
-    }
-}
 
 macro_rules! permutation_trait(
   (
