@@ -182,37 +182,46 @@ impl<I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I, O, E> for &mut 
     }
 }
 
+fn dyn_choice<I: Stream, Output, Error: ParserError<I>>(
+    branches: &mut [&mut dyn Parser<I, Output, Error>],
+    input: &mut I,
+) -> Result<Output, Error> {
+    let mut error: Option<Error> = None;
+
+    let start = input.checkpoint();
+    for branch in branches {
+        input.reset(&start);
+        match branch.parse_next(input) {
+            Err(e) if e.is_backtrack() => {
+                error = match error {
+                    Some(error) => Some(error.or(e)),
+                    None => Some(e),
+                };
+            }
+            res => return res,
+        }
+    }
+
+    match error {
+        Some(e) => Err(e.append(input, &start)),
+        None => Err(ParserError::assert(
+            input,
+            "`alt` needs at least one parser",
+        )),
+    }
+}
+
 macro_rules! impl_alt_for_tuple {
   ($($index:tt $parser:ident),+) => (
     impl<
       I: Stream, Output, Error: ParserError<I>,
       $($parser: Parser<I, Output, Error>),+
     > Alt<I, Output, Error> for ($($parser),+,) {
-
       fn choice(&mut self, input: &mut I) -> Result<Output, Error> {
-        let mut error: Option<Error> = None;
-
-        let start = input.checkpoint();
-        for branch in [$(&mut self.$index as &mut dyn Parser<I, Output, Error>),+] {
-            input.reset(&start);
-            match branch.parse_next(input) {
-                Err(e) if e.is_backtrack() => {
-                    error = match error {
-                        Some(error) => Some(error.or(e)),
-                        None => Some(e),
-                    };
-                }
-                res => return res,
-            }
-        }
-
-        match error {
-            Some(e) => Err(e.append(input, &start)),
-            None => Err(ParserError::assert(
-                input,
-                "`alt` needs at least one parser",
-            )),
-        }
+        dyn_choice(
+            &mut [$(&mut self.$index as &mut dyn Parser<I, Output, Error>),+],
+            input
+        )
       }
     }
   )
