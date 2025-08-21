@@ -795,6 +795,24 @@ Example: `chumsky`s json bench:
   - Gains are around 10% in select benchmarks
   - It is believed that this reduced the size of the return type, allowing values to be returned through registers more often (as opposed to the stack), and this gain only shows up in parsers that return large data types, like format preserving parsers
 
+## [0.4.12] - 2025-08-21
+
+### Fixes
+
+- Ensure deprecation messages show up for items in `bytes`, `branch`, and `sequence`
+
+## [0.4.11] - 2023-08-17
+
+### Performance
+
+- Backport v0.5 performance improvements
+
+## [0.4.10] - 2023-08-17
+
+### Performance
+
+- Additional inlining to make v0.4 and v0.5 performance differences focus on architecture and not additional changes.
+
 ## [0.4.9] - 2023-07-08
 
 ### Features
@@ -924,6 +942,18 @@ Other
 ### Internal
 
 - Cleaned up the code so it better serves as examples for user-written parsers
+
+## [0.3.8] - 2023-08-17
+
+### Performance
+
+- Backport v0.5 performance improvements
+
+## [0.3.7] - 2023-08-17
+
+### Performance
+
+Backport v0.4 and v0.5 inlining changes for more even comparison across architectures
 
 ## [0.3.6] - 2023-03-14
 
@@ -2699,6 +2729,9 @@ Considering the number of changes since the last release, this version can conta
 [0.5.2]: https://github.com/winnow-rs/winnow/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/winnow-rs/winnow/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/winnow-rs/winnow/compare/v0.4.9...v0.5.0
+[0.4.12]: https://github.com/winnow-rs/winnow/compare/v0.4.11...v0.4.12
+[0.4.11]: https://github.com/winnow-rs/winnow/compare/v0.4.10...v0.4.11
+[0.4.10]: https://github.com/winnow-rs/winnow/compare/v0.4.9...v0.4.10
 [0.4.9]: https://github.com/winnow-rs/winnow/compare/v0.4.8...v0.4.9
 [0.4.8]: https://github.com/winnow-rs/winnow/compare/v0.4.7...v0.4.8
 [0.4.7]: https://github.com/winnow-rs/winnow/compare/v0.4.6...v0.4.7
@@ -2709,6 +2742,8 @@ Considering the number of changes since the last release, this version can conta
 [0.4.2]: https://github.com/winnow-rs/winnow/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/winnow-rs/winnow/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/winnow-rs/winnow/compare/v0.3.6...v0.4.0
+[0.3.8]: https://github.com/winnow-rs/winnow/compare/v0.3.7...v0.3.8
+[0.3.7]: https://github.com/winnow-rs/winnow/compare/v0.3.6...v0.3.7
 [0.3.6]: https://github.com/winnow-rs/winnow/compare/v0.3.5...v0.3.6
 [0.3.5]: https://github.com/winnow-rs/winnow/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/winnow-rs/winnow/compare/v0.3.3...v0.3.4
