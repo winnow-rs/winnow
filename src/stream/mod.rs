@@ -25,6 +25,8 @@ use crate::lib::std::str::FromStr;
 use crate::error::ErrMode;
 
 #[cfg(feature = "alloc")]
+use crate::lib::std::borrow::Cow;
+#[cfg(feature = "alloc")]
 use crate::lib::std::collections::BTreeMap;
 #[cfg(feature = "alloc")]
 use crate::lib::std::collections::BTreeSet;
@@ -1476,6 +1478,36 @@ impl<'i> Accumulate<&'i str> for String {
     #[inline(always)]
     fn accumulate(&mut self, acc: &'i str) {
         self.push_str(acc);
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl<'i> Accumulate<Cow<'i, str>> for String {
+    #[inline(always)]
+    fn initial(capacity: Option<usize>) -> Self {
+        match capacity {
+            Some(capacity) => String::with_capacity(clamp_capacity::<char>(capacity)),
+            None => String::new(),
+        }
+    }
+    #[inline(always)]
+    fn accumulate(&mut self, acc: Cow<'i, str>) {
+        self.push_str(&acc);
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl Accumulate<String> for String {
+    #[inline(always)]
+    fn initial(capacity: Option<usize>) -> Self {
+        match capacity {
+            Some(capacity) => String::with_capacity(clamp_capacity::<char>(capacity)),
+            None => String::new(),
+        }
+    }
+    #[inline(always)]
+    fn accumulate(&mut self, acc: String) {
+        self.push_str(&acc);
     }
 }
 
