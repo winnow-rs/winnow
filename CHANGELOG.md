@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Ensure deprecation messages show up for items in `bytes`, `branch`, and `sequence`
+
 ## [0.4.11] - 2023-08-17
 
 ### Performance
