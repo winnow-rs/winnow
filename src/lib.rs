@@ -48,6 +48,7 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![cfg_attr(docsrs, feature(extended_key_value_attributes))]
 #![cfg_attr(not(feature = "std"), no_std)]
+#![allow(unexpected_cfgs)]
 #![warn(missing_docs)]
 // BEGIN - Embark standard lints v6 for Rust 1.55+
 // do not change or add/remove here, but one can add exceptions after this section
@@ -164,28 +165,18 @@ pub(crate) mod lib {
 
         #[doc(hidden)]
         pub use core::{cmp, convert, fmt, hash, iter, mem, ops, option, result, slice, str};
-
-        /// internal reproduction of std prelude
-        #[doc(hidden)]
-        pub mod prelude {
-            pub use core::prelude as v1;
-        }
     }
 
     #[cfg(feature = "std")]
     /// internal std exports for `no_std` compatibility
     pub mod std {
         #[doc(hidden)]
-        pub use std::{
-            alloc, borrow, boxed, cmp, collections, convert, fmt, hash, iter, mem, ops, option,
-            result, slice, str, string, vec,
-        };
-
-        /// internal reproduction of std prelude
+        #[cfg(test)]
+        pub use std::convert;
         #[doc(hidden)]
-        pub mod prelude {
-            pub use std::prelude as v1;
-        }
+        pub use std::{
+            borrow, cmp, collections, fmt, hash, iter, mem, ops, result, slice, str, string, vec,
+        };
     }
 }
 
