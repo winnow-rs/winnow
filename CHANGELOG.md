@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.4.12] - 2025-08-21
+
 ### Fixes
 
 - Ensure deprecation messages show up for items in `bytes`, `branch`, and `sequence`
@@ -1840,7 +1842,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.4.11...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.4.12...HEAD
+[0.4.12]: https://github.com/winnow-rs/winnow/compare/v0.4.11...v0.4.12
 [0.4.11]: https://github.com/winnow-rs/winnow/compare/v0.4.10...v0.4.11
 [0.4.10]: https://github.com/winnow-rs/winnow/compare/v0.4.9...v0.4.10
 [0.4.9]: https://github.com/winnow-rs/winnow/compare/v0.4.8...v0.4.9
