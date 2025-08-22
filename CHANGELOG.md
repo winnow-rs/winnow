@@ -3,6 +3,11 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Allow accumulating `String` into `String`
+- Allow accumulating `Cow<str>` into `String`
+
 ## [0.7.12] - 2025-07-11
 
 ### Features
