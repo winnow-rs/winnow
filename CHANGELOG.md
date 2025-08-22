@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.7.13] - 2025-08-22
+
 ### Features
 
 - Allow accumulating `String` into `String`
@@ -2652,7 +2654,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.7.12...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.7.13...HEAD
+[0.7.13]: https://github.com/winnow-rs/winnow/compare/v0.7.12...v0.7.13
 [0.7.12]: https://github.com/winnow-rs/winnow/compare/v0.7.11...v0.7.12
 [0.7.11]: https://github.com/winnow-rs/winnow/compare/v0.7.10...v0.7.11
 [0.7.10]: https://github.com/winnow-rs/winnow/compare/v0.7.9...v0.7.10
