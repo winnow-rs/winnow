@@ -1,5 +1,7 @@
 use core::num::NonZeroUsize;
 
+use zerocopy::{FromBytes, Immutable, KnownLayout};
+
 use crate::error::Needed;
 use crate::lib::std::iter::{Cloned, Enumerate};
 use crate::lib::std::slice::Iter;
@@ -20,20 +22,15 @@ use crate::stream::UpdateSlice;
 
 /// Improved `Debug` experience for `&[u8]` UTF-8-ish streams
 #[allow(clippy::derived_hash_with_manual_eq)]
-#[derive(Hash)]
-#[repr(transparent)]
+#[derive(Hash, FromBytes, KnownLayout, Immutable)]
+#[repr(C)]
 pub struct BStr([u8]);
 
 impl BStr {
     /// Make a stream out of a byte slice-like.
     #[inline]
     pub fn new<B: ?Sized + AsRef<[u8]>>(bytes: &B) -> &Self {
-        Self::from_bytes(bytes.as_ref())
-    }
-
-    #[inline]
-    fn from_bytes(slice: &[u8]) -> &Self {
-        unsafe { crate::lib::std::mem::transmute(slice) }
+        zerocopy::transmute_ref!(bytes.as_ref())
     }
 
     #[inline]
@@ -104,7 +101,7 @@ impl<'i> Stream for &'i BStr {
     #[inline(always)]
     fn next_slice(&mut self, offset: usize) -> Self::Slice {
         let (slice, next) = self.0.split_at(offset);
-        *self = BStr::from_bytes(next);
+        *self = zerocopy::transmute_ref!(next);
         slice
     }
     #[inline(always)]
@@ -116,7 +113,7 @@ impl<'i> Stream for &'i BStr {
         let slice = unsafe { self.0.get_unchecked(..offset) };
         // SAFETY: `Stream::next_slice_unchecked` requires `offset` to be in bounds
         let next = unsafe { self.0.get_unchecked(offset..) };
-        *self = BStr::from_bytes(next);
+        *self = zerocopy::transmute_ref!(next);
         slice
     }
     #[inline(always)]
@@ -368,7 +365,7 @@ impl crate::lib::std::borrow::ToOwned for BStr {
 impl crate::lib::std::borrow::Borrow<BStr> for crate::lib::std::vec::Vec<u8> {
     #[inline]
     fn borrow(&self) -> &BStr {
-        BStr::from_bytes(self.as_slice())
+        zerocopy::transmute_ref!(self.as_slice())
     }
 }
 
