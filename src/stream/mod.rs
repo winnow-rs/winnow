@@ -134,48 +134,92 @@ where
     }
 }
 
-/// Core definition for parser input state
+/// A stream of input data for a [`Parser`](`crate::Parser`).
+///
+/// Types can implement this trait to become custom input types.
 pub trait Stream: Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::Debug {
-    /// The smallest unit being parsed
+    /// The smallest unit being parsed.
     ///
-    /// Example: `u8` for `&[u8]` or `char` for `&str`
+    /// Examples:
+    ///
+    /// - `u8` for `&[u8]`
+    /// - `char` for `&str`
     type Token: crate::lib::std::fmt::Debug;
-    /// Sequence of `Token`s
+
+    /// A sequence of [`Self::Token`]s.
     ///
-    /// Example: `&[u8]` for `LocatingSlice<&[u8]>` or `&str` for `LocatingSlice<&str>`
+    /// Examples:
+    ///
+    /// - `&[u8]` for `LocatingSlice<&[u8]>`
+    /// - `&str` for `LocatingSlice<&str>`
     type Slice: crate::lib::std::fmt::Debug;
 
-    /// Iterate with the offset from the current location
+    /// An iterator containing a tuple of:
+    ///
+    /// - [`usize`]: the offset from the current location.
+    /// - [`Self::Token`]: the token at the `usize` location.
+    ///
+    /// Note that, since [`Iterator`] is a trait, this type can be anything
+    /// that implements that trait. Therefore, an efficient implementation will
+    /// dynamically create this tuple instead of precomputing it.
     type IterOffsets: Iterator<Item = (usize, Self::Token)>;
 
-    /// A parse location within the stream
+    /// A saved location within the [`Stream`].
+    ///
+    /// This type should allow users to reset the stream to a previous state.
+    ///
+    /// Note that this type must implement [`Offset`], which says how many
+    /// bytes have been computed between a checkpoint and some initial/starting
+    /// checkpoint.
     type Checkpoint: Offset + Clone + crate::lib::std::fmt::Debug;
 
-    /// Iterate with the offset from the current location
+    /// Creates a [`Self::IterOffsets`] from the existing stream state.
+    ///
+    /// For efficiency, this should probably be computed on the fly, at least
+    /// when it's possible.
     fn iter_offsets(&self) -> Self::IterOffsets;
 
-    /// Returns the offset to the end of the input
+    /// Returns the number of bytes until the stream completes.
+    ///
+    /// That is: the end of the file ("eof").
     fn eof_offset(&self) -> usize;
 
-    /// Split off the next token from the input
+    /// Takes the next token from the stream.
+    ///
+    /// This method should consume the token, mutating the original input to
+    /// no longer have it.
     fn next_token(&mut self) -> Option<Self::Token>;
-    /// Split off the next token from the input
+
+    /// Peek ahead to view the next token in the stream.
+    ///
+    /// This method should not consume the token, so it doesn't mutate the
+    /// original input source.
     fn peek_token(&self) -> Option<Self::Token>;
 
-    /// Finds the offset of the next matching token
+    /// Finds the offset of the next value matching the given `predicate`
+    /// function.
+    ///
+    /// The offset is relative from the current location.
     fn offset_for<P>(&self, predicate: P) -> Option<usize>
     where
         P: Fn(Self::Token) -> bool;
-    /// Get the offset for the number of `tokens` into the stream
+
+    /// Find the offset after consuming a number of `tokens` from the stream.
     ///
-    /// This means "0 tokens" will return `0` offset
+    /// The offset is relative to the current position. This means that an
+    /// input of "0 tokens" will return an offset of `0`.
     fn offset_at(&self, tokens: usize) -> Result<usize, Needed>;
-    /// Split off a slice of tokens from the input
+
+    /// Takes a slice of `offset` tokens from the input.
+    ///
+    /// This method should consume `offset` tokens.
     ///
     /// <div class="warning">
     ///
-    /// **Note:** For inputs with variable width tokens, like `&str`'s `char`, `offset` might not correspond
-    /// with the number of tokens. To get a valid offset, use:
+    /// **Note:** For inputs with variable width tokens, like `&str`'s `char`,
+    /// `offset` might not correspond with the number of tokens. To get a valid
+    /// offset, use:
+    ///
     /// - [`Stream::eof_offset`]
     /// - [`Stream::iter_offsets`]
     /// - [`Stream::offset_for`]
@@ -185,19 +229,21 @@ pub trait Stream: Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::D
     ///
     /// # Panic
     ///
-    /// This will panic if
+    /// This method panics if any of the following invariants are violated:
     ///
     /// * Indexes must be within bounds of the original input;
-    /// * Indexes must uphold invariants of the stream, like for `str` they must lie on UTF-8
-    ///   sequence boundaries.
-    ///
+    /// * Indexes must uphold invariants of the stream. For example, with a
+    ///   `str`, they must lie on UTF-8 sequence boundaries.
     fn next_slice(&mut self, offset: usize) -> Self::Slice;
-    /// Split off a slice of tokens from the input
+
+    /// Takes a slice of `offset` tokens from the input.
     ///
     /// <div class="warning">
     ///
-    /// **Note:** For inputs with variable width tokens, like `&str`'s `char`, `offset` might not correspond
-    /// with the number of tokens. To get a valid offset, use:
+    /// **Note:** For inputs with variable width tokens, like `&str`'s `char`,
+    /// `offset` might not correspond with the number of tokens. To get a valid
+    /// offset, use:
+    ///
     /// - [`Stream::eof_offset`]
     /// - [`Stream::iter_offsets`]
     /// - [`Stream::offset_for`]
@@ -207,38 +253,53 @@ pub trait Stream: Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::D
     ///
     /// # Safety
     ///
-    /// Callers of this function are responsible that these preconditions are satisfied:
+    /// Callers of this function are responsible for ensuring that these
+    /// preconditions are satisfied:
     ///
     /// * Indexes must be within bounds of the original input;
-    /// * Indexes must uphold invariants of the stream, like for `str` they must lie on UTF-8
-    ///   sequence boundaries.
-    ///
+    /// * Indexes must uphold invariants of the stream. For example, with a
+    ///   `str`, they must lie on UTF-8 sequence boundaries.
     unsafe fn next_slice_unchecked(&mut self, offset: usize) -> Self::Slice {
         // Inherent impl to allow callers to have `unsafe`-free code
         self.next_slice(offset)
     }
-    /// Split off a slice of tokens from the input
+
+    /// Peek ahead to view the next `offset` tokens in the stream.
+    ///
+    /// Returns a slice of the tokens without consuming them from the backing
+    /// input.
     fn peek_slice(&self, offset: usize) -> Self::Slice;
-    /// Split off a slice of tokens from the input
+
+    /// Peek ahead to view the next `offset` tokens in the stream.
+    ///
+    /// Returns a slice of the tokens without consuming them from the backing
+    /// input.
     ///
     /// # Safety
     ///
-    /// Callers of this function are responsible that these preconditions are satisfied:
+    /// Callers of this function are responsible for ensuring that these
+    /// preconditions are satisfied:
     ///
     /// * Indexes must be within bounds of the original input;
-    /// * Indexes must uphold invariants of the stream, like for `str` they must lie on UTF-8
-    ///   sequence boundaries.
+    /// * Indexes must uphold invariants of the stream. For example, with a
+    ///   `str`, they must lie on UTF-8 sequence boundaries.
     unsafe fn peek_slice_unchecked(&self, offset: usize) -> Self::Slice {
         // Inherent impl to allow callers to have `unsafe`-free code
         self.peek_slice(offset)
     }
 
-    /// Advance to the end of the stream
+    /// Advances to the end of the stream.
+    ///
+    /// In the process, this method takes all available tokens from the
+    /// input and returns them as a slice.
     #[inline(always)]
     fn finish(&mut self) -> Self::Slice {
         self.next_slice(self.eof_offset())
     }
-    /// Advance to the end of the stream
+
+    /// Peeks ahead and returns all tokens until the end of the stream.
+    ///
+    /// This method does not consume any tokens.
     #[inline(always)]
     fn peek_finish(&self) -> Self::Slice
     where
@@ -247,20 +308,25 @@ pub trait Stream: Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::D
         self.peek_slice(self.eof_offset())
     }
 
-    /// Save the current parse location within the stream
+    /// Takes a snapshot of the current location of the stream.
+    ///
+    /// A stream can be reverted to this location using [`Self::reset`].
     fn checkpoint(&self) -> Self::Checkpoint;
-    /// Revert the stream to a prior [`Self::Checkpoint`]
+
+    /// Reverts the stream to a prior [`Self::Checkpoint`].
     ///
     /// # Panic
     ///
-    /// May panic if an invalid [`Self::Checkpoint`] is provided
+    /// This method may panic if an invalid [`Self::Checkpoint`] is provided.
     fn reset(&mut self, checkpoint: &Self::Checkpoint);
 
-    /// Deprecated for callers as of 0.7.10, instead call [`Stream::trace`]
+    /// Deprecated for callers as of `0.7.10`..!
+    ///
+    /// Please call [`Stream::trace`] instead.
     #[deprecated(since = "0.7.10", note = "Replaced with `Stream::trace`")]
     fn raw(&self) -> &dyn crate::lib::std::fmt::Debug;
 
-    /// Write out a single-line summary of the current parse location
+    /// Writes out a single-line summary of the current parse location.
     fn trace(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         #![allow(deprecated)]
         write!(f, "{:#?}", self.raw())
@@ -814,14 +880,19 @@ where
     }
 }
 
-/// Useful functions to calculate the offset between slices and show a hexdump of a slice
+/// Methods to compute general offsets between type indexes.
+///
+/// Primarily used by [`Stream::Checkpoint`].
 pub trait Offset<Start = Self> {
-    /// Offset between the first byte of `start` and the first byte of `self`a
+    /// Computes the number of bytes since `start`.
+    ///
+    /// The number of bytes should be based on the distance between the first
+    /// byte of `self` and the first byte of `start`.
     ///
     /// <div class="warning">
     ///
-    /// **Note:** This is an offset, not an index, and may point to the end of input
-    /// (`start.len()`) when `self` is exhausted.
+    /// **Note:** This is an offset -- not an index. So, the resulting value
+    /// may point to the end of input (`start.len()`) when `self` is exhausted.
     ///
     /// </div>
     fn offset_from(&self, start: &Start) -> usize;
