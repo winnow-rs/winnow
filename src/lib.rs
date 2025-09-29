@@ -46,7 +46,6 @@
 //!
 //! See also the [Tutorial][_tutorial::chapter_0] and [Special Topics][_topic]
 
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![cfg_attr(docsrs, feature(extended_key_value_attributes))]
 #![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
