@@ -15,7 +15,9 @@ mod complete {
     use crate::token::none_of;
     use crate::token::one_of;
     #[cfg(feature = "alloc")]
-    use crate::{lib::std::string::String, lib::std::vec::Vec};
+    use alloc::string::String;
+    #[cfg(feature = "alloc")]
+    use alloc::vec::Vec;
 
     #[test]
     fn character() {
