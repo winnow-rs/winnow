@@ -65,44 +65,6 @@ extern crate alloc;
 #[cfg(doctest)]
 pub struct ReadmeDoctests;
 
-/// Lib module to re-export everything needed from `std` or `core`/`alloc`. This is how `serde` does
-/// it, albeit there it is not public.
-#[doc(hidden)]
-pub(crate) mod lib {
-    #![allow(unused_imports)]
-
-    /// `std` facade allowing `std`/`core` to be interchangeable. Reexports `alloc` crate optionally,
-    /// as well as `core` or `std`
-    #[cfg(not(feature = "std"))]
-    /// internal std exports for no_std compatibility
-    pub(crate) mod std {
-        #[doc(hidden)]
-        #[cfg(not(feature = "alloc"))]
-        pub(crate) use core::borrow;
-
-        #[cfg(feature = "alloc")]
-        #[doc(hidden)]
-        pub(crate) use alloc::{borrow, boxed, collections, string, vec};
-
-        #[doc(hidden)]
-        pub(crate) use core::{
-            cmp, convert, fmt, hash, iter, mem, ops, option, result, slice, str,
-        };
-    }
-
-    #[cfg(feature = "std")]
-    /// internal std exports for `no_std` compatibility
-    pub(crate) mod std {
-        #![allow(clippy::std_instead_of_core)]
-        #![allow(clippy::std_instead_of_alloc)]
-        #[doc(hidden)]
-        pub(crate) use std::{
-            borrow, boxed, cmp, collections, convert, fmt, hash, iter, mem, ops, result, slice,
-            str, string, vec,
-        };
-    }
-}
-
 pub(crate) mod util {
     #[allow(dead_code)]
     pub(crate) fn from_fn<F: Fn(&mut core::fmt::Formatter<'_>) -> core::fmt::Result>(

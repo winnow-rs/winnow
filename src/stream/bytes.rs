@@ -1,9 +1,6 @@
 use core::num::NonZeroUsize;
 
 use crate::error::Needed;
-use crate::lib::std::iter::{Cloned, Enumerate};
-use crate::lib::std::slice::Iter;
-use crate::lib::std::{cmp::Ordering, fmt, ops};
 use crate::stream::AsBytes;
 use crate::stream::Checkpoint;
 use crate::stream::Compare;
@@ -17,6 +14,9 @@ use crate::stream::SliceLen;
 use crate::stream::Stream;
 use crate::stream::StreamIsPartial;
 use crate::stream::UpdateSlice;
+use core::iter::{Cloned, Enumerate};
+use core::slice::Iter;
+use core::{cmp::Ordering, fmt, ops};
 
 /// Improved `Debug` experience for `&[u8]` byte streams
 #[allow(clippy::derived_hash_with_manual_eq)]
@@ -33,7 +33,7 @@ impl Bytes {
 
     #[inline]
     fn from_bytes(slice: &[u8]) -> &Self {
-        unsafe { crate::lib::std::mem::transmute(slice) }
+        unsafe { core::mem::transmute(slice) }
     }
 
     #[inline]
@@ -143,7 +143,7 @@ impl<'i> Stream for &'i Bytes {
     }
 
     #[inline(always)]
-    fn raw(&self) -> &dyn crate::lib::std::fmt::Debug {
+    fn raw(&self) -> &dyn core::fmt::Debug {
         self
     }
 }
@@ -222,7 +222,7 @@ where
     &'i [u8]: FindSlice<S>,
 {
     #[inline(always)]
-    fn find_slice(&self, substr: S) -> Option<crate::lib::std::ops::Range<usize>> {
+    fn find_slice(&self, substr: S) -> Option<core::ops::Range<usize>> {
         let bytes = (*self).as_bytes();
         let offset = bytes.find_slice(substr);
         offset
@@ -370,17 +370,17 @@ impl AsRef<Bytes> for str {
 }
 
 #[cfg(feature = "alloc")]
-impl crate::lib::std::borrow::ToOwned for Bytes {
-    type Owned = crate::lib::std::vec::Vec<u8>;
+impl alloc::borrow::ToOwned for Bytes {
+    type Owned = alloc::vec::Vec<u8>;
 
     #[inline]
     fn to_owned(&self) -> Self::Owned {
-        crate::lib::std::vec::Vec::from(self.as_bytes())
+        alloc::vec::Vec::from(self.as_bytes())
     }
 }
 
 #[cfg(feature = "alloc")]
-impl crate::lib::std::borrow::Borrow<Bytes> for crate::lib::std::vec::Vec<u8> {
+impl core::borrow::Borrow<Bytes> for alloc::vec::Vec<u8> {
     #[inline]
     fn borrow(&self) -> &Bytes {
         Bytes::from_bytes(self.as_slice())
