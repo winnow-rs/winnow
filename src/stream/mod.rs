@@ -2000,7 +2000,7 @@ impl<C: AsChar> ContainsToken<C> for &'_ [char] {
     #[inline]
     fn contains_token(&self, token: C) -> bool {
         let token = token.as_char();
-        self.iter().any(|t| *t == token)
+        self.contains(&token)
     }
 }
 
@@ -2016,7 +2016,7 @@ impl<const LEN: usize, C: AsChar> ContainsToken<C> for &'_ [char; LEN] {
     #[inline]
     fn contains_token(&self, token: C) -> bool {
         let token = token.as_char();
-        self.iter().any(|t| *t == token)
+        self.contains(&token)
     }
 }
 
@@ -2032,7 +2032,7 @@ impl<const LEN: usize, C: AsChar> ContainsToken<C> for [char; LEN] {
     #[inline]
     fn contains_token(&self, token: C) -> bool {
         let token = token.as_char();
-        self.iter().any(|t| *t == token)
+        self.contains(&token)
     }
 }
 
