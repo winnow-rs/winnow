@@ -3398,21 +3398,6 @@ Ok(
     );
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
-struct NilError;
-
-impl<I: Stream> ParserError<I> for NilError {
-    type Inner = Self;
-
-    fn from_input(_: &I) -> NilError {
-        NilError
-    }
-
-    fn into_inner(self) -> Result<Self::Inner, Self> {
-        Ok(self)
-    }
-}
-
 #[test]
 #[cfg(feature = "alloc")]
 fn fold_repeat0_test() {
