@@ -53,16 +53,12 @@ struct Args {
     implementation: Impl,
 }
 
+#[derive(Default)]
 enum Impl {
+    #[default]
     Eval,
     Ast,
     Lexer,
-}
-
-impl Default for Impl {
-    fn default() -> Self {
-        Self::Eval
-    }
 }
 
 impl Args {
