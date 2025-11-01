@@ -208,10 +208,91 @@ where
         }
     }
 
-    /// Sets the precedence level of the parser.
+    /// Sets the precedence level for the current instance of the parser.
+    ///
+    /// It defaults to 0, which is traditionally treated as the "lowest"
+    /// possible precedence when parsing an expression.
     ///
     /// This is useful to disambiguate grammars based on the parent operator's
-    /// precedence.
+    /// precedence. This comes up primarily when parsing recursive expressions.
+    ///
+    /// The parsing machinery underpinning [`Expression`] assumes that a "more
+    /// tightly binding" operator is numerically large, while a "more loosely
+    /// binding" operator is numerically small. For example, `13` is a higher
+    /// precedence level than `1` because `13 > 1`.
+    ///
+    /// Other ways of describing this relationship:
+    /// - `13` has a higher precedence compared to `1`
+    /// - `13` has a higher binding power compared to `1`
+    ///
+    /// Note: Binding power and precedence both refer to the same concept and
+    /// may be used interchangeably.
+    ///
+    /// # Motivation
+    ///
+    /// If you don't understand why this is useful to have, this section tries
+    /// to explain in more detail.
+    ///
+    /// The [C-style Expressions][crate::_topic::arithmetic#c-style-expression]
+    /// example has source code for parsing the expression described below, and
+    /// can provide a clearer usage example.
+    ///
+    /// Consider the following expression in the C language:
+    ///
+    /// ```c
+    /// int x = (1 == 1 ? 0 : 1, -123); // <-- let's parse this
+    /// printf("%d\n", x); // -123
+    /// ```
+    ///
+    /// Let's look at the right-hand side of the expression on the first line,
+    /// and replace some of the sub-expressions with symbols:
+    ///
+    /// ```text
+    /// (1 == 1 ? 0 : 1, -123) // rhs
+    /// (a      ? b : c, d  )  // symbolic
+    /// (a ? b : c, d)         // remove whitespace
+    /// (, (? a b c) d)        // prefix notation
+    /// ```
+    ///
+    /// Written symbolically:
+    /// - `a` is the condition, like `1 == 1`
+    /// - `b` is the value when the condition is true
+    /// - `c` is the value when the condition is false
+    /// - `d` is a secondary expression unrelated to the ternary
+    ///
+    /// In prefix notation, it's easier to see the specific operators and what
+    /// they bind to:
+    /// - COMMA (`,`) binds to `(? a b c)` and `d`
+    /// - TERNARY (`?`) binds to `a`, `b`, and `c`
+    ///
+    /// ## Parsing `c` and `d`
+    ///
+    /// Let's focus on parsing the sub-expressions `c` and `d`, as that
+    /// motivates why a parser precedence level is necessary.
+    ///
+    /// To parse `c`, we would really like to re-use the parser produced by
+    /// [`expression()`], because `c` is really *any* valid expression that
+    /// can be parsed by `expression()` already.
+    ///
+    /// However, we can't re-use the parser naively. When parsing `c`, we need
+    /// to "escape" from the inner parser when encountering the comma separating
+    /// `c` from `d`.
+    ///
+    /// The reason we have to "escape" is because of how operator precedence is
+    /// defined in the C language: the comma operator has the lowest precedence
+    /// among all the operators. When we're parsing `c`, we're in the context of
+    /// the ternary operator. We don't want to parse any valid expression! Just
+    /// what the ternary operator captures.
+    ///
+    /// That's where the precedence level comes in: you specify the minimum
+    /// precedence this parser is willing to accept. If you come across an
+    /// expression in the top-level with a lower binding power than the starting
+    /// precedence, you know to stop parsing.
+    ///
+    /// The parsing machinery inside of [`Expression`] handles most of this for
+    /// you, but it can't determine what the precedence level should be for a
+    /// given expression. That's a language-specific detail, and it depends on
+    /// what you want to parse.
     #[inline(always)]
     pub fn precedence_level(
         mut self,
