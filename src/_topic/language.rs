@@ -326,6 +326,7 @@
 //! The operator precedence level is based on the [C language](c-precedence).
 //!
 //! [c-precedence]: https://en.cppreference.com/w/c/language/operator_precedence.html
+//!
 //! ```rust
 #![doc = include_str!("../../examples/c_expression/parser.rs")]
 //! ```
