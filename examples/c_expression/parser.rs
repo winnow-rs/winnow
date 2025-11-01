@@ -1,3 +1,105 @@
+//! Main points of this example:
+//!
+//! 1. [Expr], representing the AST of C-style expressions
+//! 2. [pratt_parser()], the core parser.
+//! 3. The [test]s, which demonstrate the expected input/outputs.
+//!
+//! # Errata:
+//! - There is a helper parser, [identifier()]
+//! - Two print implementations: [Expr::fmt_ast_with_indent()] and [Expr::fmt_delimited()]
+//! - For operator precedence, `1` has a low binding power while `13` has a high binding power.
+//!
+//! ## Printing
+//!
+//! `fmt_delimited()` is essentially prefix-notation.
+//!
+//! A short visual about the differences in printing, for parsing `1 + 1`:
+//!
+//! `fmt_ast_with_indent()` =
+//! ~~~text
+//! ADD
+//!  VAL 1
+//!  VAL 1
+//! ~~~
+//!
+//! `fmt_delimited()` =
+//! ~~~text
+//! (+ 1 1)
+//! ~~~
+//!
+//! ## Precedences
+//!
+//! Values uses an *inverted form* of the [C language operator precedence](c-precedence).
+//!
+//! In our implementation, a precedence of `1` is a very low precedence compared
+//! to a value of `13`.
+//!
+//! In the linked C operator page, the table shows precedence in *descending precedence order*,
+//! so `1` is the highest precedence, while `13` is a low precedence.
+//!
+//! The precedence levels you have to choose for your grammar depend on the language's
+//! semantics.
+//!
+//! [c-precedence]: https://en.cppreference.com/w/c/language/operator_precedence.html
+//!
+//! ### Precedence Table
+//!
+//! An overview of the different operators for this C-style expression language.
+//!
+//! Note: this does not include the operands themselves, such as literals or
+//! parenthesized expressions like: `(x)`
+//!
+//! Legend:
+//! - Kind: one of Prefix, Postfix, or Infix
+//! - Example: input text example
+//! - Name: the [Expr] variant it corresponds to
+//! - Power: the binding power/precedence of the operator
+//! - Assoc: infix-only, represents the left/right associativity of an operator
+//! - Recursive: only "TRUE" if parsing the operand invokes the parser again
+//!
+//! | Kind    | Example    | Name             | Power | Assoc   | Recursive |
+//! |---------|------------|------------------|-------|---------|-----------|
+//! | Prefix  | `++x`      | PreIncr          | 18    |         |           |
+//! | Prefix  | `+x`       | Positive (no-op) | 18    |         |           |
+//! | Prefix  | `--x`      | PreDecr          | 18    |         |           |
+//! | Prefix  | `-x`       | Neg              | 18    |         |           |
+//! | Prefix  | `&x`       | Addr             | 18    |         |           |
+//! | Prefix  | `*x`       | Deref            | 18    |         |           |
+//! | Prefix  | `!x`       | Not              | 18    |         |           |
+//! | Prefix  | `~x`       | BitwiseNot       | 18    |         |           |
+//! | Postfix | `x!`       | Fac              | 19    |         |           |
+//! | Postfix | `x?`       | Ternary          | 3     |         | TRUE      |
+//! | Postfix | `[x]`      | Index            | 20    |         | TRUE      |
+//! | Postfix | `(x)`      | Function call    | 20    |         | TRUE      |
+//! | Postfix | `x++`      | PostIncr         | 20    |         |           |
+//! | Postfix | `x--`      | PostDecr         | 20    |         |           |
+//! | Infix   | `a ** b`   | Pow              | 28    | Right   |           |
+//! | Infix   | `a * b`    | Mul              | 16    | Left    |           |
+//! | Infix   | `a / b`    | Div              | 16    | Left    |           |
+//! | Infix   | `a % b`    | Rem              | 16    | Left    |           |
+//! | Infix   | `a + b`    | Add              | 14    | Left    |           |
+//! | Infix   | `a -ne b`  | NotEq            | 10    | Neither |           |
+//! | Infix   | `a -eq b`  | Eq               | 10    | Neither |           |
+//! | Infix   | `a -gt b`  | Greater          | 12    | Neither |           |
+//! | Infix   | `a -ge b`  | GreaterEq        | 12    | Neither |           |
+//! | Infix   | `a -lt b`  | Less             | 12    | Neither |           |
+//! | Infix   | `a -le b`  | LessEqual        | 12    | Neither |           |
+//! | Infix   | `a->b`     | ArrowOp          | 20    | Left    |           |
+//! | Infix   | `a - b`    | Sub              | 14    | Left    |           |
+//! | Infix   | `a.b`      | Dot              | 20    | Left    |           |
+//! | Infix   | `a && b`   | And              | 6     | Left    |           |
+//! | Infix   | `a & b`    | BitAnd           | 12    | Left    |           |
+//! | Infix   | `a ^ b`    | BitXor           | 8     | Left    |           |
+//! | Infix   | `a == b`   | Eq               | 10    | Neither |           |
+//! | Infix   | `a = b`    | Assign           | 2     | Right   |           |
+//! | Infix   | `a >= b`   | GreaterEq        | 12    | Neither |           |
+//! | Infix   | `a > b`    | Greater          | 12    | Neither |           |
+//! | Infix   | `a <= b`   | LessEqual        | 12    | Neither |           |
+//! | Infix   | `a < b`    | Less             | 2     | Neither |           |
+//! | Infix   | `a, b`     | Comma            | 0     | Left    |           |
+//! | Infix   | `a != b`   | NotEq            | 10    | Neither |           |
+//! | Infix   | `a \|\| b` | Or               | 4     | Left    |           |
+
 use winnow::ascii::{digit1, multispace0};
 use winnow::combinator::{
     alt, cut_err, delimited, expression, fail, not, opt, peek, separated_pair, trace,
@@ -63,8 +165,16 @@ pub(crate) enum Expr {
     BitwiseNot(Box<Expr>),
 }
 
-// Parser definition
+/// Parser definition
+///
+/// We define a helper function `parser()` and call it at the very end.
+///
+/// `parser()` accepts a minimum `precedence_level` for the entire expression,
+/// and it returns a [Parser] that takes in a string and returns an [Expr] on
+/// success.
 pub(crate) fn pratt_parser(i: &mut &str) -> ModalResult<Expr> {
+
+
     fn parser<'i>(precedence: i64) -> impl Parser<&'i str, Expr, ErrMode<ContextError>> {
         move |i: &mut &str| {
             use Infix::{Left, Neither, Right};
