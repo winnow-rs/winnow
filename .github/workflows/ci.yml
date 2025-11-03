@@ -198,6 +198,6 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
     - name: Publish to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v5
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
