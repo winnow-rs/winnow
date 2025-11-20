@@ -54,7 +54,7 @@ pub trait Parser<I, O, E> {
     /// [incremental parsing][StreamIsPartial], see instead [`Parser::parse_next`].
     ///
     /// This assumes the [`Parser`] intends to read all of `input` and will return an
-    /// [`eof`][crate::combinator::eof] error if it does not
+    /// [`eof`][crate::combinator::eof] error if it does not.
     /// To ignore trailing `input`, combine your parser with a [`rest`][crate::token::rest]
     /// (e.g. `(parser, rest).parse(input)`).
     ///
