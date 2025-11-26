@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.7.14] - 2025-11-26
+
 ### Features
 
 - Add `combinator::expression` parser for parsing expressions with precedence (a pratt parser)
@@ -2662,7 +2664,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.7.13...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.7.14...HEAD
+[0.7.14]: https://github.com/winnow-rs/winnow/compare/v0.7.13...v0.7.14
 [0.7.13]: https://github.com/winnow-rs/winnow/compare/v0.7.12...v0.7.13
 [0.7.12]: https://github.com/winnow-rs/winnow/compare/v0.7.11...v0.7.12
 [0.7.11]: https://github.com/winnow-rs/winnow/compare/v0.7.10...v0.7.11
