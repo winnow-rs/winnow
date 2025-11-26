@@ -1366,6 +1366,7 @@ where
                 .split(|c| *c == b'\n')
                 .nth(line_idx)
                 .expect("valid line number");
+            let (content_left, _) = content.split_at(col_idx);
 
             writeln!(f, "parse error at line {line_num}, column {col_num}")?;
             //   |
@@ -1383,8 +1384,16 @@ where
                 write!(f, " ")?;
             }
             write!(f, " | ")?;
-            for _ in 0..col_idx {
-                write!(f, " ")?;
+            // Add the same amount of tabs as in the content line up to the `col_num`,
+            // so the `^` aligns correctly.
+            for byte in content_left {
+                // Tabs must be at the same position as in the content to match correctly,
+                // as they are variable width...
+                if *byte == b'\t' {
+                    write!(f, "\t")?;
+                } else {
+                    write!(f, " ")?;
+                }
             }
             // The span will be empty at eof, so we need to make sure we always print at least
             // one `^`
@@ -1395,9 +1404,19 @@ where
             writeln!(f)?;
         } else {
             let content = input;
+            let (content_left, _) = content.split_at(span_start);
+
             writeln!(f, "{}", String::from_utf8_lossy(content))?;
-            for _ in 0..span_start {
-                write!(f, " ")?;
+            // Add the same amount of tabs as in the content up to the `span_start`,
+            // so the `^` aligns correctly.
+            for byte in content_left {
+                // Tabs must be at the same position as in the content to match correctly,
+                // as they are variable width...
+                if *byte == b'\t' {
+                    write!(f, "\t")?;
+                } else {
+                    write!(f, " ")?;
+                }
             }
             // The span will be empty at eof, so we need to make sure we always print at least
             // one `^`
@@ -1507,6 +1526,58 @@ mod test_parse_error {
 0xZ123
   ^
 failed to parse starting at: Z123";
+        assert_eq!(error.to_string(), expected);
+    }
+
+    #[test]
+    fn single_line_tabs() {
+        let mut input = "\t0xA123\t0xZ123\t";
+        let start = input.checkpoint();
+        for _ in 0..10 {
+            let _ = input.next_token().unwrap();
+        }
+        let inner = InputError::at(input);
+        let error = ParseError::new(input, start, inner);
+        let expected = "\
+\t0xA123\t0xZ123\t
+\t      \t  ^
+failed to parse starting at: Z123\t";
+        assert_eq!(error.to_string(), expected);
+    }
+
+    #[test]
+    fn multiple_lines() {
+        let mut input = "0xA123\n0xZ123";
+        let start = input.checkpoint();
+        for _ in 0..9 {
+            let _ = input.next_token().unwrap();
+        }
+        let inner = InputError::at(input);
+        let error = ParseError::new(input, start, inner);
+        let expected = "\
+parse error at line 2, column 3
+  |
+2 | 0xZ123
+  |   ^
+failed to parse starting at: Z123";
+        assert_eq!(error.to_string(), expected);
+    }
+
+    #[test]
+    fn multiple_lines_tabs() {
+        let mut input = "\t0xA123\t0xA123\t\n\t0xA123\t0xZ123\t";
+        let start = input.checkpoint();
+        for _ in 0..26 {
+            let _ = input.next_token().unwrap();
+        }
+        let inner = InputError::at(input);
+        let error = ParseError::new(input, start, inner);
+        let expected = "\
+parse error at line 2, column 11
+  |
+2 | \t0xA123\t0xZ123\t
+  | \t      \t  ^
+failed to parse starting at: Z123\t";
         assert_eq!(error.to_string(), expected);
     }
 }
