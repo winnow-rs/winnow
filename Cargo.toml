@@ -162,6 +162,10 @@ test = true
 required-features = ["alloc"]
 
 [[example]]
+name = "c_expression"
+required-features = ["std"]
+
+[[example]]
 name = "css"
 test = true
 required-features = ["alloc"]
@@ -210,6 +214,12 @@ name = "arithmetic"
 path = "examples/arithmetic/bench.rs"
 harness = false
 required-features = ["alloc"]
+
+[[bench]]
+name = "c_expression"
+path = "examples/c_expression/bench.rs"
+harness = false
+required-features = ["std"]
 
 [[bench]]
 name = "contains_token"
