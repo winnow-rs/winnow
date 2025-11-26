@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add `combinator::expression` parser for parsing expressions with precedence (a pratt parser)
+
 ## [0.7.13] - 2025-08-22
 
 ### Features
