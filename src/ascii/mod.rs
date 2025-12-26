@@ -1543,7 +1543,7 @@ where
 /// - `escape`: parse and transform the escaped character
 ///
 /// Parsing ends when:
-/// - `alt(normal, control._char)` [`Backtrack`s][crate::error::ErrMode::Backtrack]
+/// - `alt(normal, control_char)` [`Backtrack`s][crate::error::ErrMode::Backtrack]
 /// - `normal` doesn't advance the input stream
 /// - *(complete)* input stream is exhausted
 ///
@@ -1699,7 +1699,7 @@ where
 /// - `escape`: parse and transform the escaped character
 ///
 /// Parsing ends when:
-/// - `alt(normal, control._char)` [`Backtrack`s][crate::error::ErrMode::Backtrack]
+/// - `alt(normal, control_char)` [`Backtrack`s][crate::error::ErrMode::Backtrack]
 /// - `normal` doesn't advance the input stream
 /// - *(complete)* input stream is exhausted
 ///
