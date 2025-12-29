@@ -1671,7 +1671,7 @@ where
     }
 }
 
-/// Deprecated, replaed with [`escaped`]
+/// Deprecated, replaced with [`escaped`]
 #[inline(always)]
 #[deprecated(since = "7.0.0", note = "replaced with `escaped`")]
 pub fn escaped_transform<Input, Error, Normal, NormalOutput, Escape, EscapeOutput, Output>(
