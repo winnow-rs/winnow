@@ -1386,7 +1386,8 @@ impl<T: core::fmt::Debug, S> core::fmt::Debug for Checkpoint<T, S> {
 }
 
 /// Abstracts something which can extend an `Extend`.
-/// Used to build modified input slices in `escaped_transform`
+///
+/// Used to build modified input slices in [`escaped`][crate::ascii::escaped].
 pub trait Accumulate<T>: Sized {
     /// Create a new `Extend` of the correct type
     fn initial(capacity: Option<usize>) -> Self;
