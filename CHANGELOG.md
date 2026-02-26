@@ -2258,7 +2258,7 @@ This version also adds a lot of interesting features, like the permutation combi
 - `alt_complete!` works like the `alt!` combinator, but tries the next branch if the current one returned `Incomplete`, instead of returning directly
 - more unit tests for a lot of combinators
 - hexadecimal digit parsers
-- the `tuple!` combinator takes a list of parsers as argument, and applies them serially on the input. If all of them are successful, it willr eturn a tuple accumulating all the values. This combinator will (hopefully) replace most uses of `chain!`
+- the `tuple!` combinator takes a list of parsers as argument, and applies them serially on the input. If all of them are successful, it will return a tuple accumulating all the values. This combinator will (hopefully) replace most uses of `chain!`
 - parsers can now be implemented as a method for a struct thanks to the `method!`, `call_m!` and `apply_rf!` combinators
 
 ### Fixed
