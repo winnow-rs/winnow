@@ -8,6 +8,7 @@ use crate::combinator::empty;
 use crate::combinator::fail;
 use crate::combinator::permutation;
 use crate::combinator::seq;
+use crate::combinator::unordered_seq;
 use crate::prelude::*;
 use crate::stream::Partial;
 use crate::token::any;
@@ -626,7 +627,7 @@ fn unordered_seq_struct_basics() {
     }
 
     fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
-        seq! {
+        unordered_seq! {
             Point {
                 x: dec_uint,
                 _: ',',
@@ -691,7 +692,7 @@ fn unordered_seq_struct_default_init() {
     }
 
     fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
-        seq! {
+        unordered_seq! {
             Point {
                 x: dec_uint,
                 _: ',',
@@ -759,7 +760,7 @@ fn unordered_seq_struct_trailing_comma_elided() {
     }
 
     fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
-        seq! {
+        unordered_seq! {
             Point {
                 x: dec_uint,
                 _: ',',
@@ -782,7 +783,7 @@ fn unordered_seq_struct_no_trailing_comma() {
     }
 
     fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
-        seq! {
+        unordered_seq! {
             Point {
                 x: dec_uint,
                 _: ',',
@@ -804,7 +805,7 @@ fn unordered_seq_struct_no_trailing_comma_elided() {
     }
 
     fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
-        seq! {
+        unordered_seq! {
             Point {
                 x: dec_uint,
                 _: ',',
@@ -825,7 +826,7 @@ fn unordered_seq_enum_struct_variant() {
     }
 
     fn add<'i>(input: &mut &'i [u8]) -> TestResult<&'i [u8], Expr> {
-        seq! {Expr::Add {
+        unordered_seq! {Expr::Add {
             lhs: dec_uint::<_, u32, _>,
             _: b" + ",
             rhs: dec_uint::<_, u32, _>,
@@ -834,7 +835,7 @@ fn unordered_seq_enum_struct_variant() {
     }
 
     fn mul<'i>(input: &mut &'i [u8]) -> TestResult<&'i [u8], Expr> {
-        seq!(Expr::Mul(
+        unordered_seq!(Expr::Mul(
              dec_uint::<_, u32, _>,
              _: b" * ",
              dec_uint::<_, u32, _>,
@@ -889,7 +890,7 @@ fn unordered_seq_struct_borrow() {
 
     fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
         let mut dec_uint = digit0.parse_to();
-        seq! {
+        unordered_seq! {
             Point {
                 x: dec_uint,
                 _: ',',
@@ -907,7 +908,7 @@ fn unordered_seq_tuple_struct_basics() {
     struct Point(u32, u32);
 
     fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
-        seq! {
+        unordered_seq! {
             Point(
                 dec_uint,
                 _: ',',
@@ -970,7 +971,7 @@ fn unordered_seq_tuple_struct_trailing_comma_elided() {
     struct Point(u32, u32);
 
     fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
-        seq! {
+        unordered_seq! {
             Point(
                 dec_uint,
                 _: ',',
@@ -990,7 +991,7 @@ fn unordered_seq_tuple_struct_no_trailing_comma() {
     struct Point(u32, u32);
 
     fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
-        seq! {
+        unordered_seq! {
             Point(
                 dec_uint,
                 _: ',',
@@ -1009,7 +1010,7 @@ fn unordered_seq_tuple_struct_no_trailing_comma_elided() {
     struct Point(u32, u32);
 
     fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
-        seq! {
+        unordered_seq! {
             Point(
                 dec_uint,
                 _: ',',
@@ -1024,7 +1025,7 @@ fn unordered_seq_tuple_struct_no_trailing_comma_elided() {
 #[test]
 fn unordered_seq_tuple_basics() {
     fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, (u32, u32)> {
-        seq! {
+        unordered_seq! {
             (
                 dec_uint,
                 _: ',',
@@ -1084,7 +1085,7 @@ fn unordered_seq_tuple_trailing_comma_elided() {
     #![allow(dead_code)]
 
     fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, (u32, u32)> {
-        seq! {
+        unordered_seq! {
             (
                 dec_uint,
                 _: ',',
@@ -1101,7 +1102,7 @@ fn unordered_seq_tuple_no_trailing_comma() {
     #![allow(dead_code)]
 
     fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, (u32, u32)> {
-        seq! {
+        unordered_seq! {
             (
                 dec_uint,
                 _: ',',
@@ -1117,7 +1118,7 @@ fn unordered_seq_tuple_no_trailing_comma_elided() {
     #![allow(dead_code)]
 
     fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, (u32, u32)> {
-        seq! {
+        unordered_seq! {
             (
                 dec_uint,
                 _: ',',
@@ -1134,7 +1135,7 @@ fn unordered_seq_tuple_no_parens() {
     #![allow(dead_code)]
 
     fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, (u32, u32)> {
-        seq! (
+        unordered_seq! (
             dec_uint,
             _: ',',
             dec_uint,
@@ -1152,7 +1153,7 @@ fn unordered_seq_tuple_borrow() {
 
     fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
         let mut dec_uint = digit0.parse_to();
-        seq! {
+        unordered_seq! {
             Point(
                 dec_uint,
                 _: ',',

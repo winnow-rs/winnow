@@ -1,5 +1,6 @@
 mod dispatch;
 mod seq;
+mod unordered_seq;
 
 #[cfg(test)]
 macro_rules! assert_parse(
