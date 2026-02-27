@@ -67,58 +67,8 @@ pub trait Permutation<I, O, E> {
     fn permutation(&mut self, input: &mut I) -> Result<O, E>;
 }
 
-/// Applies a list of parsers in any order.
-///
-/// Permutation will succeed if all of the child parsers succeeded.
-/// It takes as argument a tuple of parsers, and returns a
-/// tuple of the parser results.
-///
-/// To stop on an error, rather than trying further permutations, see
-/// [`cut_err`][crate::combinator::cut_err] ([example][crate::_tutorial::chapter_7]).
-///
-/// # Example
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::Needed};
-/// # use winnow::prelude::*;
-/// use winnow::ascii::{alpha1, digit1};
-/// use winnow::combinator::permutation;
-/// # fn main() {
-/// fn parser<'i>(input: &mut &'i str) -> ModalResult<(&'i str, &'i str)> {
-///   permutation((alpha1, digit1)).parse_next(input)
-/// }
-///
-/// // permutation takes alphabetic characters then digit
-/// assert_eq!(parser.parse_peek("abc123"), Ok(("", ("abc", "123"))));
-///
-/// // but also in inverse order
-/// assert_eq!(parser.parse_peek("123abc"), Ok(("", ("abc", "123"))));
-///
-/// // it will fail if one of the parsers failed
-/// assert!(parser.parse_peek("abc;").is_err());
-/// # }
-/// ```
-///
-/// The parsers are applied greedily: if there are multiple unapplied parsers
-/// that could parse the next slice of input, the first one is used.
-/// ```rust
-/// # use winnow::error::ErrMode;
-/// # use winnow::prelude::*;
-/// use winnow::combinator::permutation;
-/// use winnow::token::any;
-///
-/// fn parser(input: &mut &str) -> ModalResult<(char, char)> {
-///   permutation((any, 'a')).parse_next(input)
-/// }
-///
-/// // any parses 'b', then char('a') parses 'a'
-/// assert_eq!(parser.parse_peek("ba"), Ok(("", ('b', 'a'))));
-///
-/// // any parses 'a', then char('a') fails on 'b',
-/// // even though char('a') followed by any would succeed
-/// assert!(parser.parse_peek("ab").is_err());
-/// ```
-///
+/// Deprecated, replaced with [`unordered_seq!`][crate::combinator::unordered_seq].
+#[deprecated(since = "0.7.14", note = "replaced with `unordered_seq!`")]
 #[inline(always)]
 pub fn permutation<I: Stream, O, E: ParserError<I>, List: Permutation<I, O, E>>(
     mut l: List,
