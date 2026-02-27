@@ -6,7 +6,6 @@ use crate::ascii::digit0;
 use crate::combinator::dispatch;
 use crate::combinator::empty;
 use crate::combinator::fail;
-use crate::combinator::permutation;
 use crate::combinator::seq;
 use crate::combinator::unordered_seq;
 use crate::prelude::*;
@@ -1171,7 +1170,7 @@ fn unordered_seq_permutation_test() {
     fn perm<'i>(
         i: &mut Partial<&'i [u8]>,
     ) -> TestResult<Partial<&'i [u8]>, (&'i [u8], &'i [u8], &'i [u8])> {
-        permutation(("abcd", "efg", "hi")).parse_next(i)
+        unordered_seq!(("abcd", "efg", "hi")).parse_next(i)
     }
 
     let a = &b"abcdefghijk"[..];
