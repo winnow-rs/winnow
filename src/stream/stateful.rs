@@ -160,12 +160,6 @@ impl<I: Stream, S: core::fmt::Debug> Stream for Stateful<I, S> {
         self.input.reset(&checkpoint.inner);
     }
 
-    #[inline(always)]
-    fn raw(&self) -> &dyn core::fmt::Debug {
-        #![allow(deprecated)]
-        self.input.raw()
-    }
-
     fn trace(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         self.input.trace(f)
     }

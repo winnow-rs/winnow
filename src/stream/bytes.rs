@@ -142,9 +142,8 @@ impl<'i> Stream for &'i Bytes {
         *self = checkpoint.inner;
     }
 
-    #[inline(always)]
-    fn raw(&self) -> &dyn core::fmt::Debug {
-        self
+    fn trace(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "{self:#?}")
     }
 }
 
