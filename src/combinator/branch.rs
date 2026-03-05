@@ -59,23 +59,6 @@ where
     trace("alt", move |i: &mut Input| alternatives.choice(i))
 }
 
-/// Helper trait for the [`permutation()`] combinator.
-///
-/// This trait is implemented for tuples of up to 21 elements
-pub trait Permutation<I, O, E> {
-    /// Tries to apply all parsers in the tuple in various orders until all of them succeed
-    fn permutation(&mut self, input: &mut I) -> Result<O, E>;
-}
-
-/// Deprecated, replaced with [`unordered_seq!`][crate::combinator::unordered_seq].
-#[deprecated(since = "0.7.14", note = "replaced with `unordered_seq!`")]
-#[inline(always)]
-pub fn permutation<I: Stream, O, E: ParserError<I>, List: Permutation<I, O, E>>(
-    mut l: List,
-) -> impl Parser<I, O, E> {
-    trace("permutation", move |i: &mut I| l.permutation(i))
-}
-
 impl<const N: usize, I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I, O, E> for [P; N] {
     fn choice(&mut self, input: &mut I) -> Result<O, E> {
         let mut error: Option<E> = None;
@@ -166,7 +149,6 @@ macro_rules! alt_trait_impl(
 );
 
 macro_rules! succ (
-    (0, $submac:ident ! ($($rest:tt)*)) => ($submac!(1, $($rest)*));
     (1, $submac:ident ! ($($rest:tt)*)) => ($submac!(2, $($rest)*));
     (2, $submac:ident ! ($($rest:tt)*)) => ($submac!(3, $($rest)*));
     (3, $submac:ident ! ($($rest:tt)*)) => ($submac!(4, $($rest)*));
@@ -213,104 +195,3 @@ impl<I: Stream, O, E: ParserError<I>, A: Parser<I, O, E>> Alt<I, O, E> for (A,) 
         self.0.parse_next(input)
     }
 }
-
-macro_rules! permutation_trait(
-  (
-    $name1:ident $ty1:ident $item1:ident
-    $name2:ident $ty2:ident $item2:ident
-    $($name3:ident $ty3:ident $item3:ident)*
-  ) => (
-    permutation_trait!(__impl $name1 $ty1 $item1, $name2 $ty2 $item2; $($name3 $ty3 $item3)*);
-  );
-  (
-    __impl $($name:ident $ty:ident $item:ident),+;
-    $name1:ident $ty1:ident $item1:ident $($name2:ident $ty2:ident $item2:ident)*
-  ) => (
-    permutation_trait_impl!($($name $ty $item),+);
-    permutation_trait!(__impl $($name $ty $item),+ , $name1 $ty1 $item1; $($name2 $ty2 $item2)*);
-  );
-  (__impl $($name:ident $ty:ident $item:ident),+;) => (
-    permutation_trait_impl!($($name $ty $item),+);
-  );
-);
-
-macro_rules! permutation_trait_impl(
-  ($($name:ident $ty:ident $item:ident),+) => (
-    impl<
-      I: Stream, $($ty),+ , Error: ParserError<I>,
-      $($name: Parser<I, $ty, Error>),+
-    > Permutation<I, ( $($ty),+ ), Error> for ( $($name),+ ) {
-
-      fn permutation(&mut self, input: &mut I) -> Result<( $($ty),+ ), Error> {
-        let mut res = ($(Option::<$ty>::None),+);
-
-        loop {
-          let mut err: Option<Error> = None;
-          let start = input.checkpoint();
-          permutation_trait_inner!(0, self, input, start, res, err, $($name)+);
-
-          // If we reach here, every iterator has either been applied before,
-          // or errored on the remaining input
-          if let Some(err) = err {
-            // There are remaining parsers, and all errored on the remaining input
-            input.reset(&start);
-            return Err(err.append(input, &start));
-          }
-
-          // All parsers were applied
-          match res {
-            ($(Some($item)),+) => return Ok(($($item),+)),
-            _ => unreachable!(),
-          }
-        }
-      }
-    }
-  );
-);
-
-macro_rules! permutation_trait_inner(
-  ($it:tt, $self:expr, $input:ident, $start:ident, $res:expr, $err:expr, $head:ident $($id:ident)*) => (
-    if $res.$it.is_none() {
-      $input.reset(&$start);
-      match $self.$it.parse_next($input) {
-        Ok(o) => {
-          $res.$it = Some(o);
-          continue;
-        }
-        Err(e) if e.is_backtrack() => {
-          $err = Some(match $err {
-            Some(err) => err.or(e),
-            None => e,
-          });
-        }
-        Err(e) => return Err(e),
-      };
-    }
-    succ!($it, permutation_trait_inner!($self, $input, $start, $res, $err, $($id)*));
-  );
-  ($it:tt, $self:expr, $input:ident, $start:ident, $res:expr, $err:expr,) => ();
-);
-
-permutation_trait!(
-  P1 O1 o1
-  P2 O2 o2
-  P3 O3 o3
-  P4 O4 o4
-  P5 O5 o5
-  P6 O6 o6
-  P7 O7 o7
-  P8 O8 o8
-  P9 O9 o9
-  P10 O10 o10
-  P11 O11 o11
-  P12 O12 o12
-  P13 O13 o13
-  P14 O14 o14
-  P15 O15 o15
-  P16 O16 o16
-  P17 O17 o17
-  P18 O18 o18
-  P19 O19 o19
-  P20 O20 o20
-  P21 O21 o21
-);

@@ -26,7 +26,6 @@
 //! |---|---|---|---|---|---|
 //! | [`alt`] | `alt(("ab", "cd"))` |  `"cdef"` |  `"ef"` | `Ok("cd")` |Try a list of parsers and return the result of the first successful one|
 //! | [`dispatch`] | \- | \- | \- | \- | `match` for parsers |
-//! | [`permutation`] | `permutation(("ab", "cd", "12"))` | `"cd12abc"` | `"c"` | `Ok(("ab", "cd", "12"))` |Succeeds when all its child parser have succeeded, whatever the order|
 //!
 //! ## Sequence combinators
 //!
