@@ -141,7 +141,6 @@ macro_rules! unordered_seq_parse_struct_body {
             // or errored on the remaining input
             if let ::core::option::Option::Some(err) = err {
                 // There are remaining parsers, and all errored on the remaining input
-                $crate::stream::Stream::reset($input, &start);
                 break Err($crate::error::ParserError::append(err, $input, &start));
             }
 
@@ -416,7 +415,6 @@ macro_rules! unordered_seq_parse_tuple_body {
             // or errored on the remaining input
             if let ::core::option::Option::Some(err) = err {
                 // There are remaining parsers, and all errored on the remaining input
-                $crate::stream::Stream::reset($input, &start);
                 break Err($crate::error::ParserError::append(err, $input, &start));
             }
 
