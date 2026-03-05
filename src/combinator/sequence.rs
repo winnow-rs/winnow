@@ -1,7 +1,7 @@
 use crate::combinator::trace;
 use crate::error::ParserError;
 use crate::stream::Stream;
-use crate::*;
+use crate::Parser;
 
 #[doc(inline)]
 pub use crate::seq;

@@ -156,7 +156,10 @@ pub mod prelude {
 
 pub use error::ModalResult;
 pub use error::Result;
-pub use parser::*;
+#[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
+pub use parser::RecoverableParser;
+pub use parser::{ModalParser, Parser};
 pub use stream::BStr;
 pub use stream::Bytes;
 pub use stream::LocatingSlice;

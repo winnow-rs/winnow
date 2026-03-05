@@ -82,7 +82,7 @@ todo = "warn"
 trait_duplication_in_bounds = "warn"
 uninlined_format_args = "warn"
 verbose_file_reads = "warn"
-wildcard_imports = "allow"
+wildcard_imports = "warn"
 zero_sized_map_values = "warn"
 
 [profile.dev]
