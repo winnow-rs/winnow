@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Compatibility
+
+- Deprecate `combinator::permutation` in favor of `combinator::unordered_seq!`
+
+### Features
+
+- Add `combinator::unordered_seq!`, like `seq!` but where the order of values does not matter
+
 ## [0.7.14] - 2025-11-26
 
 ### Features
