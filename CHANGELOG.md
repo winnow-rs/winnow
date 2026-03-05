@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.7.15] - 2026-03-05
+
 ### Compatibility
 
 - Deprecate `combinator::permutation` in favor of `combinator::unordered_seq!`
@@ -2672,7 +2674,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.7.14...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.7.15...HEAD
+[0.7.15]: https://github.com/winnow-rs/winnow/compare/v0.7.14...v0.7.15
 [0.7.14]: https://github.com/winnow-rs/winnow/compare/v0.7.13...v0.7.14
 [0.7.13]: https://github.com/winnow-rs/winnow/compare/v0.7.12...v0.7.13
 [0.7.12]: https://github.com/winnow-rs/winnow/compare/v0.7.11...v0.7.12
