@@ -157,18 +157,6 @@ macro_rules! succ (
     (6, $submac:ident ! ($($rest:tt)*)) => ($submac!(7, $($rest)*));
     (7, $submac:ident ! ($($rest:tt)*)) => ($submac!(8, $($rest)*));
     (8, $submac:ident ! ($($rest:tt)*)) => ($submac!(9, $($rest)*));
-    (9, $submac:ident ! ($($rest:tt)*)) => ($submac!(10, $($rest)*));
-    (10, $submac:ident ! ($($rest:tt)*)) => ($submac!(11, $($rest)*));
-    (11, $submac:ident ! ($($rest:tt)*)) => ($submac!(12, $($rest)*));
-    (12, $submac:ident ! ($($rest:tt)*)) => ($submac!(13, $($rest)*));
-    (13, $submac:ident ! ($($rest:tt)*)) => ($submac!(14, $($rest)*));
-    (14, $submac:ident ! ($($rest:tt)*)) => ($submac!(15, $($rest)*));
-    (15, $submac:ident ! ($($rest:tt)*)) => ($submac!(16, $($rest)*));
-    (16, $submac:ident ! ($($rest:tt)*)) => ($submac!(17, $($rest)*));
-    (17, $submac:ident ! ($($rest:tt)*)) => ($submac!(18, $($rest)*));
-    (18, $submac:ident ! ($($rest:tt)*)) => ($submac!(19, $($rest)*));
-    (19, $submac:ident ! ($($rest:tt)*)) => ($submac!(20, $($rest)*));
-    (20, $submac:ident ! ($($rest:tt)*)) => ($submac!(21, $($rest)*));
 );
 
 macro_rules! alt_trait_inner(
@@ -187,7 +175,7 @@ macro_rules! alt_trait_inner(
     });
 );
 
-alt_trait!(Alt2 Alt3 Alt4 Alt5 Alt6 Alt7 Alt8 Alt9 Alt10 Alt11 Alt12 Alt13 Alt14 Alt15 Alt16 Alt17 Alt18 Alt19 Alt20 Alt21 Alt22);
+alt_trait!(Alt2 Alt3 Alt4 Alt5 Alt6 Alt7 Alt8 Alt9 Alt10);
 
 // Manually implement Alt for (A,), the 1-tuple type
 impl<I: Stream, O, E: ParserError<I>, A: Parser<I, O, E>> Alt<I, O, E> for (A,) {

@@ -1292,18 +1292,7 @@ impl_parser_for_tuples!(
   7 P7 O7,
   8 P8 O8,
   9 P9 O9,
-  10 P10 O10,
-  11 P11 O11,
-  12 P12 O12,
-  13 P13 O13,
-  14 P14 O14,
-  15 P15 O15,
-  16 P16 O16,
-  17 P17 O17,
-  18 P18 O18,
-  19 P19 O19,
-  20 P20 O20,
-  21 P21 O21
+  10 P10 O10
 );
 
 #[cfg(feature = "alloc")]
