@@ -4,7 +4,7 @@ use std::io::Write;
 
 use crate::error::ParserError;
 use crate::stream::Stream;
-use crate::*;
+use crate::{Parser, Result};
 
 pub(crate) struct Trace<P, D, I, O, E>
 where

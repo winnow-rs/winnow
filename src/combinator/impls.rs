@@ -12,7 +12,7 @@ use crate::error::{AddContext, FromExternalError, ParserError};
 use crate::stream::Recover;
 use crate::stream::StreamIsPartial;
 use crate::stream::{Location, Stream};
-use crate::*;
+use crate::{Parser, Result};
 use core::borrow::Borrow;
 use core::ops::Range;
 

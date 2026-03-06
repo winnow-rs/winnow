@@ -172,12 +172,18 @@ mod tests;
 
 pub mod impls;
 
-pub use self::branch::*;
-pub use self::core::*;
-pub use self::debug::*;
-pub use self::expression::*;
-pub use self::multi::*;
-pub use self::sequence::*;
+pub use self::branch::{alt, dispatch, Alt};
+pub use self::core::{
+    backtrack_err, cond, cut_err, empty, eof, fail, iterator, not, opt, peek, todo, ParserIterator,
+};
+pub use self::debug::trace;
+pub use self::expression::{expression, Expression, Infix, Postfix, Prefix};
+#[cfg(feature = "alloc")]
+pub use self::multi::separated_foldr1;
+pub use self::multi::{fill, repeat, repeat_till, separated, separated_foldl1, Repeat};
+pub use self::sequence::{delimited, preceded, separated_pair, seq, terminated, unordered_seq};
+
+pub(crate) use self::debug::{trace_result, DisplayDebug};
 
 #[allow(unused_imports)]
 use crate::Parser;

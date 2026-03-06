@@ -1,7 +1,7 @@
 use crate::combinator::trace;
 use crate::error::{ModalError, ParserError};
 use crate::stream::Stream;
-use crate::*;
+use crate::{Parser, Result};
 
 /// Apply a [`Parser`], producing `None` on [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack].
 ///
