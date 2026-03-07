@@ -26,7 +26,7 @@
 //! - Resilient maintainership, including
 //!   - Willing to break compatibility rather than batching up breaking changes in large releases
 //!   - Leverage feature flags to keep one active branch
-//! - We will support the last 6 months of rust releases (MSRV, currently 1.64.0)
+//! - We will support the last 6 months of rust releases (MSRV)
 //!
 //! See also [Special Topic: Why winnow?][crate::_topic::why]
 //!
