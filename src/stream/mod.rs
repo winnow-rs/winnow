@@ -1658,14 +1658,7 @@ pub trait AsChar {
     /// ```
     fn as_char(self) -> char;
 
-    /// Tests that self is an alphabetic character
-    ///
-    /// <div class="warning">
-    ///
-    /// **Warning:** for `&str` it matches alphabetic
-    /// characters outside of the 52 ASCII letters
-    ///
-    /// </div>
+    /// Tests that self is an ASCII alphabetic character
     fn is_alpha(self) -> bool;
 
     /// Tests that self is an alphabetic character
