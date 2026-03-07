@@ -1317,10 +1317,7 @@ where
 {
     trace("hex_uint", move |input: &mut Input| {
         let invalid_offset = input
-            .offset_for(|c| {
-                let c = c.as_char();
-                !"0123456789abcdefABCDEF".contains(c)
-            })
+            .offset_for(|c| !c.is_hex_digit())
             .unwrap_or_else(|| input.eof_offset());
         let max_nibbles = Output::max_nibbles(sealed::SealedMarker);
         let max_offset = input.offset_at(max_nibbles);
@@ -1352,9 +1349,13 @@ where
         let parsed = input.next_slice(offset);
 
         let mut res = Output::default();
-        for c in parsed.as_bstr() {
-            let nibble = *c as char;
-            let nibble = nibble.to_digit(16).unwrap_or(0) as u8;
+        for &c in parsed.as_bstr() {
+            let nibble = match c {
+                b'0'..=b'9' => c - b'0',
+                b'a'..=b'f' => c - b'a' + 10,
+                b'A'..=b'F' => c - b'A' + 10,
+                _ => unreachable!(),
+            };
             let nibble = Output::from(nibble);
             res = (res << Output::from(4)) + nibble;
         }
