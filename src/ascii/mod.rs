@@ -780,7 +780,7 @@ where
     <Input as Stream>::Token: AsChar,
     Error: ParserError<Input>,
 {
-    trace("oct_digit0", take_while(1.., AsChar::is_oct_digit)).parse_next(input)
+    trace("oct_digit1", take_while(1.., AsChar::is_oct_digit)).parse_next(input)
 }
 
 /// Recognizes zero or more ASCII numerical and alphabetic characters: `'a'..='z'`, `'A'..='Z'`, `'0'..='9'`
