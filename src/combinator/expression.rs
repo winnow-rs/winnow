@@ -22,7 +22,7 @@ use crate::Result;
 /// a function that applies the operator to its operand, and the
 /// operator's associativity (infix only).
 ///
-/// For a more full-featured example, look at the [C-style Expression][crate::_topic::arithmetic#c-style-expression]
+/// For a more full-featured example, look at the [C-style Expressions][crate::_topic::language#c-style-expressions]
 /// topic.
 ///
 /// # Example
