@@ -1,6 +1,5 @@
 //! Basic types to build the parsers
 
-use crate::ascii::Caseless as AsciiCaseless;
 use crate::combinator::impls;
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
@@ -1036,38 +1035,6 @@ where
 /// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::combinator::alt;
 /// # use winnow::token::take;
-/// use winnow::ascii::Caseless;
-///
-/// fn parser<'s>(s: &mut &'s [u8]) -> ModalResult<&'s [u8]> {
-///   alt((Caseless(&"hello"[..]), take(5usize))).parse_next(s)
-/// }
-///
-/// assert_eq!(parser.parse_peek(&b"Hello, World!"[..]), Ok((&b", World!"[..], &b"Hello"[..])));
-/// assert_eq!(parser.parse_peek(&b"hello, World!"[..]), Ok((&b", World!"[..], &b"hello"[..])));
-/// assert_eq!(parser.parse_peek(&b"HeLlo, World!"[..]), Ok((&b", World!"[..], &b"HeLlo"[..])));
-/// assert_eq!(parser.parse_peek(&b"Something"[..]), Ok((&b"hing"[..], &b"Somet"[..])));
-/// assert!(parser.parse_peek(&b"Some"[..]).is_err());
-/// assert!(parser.parse_peek(&b""[..]).is_err());
-/// ```
-impl<'s, I, E: ParserError<I>> Parser<I, <I as Stream>::Slice, E> for AsciiCaseless<&'s [u8]>
-where
-    I: Compare<AsciiCaseless<&'s [u8]>> + StreamIsPartial,
-    I: Stream,
-{
-    #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> Result<<I as Stream>::Slice, E> {
-        crate::token::literal(*self).parse_next(i)
-    }
-}
-
-/// This is a shortcut for [`literal`][crate::token::literal].
-///
-/// # Example
-/// ```rust
-/// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
-/// # use winnow::combinator::alt;
-/// # use winnow::token::take;
 ///
 /// fn parser<'s>(s: &mut &'s [u8]) -> ModalResult<&'s [u8]> {
 ///   alt((b"Hello", take(5usize))).parse_next(s)
@@ -1081,39 +1048,6 @@ where
 impl<'s, I, E: ParserError<I>, const N: usize> Parser<I, <I as Stream>::Slice, E> for &'s [u8; N]
 where
     I: Compare<&'s [u8; N]> + StreamIsPartial,
-    I: Stream,
-{
-    #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> Result<<I as Stream>::Slice, E> {
-        crate::token::literal(*self).parse_next(i)
-    }
-}
-
-/// This is a shortcut for [`literal`][crate::token::literal].
-///
-/// # Example
-/// ```rust
-/// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
-/// # use winnow::combinator::alt;
-/// # use winnow::token::take;
-/// use winnow::ascii::Caseless;
-///
-/// fn parser<'s>(s: &mut &'s [u8]) -> ModalResult<&'s [u8]> {
-///   alt((Caseless(b"hello"), take(5usize))).parse_next(s)
-/// }
-///
-/// assert_eq!(parser.parse_peek(&b"Hello, World!"[..]), Ok((&b", World!"[..], &b"Hello"[..])));
-/// assert_eq!(parser.parse_peek(&b"hello, World!"[..]), Ok((&b", World!"[..], &b"hello"[..])));
-/// assert_eq!(parser.parse_peek(&b"HeLlo, World!"[..]), Ok((&b", World!"[..], &b"HeLlo"[..])));
-/// assert_eq!(parser.parse_peek(&b"Something"[..]), Ok((&b"hing"[..], &b"Somet"[..])));
-/// assert!(parser.parse_peek(&b"Some"[..]).is_err());
-/// assert!(parser.parse_peek(&b""[..]).is_err());
-/// ```
-impl<'s, I, E: ParserError<I>, const N: usize> Parser<I, <I as Stream>::Slice, E>
-    for AsciiCaseless<&'s [u8; N]>
-where
-    I: Compare<AsciiCaseless<&'s [u8; N]>> + StreamIsPartial,
     I: Stream,
 {
     #[inline(always)]
@@ -1143,38 +1077,6 @@ where
 impl<'s, I, E: ParserError<I>> Parser<I, <I as Stream>::Slice, E> for &'s str
 where
     I: Compare<&'s str> + StreamIsPartial,
-    I: Stream,
-{
-    #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> Result<<I as Stream>::Slice, E> {
-        crate::token::literal(*self).parse_next(i)
-    }
-}
-
-/// This is a shortcut for [`literal`][crate::token::literal].
-///
-/// # Example
-/// ```rust
-/// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ContextError};
-/// # use winnow::combinator::alt;
-/// # use winnow::token::take;
-/// # use winnow::ascii::Caseless;
-///
-/// fn parser<'s>(s: &mut &'s str) -> ModalResult<&'s str> {
-///   alt((Caseless("hello"), take(5usize))).parse_next(s)
-/// }
-///
-/// assert_eq!(parser.parse_peek("Hello, World!"), Ok((", World!", "Hello")));
-/// assert_eq!(parser.parse_peek("hello, World!"), Ok((", World!", "hello")));
-/// assert_eq!(parser.parse_peek("HeLlo, World!"), Ok((", World!", "HeLlo")));
-/// assert_eq!(parser.parse_peek("Something"), Ok(("hing", "Somet")));
-/// assert!(parser.parse_peek("Some").is_err());
-/// assert!(parser.parse_peek("").is_err());
-/// ```
-impl<'s, I, E: ParserError<I>> Parser<I, <I as Stream>::Slice, E> for AsciiCaseless<&'s str>
-where
-    I: Compare<AsciiCaseless<&'s str>> + StreamIsPartial,
     I: Stream,
 {
     #[inline(always)]

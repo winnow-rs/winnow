@@ -2,6 +2,42 @@ use super::*;
 use snapbox::prelude::*;
 use snapbox::str;
 
+use crate::error::ErrMode;
+use crate::error::ErrMode::Backtrack;
+use crate::error::InputError;
+use crate::token::literal;
+
+#[test]
+fn test_literal_support_char() {
+    assert_eq!(
+        literal::<_, &[u8], ErrMode<InputError<_>>>(Caseless('a')).parse_peek(b"ABCxyz"),
+        Ok((&b"BCxyz"[..], &b"A"[..]))
+    );
+
+    assert_eq!(
+        literal::<_, &[u8], ErrMode<InputError<_>>>('a').parse_peek(b"ABCxyz"),
+        Err(Backtrack(InputError::at(&b"ABCxyz"[..],)))
+    );
+
+    assert_eq!(
+        literal::<_, &[u8], ErrMode<InputError<_>>>(Caseless('π')).parse_peek(b"\xCF\x803.14"),
+        Ok((&b"3.14"[..], "π".as_bytes()))
+    );
+
+    assert_eq!(
+        literal::<_, _, ErrMode<InputError<_>>>(Caseless('🧑')).parse_peek("🧑你好"),
+        Ok(("你好", "🧑"))
+    );
+
+    let mut buffer = [0; 4];
+    let input = '\u{241b}'.encode_utf8(&mut buffer);
+    assert_eq!(
+        literal::<_, &[u8], ErrMode<InputError<_>>>(Caseless('␛'))
+            .parse_peek(input.as_bytes()),
+        Ok((&b""[..], [226, 144, 155].as_slice()))
+    );
+}
+
 mod complete {
     use super::*;
 
