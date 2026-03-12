@@ -67,6 +67,10 @@ pub use token::TokenSlice;
 /// UTF-8 Stream
 pub type Str<'i> = &'i str;
 
+/// Bit-level view over an existing [`Stream`]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub struct Bits<I>(pub I, pub usize);
+
 /// Abstract method to calculate the input length
 pub trait SliceLen {
     /// Calculates the input length, as indicated by its name,
@@ -455,7 +459,7 @@ impl<'i> Stream for &'i str {
     }
 }
 
-impl<I> Stream for (I, usize)
+impl<I> Stream for Bits<I>
 where
     I: Stream<Token = u8> + Clone,
 {
@@ -464,7 +468,7 @@ where
 
     type IterOffsets = BitOffsets<I>;
 
-    type Checkpoint = Checkpoint<(I::Checkpoint, usize), Self>;
+    type Checkpoint = Checkpoint<Bits<I::Checkpoint>, Self>;
 
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
@@ -532,7 +536,7 @@ where
 
     #[inline(always)]
     fn checkpoint(&self) -> Self::Checkpoint {
-        Checkpoint::<_, Self>::new((self.0.checkpoint(), self.1))
+        Checkpoint::<_, Self>::new(Bits(self.0.checkpoint(), self.1))
     }
     #[inline(always)]
     fn reset(&mut self, checkpoint: &Self::Checkpoint) {
@@ -545,9 +549,9 @@ where
     }
 }
 
-/// Iterator for [bit][crate::binary::bits] stream (`(I, usize)`)
+/// Iterator for [bit][crate::binary::bits] stream ([`Bits`])
 pub struct BitOffsets<I> {
-    i: (I, usize),
+    i: Bits<I>,
     o: usize,
 }
 
@@ -566,7 +570,7 @@ where
     }
 }
 
-fn next_bit<I>(i: &mut (I, usize)) -> Option<bool>
+fn next_bit<I>(i: &mut Bits<I>) -> Option<bool>
 where
     I: Stream<Token = u8> + Clone,
 {
@@ -590,7 +594,7 @@ where
     }
 }
 
-fn peek_bit<I>(i: &(I, usize)) -> Option<bool>
+fn peek_bit<I>(i: &Bits<I>) -> Option<bool>
 where
     I: Stream<Token = u8> + Clone,
 {
@@ -687,7 +691,7 @@ impl<E> Recover<E> for &str {
 
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
-impl<I, E> Recover<E> for (I, usize)
+impl<I, E> Recover<E> for Bits<I>
 where
     I: Recover<E>,
     I: Stream<Token = u8> + Clone,
@@ -765,7 +769,7 @@ impl StreamIsPartial for &str {
     }
 }
 
-impl<I> StreamIsPartial for (I, usize)
+impl<I> StreamIsPartial for Bits<I>
 where
     I: StreamIsPartial,
 {
@@ -843,7 +847,7 @@ impl<'a> Offset<<&'a str as Stream>::Checkpoint> for &'a str {
     }
 }
 
-impl<I> Offset for (I, usize)
+impl<I> Offset for Bits<I>
 where
     I: Offset,
 {
@@ -853,12 +857,12 @@ where
     }
 }
 
-impl<I> Offset<<(I, usize) as Stream>::Checkpoint> for (I, usize)
+impl<I> Offset<<Bits<I> as Stream>::Checkpoint> for Bits<I>
 where
     I: Stream<Token = u8> + Clone,
 {
     #[inline(always)]
-    fn offset_from(&self, other: &<(I, usize) as Stream>::Checkpoint) -> usize {
+    fn offset_from(&self, other: &<Bits<I> as Stream>::Checkpoint) -> usize {
         self.checkpoint().offset_from(other)
     }
 }

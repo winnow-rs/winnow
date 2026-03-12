@@ -2,6 +2,7 @@ use super::*;
 use crate::error::ErrMode;
 use crate::error::InputError;
 use crate::prelude::*;
+use crate::stream::Bits;
 use crate::Partial;
 
 #[test]
@@ -13,7 +14,7 @@ fn test_complete_byte_consumption_bits() {
     // Take 3 bit slices with sizes [4, 8, 4].
     #[allow(clippy::type_complexity)]
     let result: ModalResult<(&[u8], (u8, u8, u8)), InputError<_>> =
-        bits::<_, _, ErrMode<InputError<(&[u8], usize)>>, _, _>((
+        bits::<_, _, ErrMode<InputError<Bits<&[u8]>>>, _, _>((
             take(4usize),
             take(8usize),
             take(4usize),
@@ -41,7 +42,7 @@ fn test_partial_byte_consumption_bits() {
 
     // Take bit slices with sizes [4, 8].
     let result: ModalResult<(&[u8], (u8, u8)), InputError<_>> =
-        bits::<_, _, ErrMode<InputError<(&[u8], usize)>>, _, _>((take(4usize), take(8usize)))
+        bits::<_, _, ErrMode<InputError<Bits<&[u8]>>>, _, _>((take(4usize), take(8usize)))
             .parse_peek(input);
 
     let output = result.expect("We take 1.5 bytes and the input is longer than 2 bytes");
@@ -62,7 +63,7 @@ fn test_incomplete_bits() {
 
     // Take bit slices with sizes [4, 8].
     let result: ModalResult<(_, (u8, u8)), InputError<_>> =
-        bits::<_, _, ErrMode<InputError<(_, usize)>>, _, _>((take(4usize), take(8usize)))
+        bits::<_, _, ErrMode<InputError<Bits<_>>>, _, _>((take(4usize), take(8usize)))
             .parse_peek(input);
 
     assert!(result.is_err());
@@ -77,24 +78,24 @@ fn test_take_complete_0() {
     assert_eq!(count, 0usize);
     let offset = 0usize;
 
-    let result: ModalResult<((&[u8], usize), usize), InputError<_>> =
-        take(count).parse_peek((input, offset));
+    let result: ModalResult<(Bits<&[u8]>, usize), InputError<_>> =
+        take(count).parse_peek(Bits(input, offset));
 
-    assert_eq!(result, Ok(((input, offset), 0)));
+    assert_eq!(result, Ok((Bits(input, offset), 0)));
 }
 
 #[test]
 fn test_take_complete_eof() {
     let input = &[0b00010010][..];
 
-    let result: ModalResult<((&[u8], usize), usize), InputError<_>> =
-        take(1usize).parse_peek((input, 8));
+    let result: ModalResult<(Bits<&[u8]>, usize), InputError<_>> =
+        take(1usize).parse_peek(Bits(input, 8));
 
     assert_eq!(
         result,
-        Err(crate::error::ErrMode::Backtrack(
-            InputError::at((input, 8),)
-        ))
+        Err(crate::error::ErrMode::Backtrack(InputError::at(Bits(
+            input, 8
+        ),)))
     );
 }
 
@@ -102,12 +103,12 @@ fn test_take_complete_eof() {
 fn test_take_complete_span_over_multiple_bytes() {
     let input = &[0b00010010, 0b00110100, 0b11111111, 0b11111111][..];
 
-    let result: ModalResult<((&[u8], usize), usize), InputError<_>> =
-        take(24usize).parse_peek((input, 4));
+    let result: ModalResult<(Bits<&[u8]>, usize), InputError<_>> =
+        take(24usize).parse_peek(Bits(input, 4));
 
     assert_eq!(
         result,
-        Ok((([0b11111111].as_ref(), 4), 0b1000110100111111111111))
+        Ok((Bits([0b11111111].as_ref(), 4), 0b1000110100111111111111))
     );
 }
 
@@ -118,10 +119,10 @@ fn test_take_partial_0() {
     assert_eq!(count, 0usize);
     let offset = 0usize;
 
-    let result: ModalResult<((_, usize), usize), InputError<_>> =
-        take(count).parse_peek((input, offset));
+    let result: ModalResult<(Bits<_>, usize), InputError<_>> =
+        take(count).parse_peek(Bits(input, offset));
 
-    assert_eq!(result, Ok(((input, offset), 0)));
+    assert_eq!(result, Ok((Bits(input, offset), 0)));
 }
 
 #[test]
@@ -131,10 +132,10 @@ fn test_pattern_partial_ok() {
     let bits_to_take = 4usize;
     let value_to_pattern = 0b0001;
 
-    let result: ModalResult<((_, usize), usize), InputError<_>> =
-        pattern(value_to_pattern, bits_to_take).parse_peek((input, offset));
+    let result: ModalResult<(Bits<_>, usize), InputError<_>> =
+        pattern(value_to_pattern, bits_to_take).parse_peek(Bits(input, offset));
 
-    assert_eq!(result, Ok(((input, bits_to_take), value_to_pattern)));
+    assert_eq!(result, Ok((Bits(input, bits_to_take), value_to_pattern)));
 }
 
 #[test]
@@ -144,12 +145,12 @@ fn test_pattern_partial_err() {
     let bits_to_take = 4usize;
     let value_to_pattern = 0b1111;
 
-    let result: ModalResult<((_, usize), usize), InputError<_>> =
-        pattern(value_to_pattern, bits_to_take).parse_peek((input, offset));
+    let result: ModalResult<(Bits<_>, usize), InputError<_>> =
+        pattern(value_to_pattern, bits_to_take).parse_peek(Bits(input, offset));
 
     assert_eq!(
         result,
-        Err(crate::error::ErrMode::Backtrack(InputError::at((
+        Err(crate::error::ErrMode::Backtrack(InputError::at(Bits(
             input, offset
         ),)))
     );
@@ -159,22 +160,22 @@ fn test_pattern_partial_err() {
 fn test_bool_0_complete() {
     let input = [0b10000000].as_ref();
 
-    let result: ModalResult<((&[u8], usize), bool), InputError<_>> = bool.parse_peek((input, 0));
+    let result: ModalResult<(Bits<&[u8]>, bool), InputError<_>> = bool.parse_peek(Bits(input, 0));
 
-    assert_eq!(result, Ok(((input, 1), true)));
+    assert_eq!(result, Ok((Bits(input, 1), true)));
 }
 
 #[test]
 fn test_bool_eof_complete() {
     let input = [0b10000000].as_ref();
 
-    let result: ModalResult<((&[u8], usize), bool), InputError<_>> = bool.parse_peek((input, 8));
+    let result: ModalResult<(Bits<&[u8]>, bool), InputError<_>> = bool.parse_peek(Bits(input, 8));
 
     assert_eq!(
         result,
-        Err(crate::error::ErrMode::Backtrack(
-            InputError::at((input, 8),)
-        ))
+        Err(crate::error::ErrMode::Backtrack(InputError::at(Bits(
+            input, 8
+        ),)))
     );
 }
 
@@ -183,10 +184,10 @@ fn test_bool_0_partial() {
     let input = Partial::new([0b10000000].as_ref());
 
     #[allow(clippy::type_complexity)]
-    let result: ModalResult<((Partial<&[u8]>, usize), bool), InputError<_>> =
-        bool.parse_peek((input, 0));
+    let result: ModalResult<(Bits<Partial<&[u8]>>, bool), InputError<_>> =
+        bool.parse_peek(Bits(input, 0));
 
-    assert_eq!(result, Ok(((input, 1), true)));
+    assert_eq!(result, Ok((Bits(input, 1), true)));
 }
 
 #[test]
@@ -194,8 +195,8 @@ fn test_bool_eof_partial() {
     let input = Partial::new([0b10000000].as_ref());
 
     #[allow(clippy::type_complexity)]
-    let result: ModalResult<((Partial<&[u8]>, usize), bool), InputError<_>> =
-        bool.parse_peek((input, 8));
+    let result: ModalResult<(Bits<Partial<&[u8]>>, bool), InputError<_>> =
+        bool.parse_peek(Bits(input, 8));
 
     assert_eq!(
         result,

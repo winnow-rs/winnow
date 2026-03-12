@@ -32,8 +32,7 @@ fn test_literal_support_char() {
     let mut buffer = [0; 4];
     let input = '\u{241b}'.encode_utf8(&mut buffer);
     assert_eq!(
-        literal::<_, &[u8], ErrMode<InputError<_>>>(Caseless('␛'))
-            .parse_peek(input.as_bytes()),
+        literal::<_, &[u8], ErrMode<InputError<_>>>(Caseless('␛')).parse_peek(input.as_bytes()),
         Ok((&b""[..], [226, 144, 155].as_slice()))
     );
 }

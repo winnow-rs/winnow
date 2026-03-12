@@ -555,17 +555,17 @@ impl<I: Clone, E> FromExternalError<I, E> for InputError<I> {
     }
 }
 
-impl<I: Clone> ErrorConvert<InputError<(I, usize)>> for InputError<I> {
+impl<I: Clone> ErrorConvert<InputError<crate::stream::Bits<I>>> for InputError<I> {
     #[inline]
-    fn convert(self) -> InputError<(I, usize)> {
-        self.map_input(|i| (i, 0))
+    fn convert(self) -> InputError<crate::stream::Bits<I>> {
+        self.map_input(|i| crate::stream::Bits(i, 0))
     }
 }
 
-impl<I: Clone> ErrorConvert<InputError<I>> for InputError<(I, usize)> {
+impl<I: Clone> ErrorConvert<InputError<I>> for InputError<crate::stream::Bits<I>> {
     #[inline]
     fn convert(self) -> InputError<I> {
-        self.map_input(|(i, _o)| i)
+        self.map_input(|crate::stream::Bits(i, _o)| i)
     }
 }
 

@@ -50,7 +50,7 @@ fn test_offset_str() {
 #[test]
 #[cfg(feature = "alloc")]
 fn test_bit_stream_empty() {
-    let i = (&b""[..], 0);
+    let i = Bits(&b""[..], 0);
 
     let actual = i.iter_offsets().collect::<alloc::vec::Vec<_>>();
     assert_eq!(actual, vec![]);
@@ -74,7 +74,7 @@ fn test_bit_stream_empty() {
 #[test]
 #[cfg(feature = "alloc")]
 fn test_bit_offset_empty() {
-    let i = (&b""[..], 0);
+    let i = Bits(&b""[..], 0);
 
     let actual = i.offset_from(&i);
     assert_eq!(actual, 0);
@@ -96,7 +96,7 @@ fn bit_stream_inner(byte_len: usize, start: usize) {
     let start_bit = start % 8;
 
     let bytes = vec![0b1010_1010; byte_len];
-    let i = (&bytes[start_byte..], start_bit);
+    let i = Bits(&bytes[start_byte..], start_bit);
 
     let mut curr_i = i;
     let mut curr_offset = 0;
@@ -113,7 +113,7 @@ fn bit_stream_inner(byte_len: usize, start: usize) {
 
         let eof_offset = curr_i.eof_offset();
         let eof_slice = curr_i.peek_slice(eof_offset);
-        let eof_slice_i = (eof_slice.0, eof_slice.1);
+        let eof_slice_i = Bits(eof_slice.0, eof_slice.1);
         assert_eq!(eof_slice_i, curr_i);
 
         curr_offset += 1;
