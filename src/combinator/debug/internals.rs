@@ -16,9 +16,7 @@ where
     parser: P,
     name: D,
     call_count: usize,
-    i: core::marker::PhantomData<I>,
-    o: core::marker::PhantomData<O>,
-    e: core::marker::PhantomData<E>,
+    marker: core::marker::PhantomData<(I, O, E)>,
 }
 
 impl<P, D, I, O, E> Trace<P, D, I, O, E>
@@ -34,9 +32,7 @@ where
             parser,
             name,
             call_count: 0,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
+            marker: Default::default(),
         }
     }
 }

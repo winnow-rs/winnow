@@ -93,9 +93,7 @@ where
         parse_prefix: fail,
         parse_postfix: fail,
         parse_infix: fail,
-        i: Default::default(),
-        o: Default::default(),
-        e: Default::default(),
+        marker: Default::default(),
     }
 }
 
@@ -119,9 +117,7 @@ where
     parse_prefix: Pre,
     parse_postfix: Post,
     parse_infix: Pix,
-    i: core::marker::PhantomData<I>,
-    o: core::marker::PhantomData<O>,
-    e: core::marker::PhantomData<E>,
+    marker: core::marker::PhantomData<(I, O, E)>,
 }
 
 impl<I, O, ParseOperand, Pre, Post, Pix, E> Expression<I, O, ParseOperand, Pre, Post, Pix, E>
@@ -150,9 +146,7 @@ where
             parse_prefix: parser,
             parse_postfix: self.parse_postfix,
             parse_infix: self.parse_infix,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
+            marker: Default::default(),
         }
     }
 
@@ -176,9 +170,7 @@ where
             parse_prefix: self.parse_prefix,
             parse_postfix: parser,
             parse_infix: self.parse_infix,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
+            marker: Default::default(),
         }
     }
 
@@ -202,9 +194,7 @@ where
             parse_prefix: self.parse_prefix,
             parse_postfix: self.parse_postfix,
             parse_infix: parser,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
+            marker: Default::default(),
         }
     }
 

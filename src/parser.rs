@@ -168,9 +168,7 @@ pub trait Parser<I, O, E> {
     {
         impls::ByRef {
             p: self,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
+            marker: Default::default(),
         }
     }
 
@@ -202,9 +200,7 @@ pub trait Parser<I, O, E> {
         impls::Value {
             parser: self,
             val,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
+            marker: Default::default(),
         }
     }
 
@@ -234,10 +230,7 @@ pub trait Parser<I, O, E> {
     {
         impls::DefaultValue {
             parser: self,
-            o2: Default::default(),
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
+            marker: Default::default(),
         }
     }
 
@@ -266,9 +259,7 @@ pub trait Parser<I, O, E> {
     {
         impls::Void {
             parser: self,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
+            marker: Default::default(),
         }
     }
 
@@ -301,10 +292,7 @@ pub trait Parser<I, O, E> {
     {
         impls::OutputInto {
             parser: self,
-            i: Default::default(),
-            o: Default::default(),
-            o2: Default::default(),
-            e: Default::default(),
+            marker: Default::default(),
         }
     }
 
@@ -337,9 +325,7 @@ pub trait Parser<I, O, E> {
     {
         impls::Take {
             parser: self,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
+            marker: Default::default(),
         }
     }
 
@@ -379,9 +365,7 @@ pub trait Parser<I, O, E> {
     {
         impls::WithTaken {
             parser: self,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
+            marker: Default::default(),
         }
     }
 
@@ -412,9 +396,7 @@ pub trait Parser<I, O, E> {
     {
         impls::Span {
             parser: self,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
+            marker: Default::default(),
         }
     }
 
@@ -454,9 +436,7 @@ pub trait Parser<I, O, E> {
     {
         impls::WithSpan {
             parser: self,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
+            marker: Default::default(),
         }
     }
 
@@ -490,10 +470,7 @@ pub trait Parser<I, O, E> {
         impls::Map {
             parser: self,
             map,
-            i: Default::default(),
-            o: Default::default(),
-            o2: Default::default(),
-            e: Default::default(),
+            marker: Default::default(),
         }
     }
 
@@ -533,11 +510,7 @@ pub trait Parser<I, O, E> {
         impls::TryMap {
             parser: self,
             map,
-            i: Default::default(),
-            o: Default::default(),
-            o2: Default::default(),
-            e: Default::default(),
-            e2: Default::default(),
+            marker: Default::default(),
         }
     }
 
@@ -579,10 +552,7 @@ pub trait Parser<I, O, E> {
         impls::VerifyMap {
             parser: self,
             map,
-            i: Default::default(),
-            o: Default::default(),
-            o2: Default::default(),
-            e: Default::default(),
+            marker: Default::default(),
         }
     }
 
@@ -628,11 +598,7 @@ pub trait Parser<I, O, E> {
         impls::FlatMap {
             f: self,
             g: map,
-            h: Default::default(),
-            i: Default::default(),
-            o: Default::default(),
-            o2: Default::default(),
-            e: Default::default(),
+            marker: Default::default(),
         }
     }
 
@@ -667,10 +633,7 @@ pub trait Parser<I, O, E> {
         impls::AndThen {
             outer: self,
             inner,
-            i: Default::default(),
-            o: Default::default(),
-            o2: Default::default(),
-            e: Default::default(),
+            marker: Default::default(),
         }
     }
 
@@ -704,10 +667,7 @@ pub trait Parser<I, O, E> {
     {
         impls::ParseTo {
             p: self,
-            i: Default::default(),
-            o: Default::default(),
-            o2: Default::default(),
-            e: Default::default(),
+            marker: Default::default(),
         }
     }
 
@@ -748,10 +708,7 @@ pub trait Parser<I, O, E> {
         impls::Verify {
             parser: self,
             filter,
-            i: Default::default(),
-            o: Default::default(),
-            o2: Default::default(),
-            e: Default::default(),
+            marker: Default::default(),
         }
     }
 
@@ -795,9 +752,7 @@ pub trait Parser<I, O, E> {
         impls::Context {
             parser: self,
             context,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
+            marker: Default::default(),
         }
     }
 
@@ -845,11 +800,7 @@ pub trait Parser<I, O, E> {
         impls::ContextWith {
             parser: self,
             context,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
-            c: Default::default(),
-            fi: Default::default(),
+            marker: Default::default(),
         }
     }
 
@@ -887,10 +838,7 @@ pub trait Parser<I, O, E> {
         impls::MapErr {
             parser: self,
             map,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
-            e2: Default::default(),
+            marker: Default::default(),
         }
     }
 
@@ -919,9 +867,7 @@ pub trait Parser<I, O, E> {
     {
         impls::CompleteErr {
             p: self,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
+            marker: Default::default(),
         }
     }
 
@@ -934,10 +880,7 @@ pub trait Parser<I, O, E> {
     {
         impls::ErrInto {
             parser: self,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
-            e2: Default::default(),
+            marker: Default::default(),
         }
     }
 
@@ -962,9 +905,7 @@ pub trait Parser<I, O, E> {
         impls::RetryAfter {
             parser: self,
             recover,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
+            marker: Default::default(),
         }
     }
 
@@ -986,9 +927,7 @@ pub trait Parser<I, O, E> {
         impls::ResumeAfter {
             parser: self,
             recover,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
+            marker: Default::default(),
         }
     }
 }

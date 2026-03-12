@@ -45,7 +45,7 @@ where
         parser,
         input,
         state: State::Running,
-        o: Default::default(),
+        marker: Default::default(),
     }
 }
 
@@ -58,7 +58,7 @@ where
     parser: F,
     input: I,
     state: State<E>,
-    o: core::marker::PhantomData<O>,
+    marker: core::marker::PhantomData<O>,
 }
 
 impl<F, I, O, E> ParserIterator<F, I, O, E>
@@ -230,10 +230,7 @@ where
     Repeat {
         occurrences: occurrences.into(),
         parser,
-        i: Default::default(),
-        o: Default::default(),
-        c: Default::default(),
-        e: Default::default(),
+        marker: Default::default(),
     }
 }
 
@@ -247,10 +244,7 @@ where
 {
     occurrences: Range,
     parser: P,
-    i: core::marker::PhantomData<I>,
-    o: core::marker::PhantomData<O>,
-    c: core::marker::PhantomData<C>,
-    e: core::marker::PhantomData<E>,
+    marker: core::marker::PhantomData<(I, O, C, E)>,
 }
 
 impl<ParseNext, Input, Output, Error> Repeat<ParseNext, Input, Output, (), Error>
