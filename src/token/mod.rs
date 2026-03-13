@@ -1,6 +1,6 @@
 //! Parsers extracting tokens from the stream
 
-#[cfg(test)]
+#[cfg(all(test, feature = "ascii"))]
 mod tests;
 
 use crate::combinator::trace;
@@ -138,6 +138,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # #[cfg(feature = "ascii")] {
 /// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::token::literal;
@@ -152,6 +153,7 @@ where
 /// assert_eq!(parser.parse_peek("HeLlO, World!"), Ok((", World!", "HeLlO")));
 /// assert!(parser.parse_peek("Something").is_err());
 /// assert!(parser.parse_peek("").is_err());
+/// # }
 /// ```
 #[inline(always)]
 #[doc(alias = "tag")]

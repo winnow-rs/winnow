@@ -105,7 +105,9 @@ mod parser;
 
 pub mod stream;
 
+#[cfg(feature = "ascii")]
 pub mod ascii;
+#[cfg(feature = "binary")]
 pub mod binary;
 pub mod combinator;
 pub mod token;
@@ -124,6 +126,7 @@ pub mod _tutorial;
 /// ## Example
 ///
 /// ```rust
+/// # #[cfg(feature = "ascii")] {
 /// use winnow::prelude::*;
 ///
 /// fn parse_data(input: &mut &str) -> ModalResult<u64> {
@@ -135,6 +138,7 @@ pub mod _tutorial;
 ///   let result = parse_data.parse("100");
 ///   assert_eq!(result, Ok(100));
 /// }
+/// # }
 /// ```
 pub mod prelude {
     pub use crate::error::ModalError as _;

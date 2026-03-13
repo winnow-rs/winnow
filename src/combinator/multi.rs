@@ -19,6 +19,7 @@ use crate::Result;
 /// # Example
 ///
 /// ```rust
+/// # #[cfg(feature = "ascii")] {
 /// # use winnow::prelude::*;
 /// use winnow::{combinator::iterator, ascii::alpha1, combinator::terminated};
 /// use std::collections::HashMap;
@@ -31,6 +32,7 @@ use crate::Result;
 ///
 /// assert_eq!(parsed, [("abc", 3usize), ("defg", 4), ("hijkl", 5), ("mnopqr", 6)].iter().cloned().collect());
 /// assert_eq!(res, Ok(("123", ())));
+/// # }
 /// ```
 pub fn iterator<Input, Output, Error, ParseNext>(
     input: Input,
@@ -1470,6 +1472,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # #[cfg(feature = "ascii")] {
 /// # use winnow::{error::ErrMode, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated_foldl1;
@@ -1482,6 +1485,7 @@ where
 /// assert_eq!(parser.parse_peek("9-3-5"), Ok(("", 1)));
 /// assert!(parser.parse_peek("").is_err());
 /// assert!(parser.parse_peek("def|abc").is_err());
+/// # }
 /// ```
 pub fn separated_foldl1<Input, Output, Sep, Error, ParseNext, SepParser, Op>(
     mut parser: ParseNext,
@@ -1540,6 +1544,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # #[cfg(feature = "ascii")] {
 /// # use winnow::{error::ErrMode, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated_foldr1;
@@ -1553,6 +1558,7 @@ where
 /// assert_eq!(parser.parse_peek("2"), Ok(("", 2)));
 /// assert!(parser.parse_peek("").is_err());
 /// assert!(parser.parse_peek("def|abc").is_err());
+/// # }
 /// ```
 #[cfg(feature = "alloc")]
 pub fn separated_foldr1<Input, Output, Sep, Error, ParseNext, SepParser, Op>(

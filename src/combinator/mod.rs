@@ -167,7 +167,7 @@ mod expression;
 mod multi;
 mod sequence;
 
-#[cfg(test)]
+#[cfg(all(test, feature = "ascii", feature = "binary"))]
 mod tests;
 
 pub mod impls;

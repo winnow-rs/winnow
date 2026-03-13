@@ -1,4 +1,4 @@
-#![cfg(feature = "alloc")]
+#![cfg(all(feature = "alloc", feature = "ascii"))]
 
 use winnow::{
     ascii::{alphanumeric1 as alphanumeric, line_ending as eol},

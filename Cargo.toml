@@ -122,14 +122,16 @@ pre-release-replacements = [
 ]
 
 [features]
-default = ["std"]
+default = ["std", "ascii", "binary"]
 alloc = []
+ascii = []
+binary = []
 std = ["alloc", "memchr?/std"]
 simd = ["dep:memchr"]
 debug = ["std", "dep:anstream", "dep:anstyle", "dep:is_terminal_polyfill", "dep:terminal_size"]
 unstable-recover = []
 
-unstable-doc = ["alloc", "std", "simd", "unstable-recover"]
+unstable-doc = ["alloc", "std", "ascii", "binary", "simd", "unstable-recover"]
 
 [dependencies]
 anstream = { version = "0.6.15", optional = true }
@@ -158,11 +160,11 @@ codegen-units = 1
 [[example]]
 name = "arithmetic"
 test = true
-required-features = ["alloc"]
+required-features = ["alloc", "ascii"]
 
 [[example]]
 name = "c_expression"
-required-features = ["std"]
+required-features = ["std", "ascii"]
 
 [[example]]
 name = "css"
@@ -176,49 +178,50 @@ required-features = ["alloc"]
 
 [[example]]
 name = "http"
-required-features = ["alloc"]
+required-features = ["alloc", "ascii"]
 
 [[example]]
 name = "ini"
 test = true
-required-features = ["std"]
+required-features = ["std", "ascii"]
 
 [[example]]
 name = "json"
 test = true
-required-features = ["std"]
+required-features = ["std", "ascii"]
 
 [[example]]
 name = "ndjson"
 test = true
-required-features = ["std"]
+required-features = ["std", "ascii"]
 
 [[example]]
 name = "json_iterator"
-required-features = ["std"]
+required-features = ["std", "ascii"]
 
 [[example]]
 name = "iterator"
+required-features = ["ascii"]
 
 [[example]]
 name = "s_expression"
-required-features = ["alloc"]
+required-features = ["alloc", "ascii"]
 
 [[example]]
 name = "string"
-required-features = ["alloc"]
+required-features = ["alloc", "ascii"]
 
 [[bench]]
 name = "arithmetic"
 path = "examples/arithmetic/bench.rs"
 harness = false
-required-features = ["alloc"]
+required-features = ["alloc", "ascii"]
 
 [[bench]]
 name = "c_expression"
 path = "examples/c_expression/bench.rs"
 harness = false
-required-features = ["std"]
+required-features = ["std", "ascii"]
 
 [[bench]]
 name = "contains_token"
@@ -239,24 +242,25 @@ harness = false
 [[bench]]
 name = "number"
 harness = false
+required-features = ["ascii", "binary"]
 
 [[bench]]
 name = "http"
 path = "examples/http/bench.rs"
 harness = false
-required-features = ["alloc"]
+required-features = ["alloc", "ascii"]
 
 [[bench]]
 name = "ini"
 path = "examples/ini/bench.rs"
 harness = false
-required-features = ["std"]
+required-features = ["std", "ascii"]
 
 [[bench]]
 name = "json"
 path = "examples/json/bench.rs"
 harness = false
-required-features = ["std"]
+required-features = ["std", "ascii"]
 
 [lints]
 workspace = true
