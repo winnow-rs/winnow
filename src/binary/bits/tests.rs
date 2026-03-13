@@ -2,8 +2,10 @@ use super::*;
 use crate::error::ErrMode;
 use crate::error::InputError;
 use crate::prelude::*;
-use crate::stream::Bits;
+use crate::stream::{Offset, Stream};
 use crate::Partial;
+#[cfg(feature = "std")]
+use proptest::prelude::*;
 
 #[test]
 /// Take the `bits` function and assert that remaining bytes are correctly returned, if the
@@ -202,4 +204,79 @@ fn test_bool_eof_partial() {
         result,
         Err(crate::error::ErrMode::Incomplete(Needed::new(1)))
     );
+}
+
+#[test]
+#[cfg(feature = "alloc")]
+fn test_bit_stream_empty() {
+    let i = Bits(&b""[..], 0);
+
+    let actual = i.iter_offsets().collect::<alloc::vec::Vec<_>>();
+    assert_eq!(actual, vec![]);
+
+    let actual = i.eof_offset();
+    assert_eq!(actual, 0);
+
+    let actual = i.peek_token();
+    assert_eq!(actual, None);
+
+    let actual = i.offset_for(|b| b);
+    assert_eq!(actual, None);
+
+    let actual = i.offset_at(1);
+    assert_eq!(actual, Err(Needed::new(1)));
+
+    let actual_slice = i.peek_slice(0);
+    assert_eq!(actual_slice, (&b""[..], 0, 0));
+}
+
+#[test]
+#[cfg(feature = "alloc")]
+fn test_bit_offset_empty() {
+    let i = Bits(&b""[..], 0);
+
+    let actual = i.offset_from(&i);
+    assert_eq!(actual, 0);
+}
+
+#[cfg(feature = "std")]
+proptest! {
+  #[test]
+  #[cfg_attr(miri, ignore)]  // See https://github.com/AltSysrq/proptest/issues/253
+  fn bit_stream(byte_len in 0..20usize, start in 0..160usize) {
+        bit_stream_inner(byte_len, start);
+  }
+}
+
+#[cfg(feature = "std")]
+fn bit_stream_inner(byte_len: usize, start: usize) {
+    let start = start.min(byte_len * 8);
+    let start_byte = start / 8;
+    let start_bit = start % 8;
+
+    let bytes = vec![0b1010_1010; byte_len];
+    let i = Bits(&bytes[start_byte..], start_bit);
+
+    let mut curr_i = i;
+    let mut curr_offset = 0;
+    while let Some(_token) = curr_i.peek_token() {
+        let to_offset = curr_i.offset_from(&i);
+        assert_eq!(curr_offset, to_offset);
+
+        let actual_slice = i.peek_slice(curr_offset);
+        let expected_slice = i.peek_slice(curr_offset);
+        assert_eq!(actual_slice, expected_slice);
+
+        let at_offset = i.offset_at(curr_offset).unwrap();
+        assert_eq!(curr_offset, at_offset);
+
+        let eof_offset = curr_i.eof_offset();
+        let eof_slice = curr_i.peek_slice(eof_offset);
+        let eof_slice_i = Bits(eof_slice.0, eof_slice.1);
+        assert_eq!(eof_slice_i, curr_i);
+
+        curr_offset += 1;
+        let _ = curr_i.next_token();
+    }
+    assert_eq!(i.eof_offset(), curr_offset);
 }

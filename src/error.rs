@@ -555,20 +555,6 @@ impl<I: Clone, E> FromExternalError<I, E> for InputError<I> {
     }
 }
 
-impl<I: Clone> ErrorConvert<InputError<crate::stream::Bits<I>>> for InputError<I> {
-    #[inline]
-    fn convert(self) -> InputError<crate::stream::Bits<I>> {
-        self.map_input(|i| crate::stream::Bits(i, 0))
-    }
-}
-
-impl<I: Clone> ErrorConvert<InputError<I>> for InputError<crate::stream::Bits<I>> {
-    #[inline]
-    fn convert(self) -> InputError<I> {
-        self.map_input(|crate::stream::Bits(i, _o)| i)
-    }
-}
-
 /// The Display implementation allows the `std::error::Error` implementation
 impl<I: Clone + fmt::Display> fmt::Display for InputError<I> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

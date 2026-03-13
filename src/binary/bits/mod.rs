@@ -1,12 +1,16 @@
 //! Bit level parsers
 //!
 
+mod stream;
 #[cfg(test)]
 mod tests;
 
+pub use self::stream::BitOffsets;
+pub use self::stream::Bits;
+
 use crate::combinator::trace;
 use crate::error::{ErrorConvert, Needed, ParserError};
-use crate::stream::{Bits, Stream, StreamIsPartial, ToUsize};
+use crate::stream::{Stream, StreamIsPartial, ToUsize};
 use crate::{Parser, Result};
 use core::ops::{AddAssign, Div, Shl, Shr};
 
@@ -161,7 +165,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;;
 /// # use winnow::error::ContextError;
-/// # use winnow::stream::Bits;
+/// # use winnow::binary::bits::Bits;
 /// pub fn take<'i>(count: usize) -> impl Parser<Bits<&'i [u8]>, u8, ContextError>
 /// # {
 /// #     winnow::binary::bits::take(count)
@@ -173,8 +177,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::Bytes;
 /// # use winnow::error::ContextError;
-/// # use winnow::stream::Bits;
-/// use winnow::binary::bits::take;
+/// use winnow::binary::bits::{Bits, take};
 ///
 /// type Stream<'i> = &'i Bytes;
 ///
@@ -273,7 +276,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;;
 /// # use winnow::error::ContextError;
-/// # use winnow::stream::Bits;
+/// # use winnow::binary::bits::Bits;
 /// pub fn pattern<'i>(pattern: u8, count: usize) -> impl Parser<Bits<&'i [u8]>, u8, ContextError>
 /// # {
 /// #     winnow::binary::bits::pattern(pattern, count)
@@ -297,7 +300,7 @@ where
 /// /// Compare the lowest `count` bits of `input` against the lowest `count` bits of `pattern`.
 /// /// Return Ok and the matching section of `input` if there's a match.
 /// /// Return Err if there's no match.
-/// # use winnow::stream::Bits;
+/// # use winnow::binary::bits::Bits;
 /// fn parser(bits: u8, count: u8, input: &mut Bits<Stream<'_>>) -> ModalResult<u8> {
 ///     pattern(bits, count).parse_next(input)
 /// }
@@ -360,7 +363,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;;
 /// # use winnow::error::ContextError;
-/// # use winnow::stream::Bits;
+/// # use winnow::binary::bits::Bits;
 /// pub fn bool(input: &mut Bits<&[u8]>) -> ModalResult<bool>
 /// # {
 /// #     winnow::binary::bits::bool.parse_next(input)
@@ -381,7 +384,7 @@ where
 ///     Bytes::new(b)
 /// }
 ///
-/// # use winnow::stream::Bits;
+/// # use winnow::binary::bits::Bits;
 /// fn parse(input: &mut Bits<Stream<'_>>) -> ModalResult<bool> {
 ///     bool.parse_next(input)
 /// }
