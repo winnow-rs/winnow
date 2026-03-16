@@ -1,4 +1,3 @@
-use crate::error::Needed;
 use crate::stream::AsBStr;
 use crate::stream::AsBytes;
 use crate::stream::Checkpoint;
@@ -6,6 +5,7 @@ use crate::stream::Compare;
 use crate::stream::CompareResult;
 use crate::stream::FindSlice;
 use crate::stream::Location;
+use crate::stream::Needed;
 use crate::stream::Offset;
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
