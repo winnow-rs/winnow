@@ -555,20 +555,6 @@ impl<I: Clone, E> FromExternalError<I, E> for InputError<I> {
     }
 }
 
-impl<I: Clone> ErrorConvert<InputError<(I, usize)>> for InputError<I> {
-    #[inline]
-    fn convert(self) -> InputError<(I, usize)> {
-        self.map_input(|i| (i, 0))
-    }
-}
-
-impl<I: Clone> ErrorConvert<InputError<I>> for InputError<(I, usize)> {
-    #[inline]
-    fn convert(self) -> InputError<I> {
-        self.map_input(|(i, _o)| i)
-    }
-}
-
 /// The Display implementation allows the `std::error::Error` implementation
 impl<I: Clone + fmt::Display> fmt::Display for InputError<I> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

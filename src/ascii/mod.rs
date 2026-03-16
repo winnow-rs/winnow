@@ -2,8 +2,11 @@
 //!
 //! Functions recognizing specific characters
 
+mod caseless;
 #[cfg(test)]
 mod tests;
+
+pub use self::caseless::Caseless;
 
 use core::ops::{Add, Shl};
 
@@ -25,34 +28,6 @@ use crate::token::take_until;
 use crate::token::take_while;
 use crate::Parser;
 use crate::Result;
-
-/// Mark a value as case-insensitive for ASCII characters
-///
-/// # Example
-/// ```rust
-/// # use winnow::prelude::*;
-/// # use winnow::ascii::Caseless;
-///
-/// fn parser<'s>(s: &mut &'s str) -> ModalResult<&'s str> {
-///   Caseless("hello").parse_next(s)
-/// }
-///
-/// assert_eq!(parser.parse_peek("Hello, World!"), Ok((", World!", "Hello")));
-/// assert_eq!(parser.parse_peek("hello, World!"), Ok((", World!", "hello")));
-/// assert_eq!(parser.parse_peek("HeLlo, World!"), Ok((", World!", "HeLlo")));
-/// assert!(parser.parse_peek("Some").is_err());
-/// assert!(parser.parse_peek("").is_err());
-/// ```
-#[derive(Copy, Clone, Debug)]
-pub struct Caseless<T>(pub T);
-
-impl Caseless<&str> {
-    /// Get the byte-representation of this case-insensitive value
-    #[inline(always)]
-    pub fn as_bytes(&self) -> Caseless<&[u8]> {
-        Caseless(self.0.as_bytes())
-    }
-}
 
 /// Recognizes the string `"\r\n"`.
 ///

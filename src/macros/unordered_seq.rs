@@ -14,11 +14,11 @@
 /// # Example
 ///
 /// ```rust
+/// # #[cfg(feature = "ascii")] {
 /// # use winnow::{error::ErrMode, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::ascii::{alpha1, digit1};
 /// use winnow::combinator::unordered_seq;
-/// # fn main() {
 /// fn parser<'i>(input: &mut &'i str) -> ModalResult<(&'i str, &'i str)> {
 ///   unordered_seq!((alpha1, digit1)).parse_next(input)
 /// }

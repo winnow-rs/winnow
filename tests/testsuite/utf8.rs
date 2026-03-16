@@ -1,3 +1,5 @@
+#![cfg(feature = "ascii")]
+
 use snapbox::prelude::*;
 use snapbox::str;
 

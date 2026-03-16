@@ -9,12 +9,10 @@
 //! - [`Partial`] can mark an input as partial buffer that is being streamed into
 //! - [Custom stream types][crate::_topic::stream]
 
-use core::hash::BuildHasher;
-use core::num::NonZeroUsize;
-
-use crate::ascii::Caseless as AsciiCaseless;
 use crate::error::Needed;
+use core::hash::BuildHasher;
 use core::iter::{Cloned, Enumerate};
+use core::num::NonZeroUsize;
 use core::slice::Iter;
 use core::str::from_utf8;
 use core::str::CharIndices;
@@ -73,13 +71,6 @@ pub trait SliceLen {
     /// Calculates the input length, as indicated by its name,
     /// and the name of the trait itself
     fn slice_len(&self) -> usize;
-}
-
-impl<S: SliceLen> SliceLen for AsciiCaseless<S> {
-    #[inline(always)]
-    fn slice_len(&self) -> usize {
-        self.0.slice_len()
-    }
 }
 
 impl<T> SliceLen for &[T] {
@@ -463,162 +454,6 @@ impl<'i> Stream for &'i str {
     }
 }
 
-impl<I> Stream for (I, usize)
-where
-    I: Stream<Token = u8> + Clone,
-{
-    type Token = bool;
-    type Slice = (I::Slice, usize, usize);
-
-    type IterOffsets = BitOffsets<I>;
-
-    type Checkpoint = Checkpoint<(I::Checkpoint, usize), Self>;
-
-    #[inline(always)]
-    fn iter_offsets(&self) -> Self::IterOffsets {
-        BitOffsets {
-            i: self.clone(),
-            o: 0,
-        }
-    }
-    #[inline(always)]
-    fn eof_offset(&self) -> usize {
-        let offset = self.0.eof_offset() * 8;
-        if offset == 0 {
-            0
-        } else {
-            offset - self.1
-        }
-    }
-
-    #[inline(always)]
-    fn next_token(&mut self) -> Option<Self::Token> {
-        next_bit(self)
-    }
-
-    #[inline(always)]
-    fn peek_token(&self) -> Option<Self::Token> {
-        peek_bit(self)
-    }
-
-    #[inline(always)]
-    fn offset_for<P>(&self, predicate: P) -> Option<usize>
-    where
-        P: Fn(Self::Token) -> bool,
-    {
-        self.iter_offsets()
-            .find_map(|(o, b)| predicate(b).then_some(o))
-    }
-    #[inline(always)]
-    fn offset_at(&self, tokens: usize) -> Result<usize, Needed> {
-        if let Some(needed) = tokens
-            .checked_sub(self.eof_offset())
-            .and_then(NonZeroUsize::new)
-        {
-            Err(Needed::Size(needed))
-        } else {
-            Ok(tokens)
-        }
-    }
-    #[inline(always)]
-    fn next_slice(&mut self, offset: usize) -> Self::Slice {
-        let byte_offset = (offset + self.1) / 8;
-        let end_offset = (offset + self.1) % 8;
-        let s = self.0.next_slice(byte_offset);
-        let start_offset = self.1;
-        self.1 = end_offset;
-        (s, start_offset, end_offset)
-    }
-    #[inline(always)]
-    fn peek_slice(&self, offset: usize) -> Self::Slice {
-        let byte_offset = (offset + self.1) / 8;
-        let end_offset = (offset + self.1) % 8;
-        let s = self.0.peek_slice(byte_offset);
-        let start_offset = self.1;
-        (s, start_offset, end_offset)
-    }
-
-    #[inline(always)]
-    fn checkpoint(&self) -> Self::Checkpoint {
-        Checkpoint::<_, Self>::new((self.0.checkpoint(), self.1))
-    }
-    #[inline(always)]
-    fn reset(&mut self, checkpoint: &Self::Checkpoint) {
-        self.0.reset(&checkpoint.inner.0);
-        self.1 = checkpoint.inner.1;
-    }
-
-    fn trace(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(f, "{self:#?}")
-    }
-}
-
-/// Iterator for [bit][crate::binary::bits] stream (`(I, usize)`)
-pub struct BitOffsets<I> {
-    i: (I, usize),
-    o: usize,
-}
-
-impl<I> Iterator for BitOffsets<I>
-where
-    I: Stream<Token = u8> + Clone,
-{
-    type Item = (usize, bool);
-    fn next(&mut self) -> Option<Self::Item> {
-        let b = next_bit(&mut self.i)?;
-        let o = self.o;
-
-        self.o += 1;
-
-        Some((o, b))
-    }
-}
-
-fn next_bit<I>(i: &mut (I, usize)) -> Option<bool>
-where
-    I: Stream<Token = u8> + Clone,
-{
-    if i.eof_offset() == 0 {
-        return None;
-    }
-    let offset = i.1;
-
-    let mut next_i = i.0.clone();
-    let byte = next_i.next_token()?;
-    let bit = (byte >> offset) & 0x1 == 0x1;
-
-    let next_offset = offset + 1;
-    if next_offset == 8 {
-        i.0 = next_i;
-        i.1 = 0;
-        Some(bit)
-    } else {
-        i.1 = next_offset;
-        Some(bit)
-    }
-}
-
-fn peek_bit<I>(i: &(I, usize)) -> Option<bool>
-where
-    I: Stream<Token = u8> + Clone,
-{
-    if i.eof_offset() == 0 {
-        return None;
-    }
-    let offset = i.1;
-
-    let mut next_i = i.0.clone();
-    let byte = next_i.next_token()?;
-    let bit = (byte >> offset) & 0x1 == 0x1;
-
-    let next_offset = offset + 1;
-    if next_offset == 8 {
-        Some(bit)
-    } else {
-        Some(bit)
-    }
-}
-
 /// Current parse locations offset
 ///
 /// See [`LocatingSlice`] for adding location tracking to your [`Stream`]
@@ -693,30 +528,6 @@ impl<E> Recover<E> for &str {
     }
 }
 
-#[cfg(feature = "unstable-recover")]
-#[cfg(feature = "std")]
-impl<I, E> Recover<E> for (I, usize)
-where
-    I: Recover<E>,
-    I: Stream<Token = u8> + Clone,
-{
-    #[inline(always)]
-    fn record_err(
-        &mut self,
-        _token_start: &Self::Checkpoint,
-        _err_start: &Self::Checkpoint,
-        err: E,
-    ) -> Result<(), E> {
-        Err(err)
-    }
-
-    /// Report whether the [`Stream`] can save off errors for recovery
-    #[inline(always)]
-    fn is_recovery_supported() -> bool {
-        false
-    }
-}
-
 /// Marks the input as being the complete buffer or a partial buffer for streaming input
 ///
 /// See [`Partial`] for marking a presumed complete buffer type as a streaming buffer.
@@ -773,33 +584,6 @@ impl StreamIsPartial for &str {
     }
 }
 
-impl<I> StreamIsPartial for (I, usize)
-where
-    I: StreamIsPartial,
-{
-    type PartialState = I::PartialState;
-
-    #[inline]
-    fn complete(&mut self) -> Self::PartialState {
-        self.0.complete()
-    }
-
-    #[inline]
-    fn restore_partial(&mut self, state: Self::PartialState) {
-        self.0.restore_partial(state);
-    }
-
-    #[inline(always)]
-    fn is_partial_supported() -> bool {
-        I::is_partial_supported()
-    }
-
-    #[inline(always)]
-    fn is_partial(&self) -> bool {
-        self.0.is_partial()
-    }
-}
-
 /// Useful functions to calculate the offset between slices and show a hexdump of a slice
 pub trait Offset<Start = Self> {
     /// Offset between the first byte of `start` and the first byte of `self`a
@@ -847,26 +631,6 @@ impl Offset for &str {
 impl<'a> Offset<<&'a str as Stream>::Checkpoint> for &'a str {
     #[inline(always)]
     fn offset_from(&self, other: &<&'a str as Stream>::Checkpoint) -> usize {
-        self.checkpoint().offset_from(other)
-    }
-}
-
-impl<I> Offset for (I, usize)
-where
-    I: Offset,
-{
-    #[inline(always)]
-    fn offset_from(&self, start: &Self) -> usize {
-        self.0.offset_from(&start.0) * 8 + self.1 - start.1
-    }
-}
-
-impl<I> Offset<<(I, usize) as Stream>::Checkpoint> for (I, usize)
-where
-    I: Stream<Token = u8> + Clone,
-{
-    #[inline(always)]
-    fn offset_from(&self, other: &<(I, usize) as Stream>::Checkpoint) -> usize {
         self.checkpoint().offset_from(other)
     }
 }
@@ -948,34 +712,10 @@ impl<'b> Compare<&'b [u8]> for &[u8] {
     }
 }
 
-impl<'b> Compare<AsciiCaseless<&'b [u8]>> for &[u8] {
-    #[inline]
-    fn compare(&self, t: AsciiCaseless<&'b [u8]>) -> CompareResult {
-        if t.0
-            .iter()
-            .zip(*self)
-            .any(|(a, b)| !a.eq_ignore_ascii_case(b))
-        {
-            CompareResult::Error
-        } else if self.len() < t.slice_len() {
-            CompareResult::Incomplete
-        } else {
-            CompareResult::Ok(t.slice_len())
-        }
-    }
-}
-
 impl<const LEN: usize> Compare<[u8; LEN]> for &[u8] {
     #[inline(always)]
     fn compare(&self, t: [u8; LEN]) -> CompareResult {
         self.compare(&t[..])
-    }
-}
-
-impl<const LEN: usize> Compare<AsciiCaseless<[u8; LEN]>> for &[u8] {
-    #[inline(always)]
-    fn compare(&self, t: AsciiCaseless<[u8; LEN]>) -> CompareResult {
-        self.compare(AsciiCaseless(&t.0[..]))
     }
 }
 
@@ -986,24 +726,10 @@ impl<'b, const LEN: usize> Compare<&'b [u8; LEN]> for &[u8] {
     }
 }
 
-impl<'b, const LEN: usize> Compare<AsciiCaseless<&'b [u8; LEN]>> for &[u8] {
-    #[inline(always)]
-    fn compare(&self, t: AsciiCaseless<&'b [u8; LEN]>) -> CompareResult {
-        self.compare(AsciiCaseless(&t.0[..]))
-    }
-}
-
 impl<'b> Compare<&'b str> for &[u8] {
     #[inline(always)]
     fn compare(&self, t: &'b str) -> CompareResult {
         self.compare(t.as_bytes())
-    }
-}
-
-impl<'b> Compare<AsciiCaseless<&'b str>> for &[u8] {
-    #[inline(always)]
-    fn compare(&self, t: AsciiCaseless<&'b str>) -> CompareResult {
-        self.compare(AsciiCaseless(t.0.as_bytes()))
     }
 }
 
@@ -1018,28 +744,10 @@ impl Compare<u8> for &[u8] {
     }
 }
 
-impl Compare<AsciiCaseless<u8>> for &[u8] {
-    #[inline]
-    fn compare(&self, t: AsciiCaseless<u8>) -> CompareResult {
-        match self.first() {
-            Some(c) if t.0.eq_ignore_ascii_case(c) => CompareResult::Ok(t.slice_len()),
-            Some(_) => CompareResult::Error,
-            None => CompareResult::Incomplete,
-        }
-    }
-}
-
 impl Compare<char> for &[u8] {
     #[inline(always)]
     fn compare(&self, t: char) -> CompareResult {
         self.compare(t.encode_utf8(&mut [0; 4]).as_bytes())
-    }
-}
-
-impl Compare<AsciiCaseless<char>> for &[u8] {
-    #[inline(always)]
-    fn compare(&self, t: AsciiCaseless<char>) -> CompareResult {
-        self.compare(AsciiCaseless(t.0.encode_utf8(&mut [0; 4]).as_bytes()))
     }
 }
 
@@ -1050,23 +758,9 @@ impl<'b> Compare<&'b str> for &str {
     }
 }
 
-impl<'b> Compare<AsciiCaseless<&'b str>> for &str {
-    #[inline(always)]
-    fn compare(&self, t: AsciiCaseless<&'b str>) -> CompareResult {
-        self.as_bytes().compare(t.as_bytes())
-    }
-}
-
 impl Compare<char> for &str {
     #[inline(always)]
     fn compare(&self, t: char) -> CompareResult {
-        self.as_bytes().compare(t)
-    }
-}
-
-impl Compare<AsciiCaseless<char>> for &str {
-    #[inline(always)]
-    fn compare(&self, t: AsciiCaseless<char>) -> CompareResult {
         self.as_bytes().compare(t)
     }
 }
@@ -1317,12 +1011,12 @@ impl UpdateSlice for &str {
 
 /// Ensure checkpoint details are kept private
 pub struct Checkpoint<T, S> {
-    inner: T,
+    pub(crate) inner: T,
     stream: core::marker::PhantomData<S>,
 }
 
 impl<T, S> Checkpoint<T, S> {
-    fn new(inner: T) -> Self {
+    pub(crate) fn new(inner: T) -> Self {
         Self {
             inner,
             stream: Default::default(),

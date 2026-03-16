@@ -30,6 +30,7 @@ use crate::Result;
 /// Parsing a simple arithmetic expression without parenthesis.
 ///
 /// ```rust
+/// # #[cfg(feature = "ascii")] {
 /// # use winnow::prelude::*;
 /// # use winnow::error::ContextError;
 /// # use winnow::ascii::digit1;
@@ -64,6 +65,7 @@ use crate::Result;
 /// assert_eq!(parser().parse("1+1"), Ok(2));
 /// assert_eq!(parser().parse("0!"), Ok(1));
 /// assert_eq!(parser().parse("-1*5*2*10+30/3!"), Ok(-95));
+/// # }
 /// ```
 #[doc(alias = "pratt")]
 #[doc(alias = "separated")]
@@ -517,7 +519,7 @@ impl<I: Stream, O, E: ParserError<I>> Parser<I, Infix<I, O, E>, E> for Infix<I, 
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "ascii"))]
 mod tests {
     use crate::ascii::digit1;
     use crate::combinator::fail;

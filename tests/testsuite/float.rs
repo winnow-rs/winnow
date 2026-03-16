@@ -1,3 +1,5 @@
+#![cfg(feature = "ascii")]
+
 use std::str;
 use std::str::FromStr;
 

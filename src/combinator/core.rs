@@ -10,10 +10,10 @@ use crate::{Parser, Result};
 /// # Example
 ///
 /// ```rust
+/// # #[cfg(feature = "ascii")] {
 /// # use winnow::prelude::*;
 /// use winnow::combinator::opt;
 /// use winnow::ascii::alpha1;
-/// # fn main() {
 ///
 /// fn parser<'i>(i: &mut &'i str) -> ModalResult<Option<&'i str>> {
 ///   opt(alpha1).parse_next(i)
@@ -48,11 +48,11 @@ where
 /// # Example
 ///
 /// ```rust
+/// # #[cfg(feature = "ascii")] {
 /// # use winnow::prelude::*;
 /// # use winnow::combinator::opt;
 /// use winnow::combinator::cond;
 /// use winnow::ascii::alpha1;
-/// # fn main() {
 ///
 /// fn parser<'i>(i: &mut &'i str) -> ModalResult<Option<&'i str>> {
 ///   let prefix = opt("-").parse_next(i)?;
@@ -91,10 +91,10 @@ where
 /// # Example
 ///
 /// ```rust
+/// # #[cfg(feature = "ascii")] {
 /// # use winnow::prelude::*;
 /// use winnow::combinator::peek;
 /// use winnow::ascii::alpha1;
-/// # fn main() {
 ///
 /// fn parser<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
 ///     peek(alpha1).parse_next(input)
@@ -178,10 +178,10 @@ where
 /// # Example
 ///
 /// ```rust
+/// # #[cfg(feature = "ascii")] {
 /// # use winnow::prelude::*;
 /// use winnow::combinator::not;
 /// use winnow::ascii::alpha1;
-/// # fn main() {
 ///
 /// fn parser<'i>(input: &mut &'i str) -> ModalResult<()> {
 ///     not(alpha1).parse_next(input)
@@ -220,13 +220,13 @@ where
 ///
 /// Without `cut_err`:
 /// ```rust
+/// # #[cfg(feature = "ascii")] {
 /// # use winnow::token::one_of;
 /// # use winnow::token::rest;
 /// # use winnow::ascii::digit1;
 /// # use winnow::combinator::alt;
 /// # use winnow::combinator::preceded;
 /// # use winnow::prelude::*;
-/// # fn main() {
 ///
 /// fn parser<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
 ///   alt((
@@ -243,6 +243,7 @@ where
 ///
 /// With `cut_err`:
 /// ```rust
+/// # #[cfg(feature = "ascii")] {
 /// # use winnow::{error::ErrMode, error::ContextError};
 /// # use winnow::prelude::*;
 /// # use winnow::token::one_of;
@@ -251,7 +252,6 @@ where
 /// # use winnow::combinator::alt;
 /// # use winnow::combinator::preceded;
 /// use winnow::combinator::cut_err;
-/// # fn main() {
 ///
 /// fn parser<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
 ///   alt((

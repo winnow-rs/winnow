@@ -26,6 +26,7 @@ pub(crate) fn take_char(input: &mut &[u8]) -> ModalResult<char> {
 }
 
 #[cfg(feature = "std")]
+#[cfg(feature = "ascii")]
 mod parse_int {
     use crate::TestResult;
     use snapbox::prelude::*;
@@ -115,6 +116,7 @@ Ok(
 }
 
 #[test]
+#[cfg(feature = "binary")]
 fn usize_length_bytes_issue() {
     use winnow::binary::be_u16;
     use winnow::binary::length_take;
@@ -168,6 +170,7 @@ Ok(
 }
 
 #[test]
+#[cfg(feature = "ascii")]
 fn issue_655() {
     use winnow::ascii::{line_ending, till_line_ending};
     fn twolines<'i>(
@@ -267,6 +270,7 @@ fn issue_717<'i>(input: &mut &'i [u8]) -> TestResult<&'i [u8], Vec<&'i [u8]>> {
     separated(0.., take_till(1.., [0x0u8]), literal([0x0])).parse_next(input)
 }
 
+#[cfg(feature = "binary")]
 mod issue_647 {
     use super::*;
     use winnow::binary::be_f64;
@@ -295,6 +299,7 @@ mod issue_647 {
 
 #[test]
 #[cfg_attr(debug_assertions, should_panic)]
+#[cfg(feature = "binary")]
 fn issue_848_overflow_incomplete_bits_to_bytes() {
     fn take<'i>(input: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         use winnow::token::take;
@@ -305,7 +310,9 @@ fn issue_848_overflow_incomplete_bits_to_bytes() {
 
         bits(bytes(take)).parse_next(input)
     }
-    assert_parse!(parser.parse_peek(Partial::new(&b""[..])), str![[r#"
+    assert_parse!(
+        parser.parse_peek(Partial::new(&b""[..])),
+        str![[r#"
 Err(
     Cut(
         InputError {
@@ -317,7 +324,8 @@ Err(
     ),
 )
 
-"#]]);
+"#]]
+    );
 }
 
 #[test]
@@ -375,6 +383,7 @@ Ok(
 }
 
 #[test]
+#[cfg(feature = "binary")]
 fn issue_1231_bits_expect_fn_closure() {
     use winnow::binary::bits::{bits, take};
     pub(crate) fn example<'i>(input: &mut &'i [u8]) -> TestResult<&'i [u8], (u8, u8)> {
@@ -418,6 +427,7 @@ Ok(
 }
 
 #[test]
+#[cfg(feature = "ascii")]
 fn issue_x_looser_fill_bounds() {
     use winnow::{ascii::digit1, combinator::fill, combinator::terminated};
 

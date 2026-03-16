@@ -1,5 +1,5 @@
 #![allow(clippy::unreadable_literal)]
-#![cfg(target_pointer_width = "64")]
+#![cfg(all(target_pointer_width = "64", feature = "binary"))]
 
 use snapbox::prelude::*;
 use snapbox::str;

@@ -1,3 +1,4 @@
+#![cfg(feature = "ascii")]
 #![allow(dead_code)]
 
 use winnow::ascii::digit1 as digit;

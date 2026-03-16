@@ -25,6 +25,7 @@ use crate::stream::UpdateSlice;
 /// # Example
 ///
 /// ```
+/// # #[cfg(feature = "ascii")] {
 /// # use std::cell::Cell;
 /// # use winnow::prelude::*;
 /// # use winnow::stream::Stateful;
@@ -52,6 +53,7 @@ use crate::stream::UpdateSlice;
 /// let input = Stream { input: data, state: State(&mut state) };
 /// let output = word.parse(input).unwrap();
 /// assert_eq!(state, 1);
+/// # }
 /// ```
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 #[doc(alias = "LocatingSliceSpan")]

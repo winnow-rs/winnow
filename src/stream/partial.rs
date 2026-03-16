@@ -37,6 +37,7 @@ use crate::stream::UpdateSlice;
 /// Here is how it works in practice:
 ///
 /// ```rust
+/// # #[cfg(feature = "ascii")] {
 /// # use winnow::{Result, error::ErrMode, error::Needed, error::ContextError, token, ascii, stream::Partial};
 /// # use winnow::prelude::*;
 ///
@@ -79,6 +80,7 @@ use crate::stream::UpdateSlice;
 ///
 /// // while the complete version knows that all of the data is there
 /// assert_eq!(alpha0_complete.parse_peek("abcd"), Ok(("", "abcd")));
+/// # }
 /// ```
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Partial<I> {
