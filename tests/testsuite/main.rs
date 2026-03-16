@@ -1,3 +1,5 @@
+#![cfg(feature = "parser")]
+
 #[cfg(test)]
 macro_rules! assert_parse(
   ($left: expr, $right: expr) => {

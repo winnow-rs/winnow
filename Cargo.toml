@@ -124,12 +124,13 @@ pre-release-replacements = [
 [features]
 default = ["std", "ascii", "binary"]
 alloc = []
-ascii = []
-binary = []
+parser = []
+ascii = ["parser"]
+binary = ["parser"]
 std = ["alloc", "memchr?/std"]
 simd = ["dep:memchr"]
 debug = ["std", "dep:anstream", "dep:anstyle", "dep:is_terminal_polyfill", "dep:terminal_size"]
-unstable-recover = []
+unstable-recover = ["parser"]
 
 unstable-doc = ["alloc", "std", "ascii", "binary", "simd", "unstable-recover"]
 
@@ -169,12 +170,12 @@ required-features = ["std", "ascii"]
 [[example]]
 name = "css"
 test = true
-required-features = ["alloc"]
+required-features = ["alloc", "parser"]
 
 [[example]]
 name = "custom_error"
 test = true
-required-features = ["alloc"]
+required-features = ["alloc", "parser"]
 
 [[example]]
 name = "http"
@@ -226,18 +227,22 @@ required-features = ["std", "ascii"]
 [[bench]]
 name = "contains_token"
 harness = false
+required-features = ["parser"]
 
 [[bench]]
 name = "find_slice"
 harness = false
+required-features = ["parser"]
 
 [[bench]]
 name = "iter"
 harness = false
+required-features = ["parser"]
 
 [[bench]]
 name = "next_slice"
 harness = false
+required-features = ["parser"]
 
 [[bench]]
 name = "number"

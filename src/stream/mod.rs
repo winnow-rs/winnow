@@ -1582,6 +1582,7 @@ impl AsChar for &char {
 ///
 /// For example, you could implement `hex_digit0` as:
 /// ```
+/// # #[cfg(feature = "parser")] {
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ContextError};
 /// # use winnow::token::take_while;
@@ -1592,6 +1593,7 @@ impl AsChar for &char {
 /// assert_eq!(hex_digit1.parse_peek("21cZ"), Ok(("Z", "21c")));
 /// assert!(hex_digit1.parse_peek("H2").is_err());
 /// assert!(hex_digit1.parse_peek("").is_err());
+/// # }
 /// ```
 pub trait ContainsToken<T> {
     /// Returns true if self contains the token
