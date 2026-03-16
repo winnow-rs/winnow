@@ -21,23 +21,24 @@ use crate::Result;
 /// ```rust
 /// # #[cfg(feature = "ascii")] {
 /// # use winnow::prelude::*;
+/// # use winnow::Result;
 /// use winnow::{combinator::iterator, ascii::alpha1, combinator::terminated};
 /// use std::collections::HashMap;
 ///
-/// let data = "abc|defg|hijkl|mnopqr|123";
-/// let mut it = iterator(data, terminated(alpha1, "|"));
+/// let mut data = "abc|defg|hijkl|mnopqr|123";
+/// let mut it = iterator(&mut data, terminated(alpha1, "|"));
 ///
 /// let parsed = it.map(|v| (v, v.len())).collect::<HashMap<_,_>>();
-/// let res: ModalResult<_> = it.finish();
+/// let res: Result<_> = it.finish();
 ///
 /// assert_eq!(parsed, [("abc", 3usize), ("defg", 4), ("hijkl", 5), ("mnopqr", 6)].iter().cloned().collect());
-/// assert_eq!(res, Ok(("123", ())));
+/// assert_eq!(data, "123");
 /// # }
 /// ```
 pub fn iterator<Input, Output, Error, ParseNext>(
-    input: Input,
+    input: &mut Input,
     parser: ParseNext,
-) -> ParserIterator<ParseNext, Input, Output, Error>
+) -> ParserIterator<'_, ParseNext, Input, Output, Error>
 where
     ParseNext: Parser<Input, Output, Error>,
     Input: Stream,
@@ -52,33 +53,33 @@ where
 }
 
 /// Main structure associated to [`iterator`].
-pub struct ParserIterator<F, I, O, E>
+pub struct ParserIterator<'i, F, I, O, E>
 where
     F: Parser<I, O, E>,
     I: Stream,
 {
     parser: F,
-    input: I,
+    input: &'i mut I,
     state: State<E>,
     marker: core::marker::PhantomData<O>,
 }
 
-impl<F, I, O, E> ParserIterator<F, I, O, E>
+impl<F, I, O, E> ParserIterator<'_, F, I, O, E>
 where
     F: Parser<I, O, E>,
     I: Stream,
     E: ParserError<I>,
 {
     /// Returns the remaining input if parsing was successful, or the error if we encountered an error.
-    pub fn finish(self) -> Result<(I, ()), E> {
+    pub fn finish(self) -> Result<(), E> {
         match self.state {
-            State::Running | State::Done => Ok((self.input, ())),
+            State::Running | State::Done => Ok(()),
             State::Cut(e) => Err(e),
         }
     }
 }
 
-impl<F, I, O, E> core::iter::Iterator for &mut ParserIterator<F, I, O, E>
+impl<F, I, O, E> core::iter::Iterator for &mut ParserIterator<'_, F, I, O, E>
 where
     F: Parser<I, O, E>,
     I: Stream,
@@ -90,7 +91,7 @@ where
         if matches!(self.state, State::Running) {
             let start = self.input.checkpoint();
 
-            match self.parser.parse_next(&mut self.input) {
+            match self.parser.parse_next(self.input) {
                 Ok(o) => {
                     self.state = State::Running;
                     Some(o)
