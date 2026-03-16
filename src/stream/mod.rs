@@ -1225,6 +1225,62 @@ impl Accumulate<String> for String {
 }
 
 #[cfg(feature = "alloc")]
+impl Accumulate<char> for Cow<'_, str> {
+    #[inline(always)]
+    fn initial(_capacity: Option<usize>) -> Self {
+        Cow::Borrowed("")
+    }
+    #[inline(always)]
+    fn accumulate(&mut self, acc: char) {
+        self.to_mut().accumulate(acc);
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl<'i> Accumulate<&'i str> for Cow<'i, str> {
+    #[inline(always)]
+    fn initial(_capacity: Option<usize>) -> Self {
+        Cow::Borrowed("")
+    }
+    #[inline(always)]
+    fn accumulate(&mut self, acc: &'i str) {
+        if self.as_ref().is_empty() {
+            *self = Cow::Borrowed(acc);
+        } else {
+            self.to_mut().accumulate(acc);
+        }
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl<'i> Accumulate<Cow<'i, str>> for Cow<'i, str> {
+    #[inline(always)]
+    fn initial(_capacity: Option<usize>) -> Self {
+        Cow::Borrowed("")
+    }
+    #[inline(always)]
+    fn accumulate(&mut self, acc: Cow<'i, str>) {
+        if self.as_ref().is_empty() {
+            *self = acc;
+        } else {
+            self.to_mut().accumulate(acc);
+        }
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl Accumulate<String> for Cow<'_, str> {
+    #[inline(always)]
+    fn initial(_capacity: Option<usize>) -> Self {
+        Cow::Borrowed("")
+    }
+    #[inline(always)]
+    fn accumulate(&mut self, acc: String) {
+        self.to_mut().accumulate(acc);
+    }
+}
+
+#[cfg(feature = "alloc")]
 impl<K, V> Accumulate<(K, V)> for BTreeMap<K, V>
 where
     K: core::cmp::Ord,
