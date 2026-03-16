@@ -1,3 +1,5 @@
+#![cfg(feature = "parser")]
+
 use crate::error::ErrMode;
 use crate::error::ErrMode::Backtrack;
 use crate::error::InputError;
