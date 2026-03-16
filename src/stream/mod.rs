@@ -9,7 +9,6 @@
 //! - [`Partial`] can mark an input as partial buffer that is being streamed into
 //! - [Custom stream types][crate::_topic::stream]
 
-use crate::error::Needed;
 use core::hash::BuildHasher;
 use core::iter::{Cloned, Enumerate};
 use core::num::NonZeroUsize;
@@ -249,6 +248,48 @@ pub trait Stream: Offset<<Self as Stream>::Checkpoint> + core::fmt::Debug {
 
     /// Write out a single-line summary of the current parse location
     fn trace(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result;
+}
+
+/// Contains information on needed data if a parser returned `Incomplete`
+///
+/// <div class="warning">
+///
+/// **Note:** This is only possible for `Stream` that are [partial][`crate::stream::StreamIsPartial`],
+/// like [`Partial`].
+///
+/// </div>
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum Needed {
+    /// Needs more data, but we do not know how much
+    Unknown,
+    /// Contains a lower bound on the buffer offset needed to finish parsing
+    ///
+    /// For byte/`&str` streams, this translates to bytes
+    Size(NonZeroUsize),
+}
+
+impl Needed {
+    /// Creates `Needed` instance, returns `Needed::Unknown` if the argument is zero
+    pub fn new(s: usize) -> Self {
+        match NonZeroUsize::new(s) {
+            Some(sz) => Needed::Size(sz),
+            None => Needed::Unknown,
+        }
+    }
+
+    /// Indicates if we know how many bytes we need
+    pub fn is_known(&self) -> bool {
+        *self != Needed::Unknown
+    }
+
+    /// Maps a `Needed` to `Needed` by applying a function to a contained `Size` value.
+    #[inline]
+    pub fn map<F: Fn(NonZeroUsize) -> usize>(self, f: F) -> Needed {
+        match self {
+            Needed::Unknown => Needed::Unknown,
+            Needed::Size(n) => Needed::new(f(n)),
+        }
+    }
 }
 
 impl<'i, T> Stream for &'i [T]
