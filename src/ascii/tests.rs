@@ -2864,6 +2864,185 @@ Ok(
         );
     }
 
+    #[cfg(feature = "std")]
+    #[test]
+    fn complete_escape_transform_cow() {
+        use crate::ascii::alpha1 as alpha;
+
+        fn esc<'i>(i: &mut &'i str) -> TestResult<&'i str, alloc::borrow::Cow<'i, str>> {
+            escaped(
+                alpha,
+                '\\',
+                alt((
+                    '\\',
+                    '"',
+                    "n".value('\n'),
+                    ("x", hex_uint).map(|(_, hex)| char::from_u32(hex).unwrap()),
+                )),
+            )
+            .parse_next(i)
+        }
+
+        assert_parse!(
+            esc.parse_peek("abcd;"),
+            str![[r#"
+Ok(
+    (
+        ";",
+        "abcd",
+    ),
+)
+
+"#]]
+            .raw()
+        );
+        assert_parse!(
+            esc.parse_peek("ab\\\"cd;"),
+            str![[r#"
+Ok(
+    (
+        ";",
+        "ab\"cd",
+    ),
+)
+
+"#]]
+            .raw()
+        );
+        assert_parse!(
+            esc.parse_peek("\\\"abcd;"),
+            str![[r#"
+Ok(
+    (
+        ";",
+        "\"abcd",
+    ),
+)
+
+"#]]
+            .raw()
+        );
+        assert_parse!(
+            esc.parse_peek("\\n;"),
+            str![[r#"
+Ok(
+    (
+        ";",
+        "\n",
+    ),
+)
+
+"#]]
+            .raw()
+        );
+        assert_parse!(
+            esc.parse_peek("ab\\\"12"),
+            str![[r#"
+Ok(
+    (
+        "12",
+        "ab\"",
+    ),
+)
+
+"#]]
+            .raw()
+        );
+        assert_parse!(
+            esc.parse_peek("ab\\x20"),
+            str![[r#"
+Ok(
+    (
+        "",
+        "ab ",
+    ),
+)
+
+"#]]
+            .raw()
+        );
+        assert_parse!(
+            esc.parse_peek("AB\\"),
+            str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: "",
+        },
+    ),
+)
+
+"#]]
+            .raw()
+        );
+        assert_parse!(
+            esc.parse_peek("AB\\A"),
+            str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: "A",
+        },
+    ),
+)
+
+"#]]
+            .raw()
+        );
+
+        fn esc2<'i>(i: &mut &'i str) -> TestResult<&'i str, alloc::borrow::Cow<'i, str>> {
+            escaped(
+                alpha,
+                '&',
+                alt(("egrave;".value("è"), "agrave;".value("à"))),
+            )
+            .parse_next(i)
+        }
+        assert_parse!(
+            esc2.parse_peek("ab&egrave;DEF;"),
+            str![[r#"
+Ok(
+    (
+        ";",
+        "abèDEF",
+    ),
+)
+
+"#]]
+            .raw()
+        );
+        assert_parse!(
+            esc2.parse_peek("ab&egrave;D&agrave;EF;"),
+            str![[r#"
+Ok(
+    (
+        ";",
+        "abèDàEF",
+    ),
+)
+
+"#]]
+            .raw()
+        );
+
+        fn esc3<'i>(i: &mut &'i str) -> TestResult<&'i str, String> {
+            escaped(alpha, '␛', alt(("0".value("\0"), "n".value("\n")))).parse_next(i)
+        }
+        assert_parse!(
+            esc3.parse_peek("a␛0bc␛n"),
+            str![[r#"
+Ok(
+    (
+        "",
+        "a\0bc\n",
+    ),
+)
+
+"#]]
+            .raw()
+        );
+    }
+
     #[test]
     #[cfg(feature = "alloc")]
     fn test_escaped_error() {
