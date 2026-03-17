@@ -33,17 +33,31 @@ For easier review, use separate commits for:
 - Deprecating the old API
 - Updating internal and documentation away from the old API
 
-### `Parser`s
+## `Parser`s
 
-Design guidelines
-- Generally grammar-level `Parser`s are free-functions and output/error
-  conversion are inherent functions on `Parser`.  `Parser::verify` is an
-  example of some nuance as the logic is coupled to the `Parser` its applied
-  to.
+Principles:
+- A parser's grammar should be reflected in the Rust grammar
+  - Grammar-level `Parser`s should be free functions
+- Users can easily discover what they need
+  - Flat APIs are easier for users to process
+  - The closer to the root of the API, the more generally used it should be
+  - Small, composable APIs are easier for users to process
+
+Organization:
+- `Parser::*`: limited to non-grammatical output/error conversions
+- `combinator`: parser composition and basic building blocks
+- `token`: `Stream` agnostic token and token slice processing
+- `ascii`: Oriented around ASCII data processing
+- `binary`: Oriented around byte and bit data processing
+- `impls`: Opaque types that offer no additional behavior than the `Parser` trait
+
+Guidelines
 - `Parser`s that directly process tokens must support complete vs streaming
   parsing.
-- `Parser`s that work with slices have `take` in their name.
 - When taking slices or repeatedly calling a `Parser`, control the number of
   times with a range, rather than hard coding it with the range in the name.
+- Name for producing slices is `take`
+- Name for the indices into a `Stream` to access a token is `offset`
+- Name for the number of values, processed, returned, or expected to return is either a `count` or `occurrences`
 - Where possible, write `Parser`s in a straight-forward manner, reusing other
   `Parser`s, so they may serve as examples for the user.
