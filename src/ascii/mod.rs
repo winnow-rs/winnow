@@ -1723,7 +1723,7 @@ where
 /// # }
 /// ```
 #[inline(always)]
-pub fn escaped<Input, Error, Normal, NormalOutput, Escape, EscapeOutput, Output>(
+pub fn escaped<Input, Error, Normal, Escape, NormalOutput, EscapeOutput, Output>(
     mut normal: Normal,
     control_char: char,
     mut escape: Escape,
