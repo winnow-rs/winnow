@@ -40,11 +40,12 @@
 /// # #[cfg(feature = "parser")] {
 /// # use winnow::error::ErrMode;
 /// # use winnow::prelude::*;
+/// # use winnow::stream::AsChar;
 /// use winnow::combinator::unordered_seq;
 /// use winnow::token::any;
 ///
 /// fn parser(input: &mut &str) -> ModalResult<(char, char)> {
-///   unordered_seq!((any, 'a')).parse_next(input)
+///   unordered_seq!((any.map(AsChar::as_char), 'a')).parse_next(input)
 /// }
 ///
 /// // any parses 'b', then char('a') parses 'a'

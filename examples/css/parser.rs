@@ -30,7 +30,7 @@ pub(crate) fn hex_color(input: &mut &str) -> Result<Color> {
 }
 
 fn hex_primary(input: &mut &str) -> Result<u8> {
-    take_while(2, |c: char| c.is_ascii_hexdigit())
+    take_while(2, |c: &str| c.is_hex_digit())
         .try_map(|input| u8::from_str_radix(input, 16))
         .parse_next(input)
 }

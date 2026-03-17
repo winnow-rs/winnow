@@ -207,7 +207,7 @@ pub(crate) fn pratt_parser(i: &mut &str) -> ModalResult<Expr> {
                     multispace0,
                     dispatch! {peek(any);
                         // Case one: Parenthesized expression
-                        '(' => delimited('(',  parser(0).map(|e| Expr::Paren(Box::new(e))), cut_err(')')),
+                        "(" => delimited('(',  parser(0).map(|e| Expr::Paren(Box::new(e))), cut_err(')')),
                         _ => alt((
                             // Case two: A C-style identifier
                             identifier.map(|s| Expr::Name(s.into())),
@@ -227,20 +227,20 @@ pub(crate) fn pratt_parser(i: &mut &str) -> ModalResult<Expr> {
                 delimited(
                     multispace0,
                     dispatch! {any;
-                        '+' => alt((
+                        "+" => alt((
                             // ++
                             '+'.value(Prefix(18, |_: &mut _, a| Ok(Expr::PreIncr(Box::new(a))))),
                             Prefix(18, |_: &mut _, a| Ok(a) )
                         )),
-                        '-' =>  alt((
+                        "-" =>  alt((
                             // --
                             '-'.value(Prefix(18, |_: &mut _, a| Ok(Expr::PreDecr(Box::new(a))))),
                             Prefix(18, |_: &mut _, a| Ok(Expr::Neg(Box::new(a))))
                         )),
-                        '&' => Prefix(18, |_: &mut _, a| Ok(Expr::Addr(Box::new(a)))),
-                        '*' => Prefix(18, |_: &mut _, a| Ok(Expr::Deref(Box::new(a)))),
-                        '!' => Prefix(18, |_: &mut _, a| Ok(Expr::Not(Box::new(a)))),
-                        '~' => Prefix(18, |_: &mut _, a| Ok(Expr::BitwiseNot(Box::new(a)))),
+                        "&" => Prefix(18, |_: &mut _, a| Ok(Expr::Addr(Box::new(a)))),
+                        "*" => Prefix(18, |_: &mut _, a| Ok(Expr::Deref(Box::new(a)))),
+                        "!" => Prefix(18, |_: &mut _, a| Ok(Expr::Not(Box::new(a)))),
+                        "~" => Prefix(18, |_: &mut _, a| Ok(Expr::BitwiseNot(Box::new(a)))),
                         _ => fail
                     },
                     multispace0,
@@ -256,16 +256,16 @@ pub(crate) fn pratt_parser(i: &mut &str) -> ModalResult<Expr> {
                     multispace0,
                     alt((
                         dispatch! {any;
-                            '!' => not('=').value(Postfix(19, |_: &mut _, a| Ok(Expr::Fac(Box::new(a))))),
-                            '?' => Postfix(3, |i: &mut &str, cond| {
+                            "!" => not('=').value(Postfix(19, |_: &mut _, a| Ok(Expr::Fac(Box::new(a))))),
+                            "?" => Postfix(3, |i: &mut &str, cond| {
                                 let (left, right) = cut_err(separated_pair(parser(0), delimited(multispace0, ':', multispace0), parser(3))).parse_next(i)?;
                                 Ok(Expr::Ternary(Box::new(cond), Box::new(left), Box::new(right)))
                             }),
-                            '[' => Postfix(20, |i: &mut &str, a| {
+                            "[" => Postfix(20, |i: &mut &str, a| {
                                 let index = delimited(multispace0, parser(0), (multispace0, cut_err(']'), multispace0)).parse_next(i)?;
                                 Ok(Expr::Index(Box::new(a), Box::new(index)))
                             }),
-                            '(' => Postfix(20, |i: &mut &str, a| {
+                            "(" => Postfix(20, |i: &mut &str, a| {
                                 let args = delimited(multispace0, opt(parser(0)), (multispace0, cut_err(')'), multispace0)).parse_next(i)?;
                                 Ok(Expr::FunctionCall(Box::new(a), args.map(Box::new)))
                             }),
@@ -292,16 +292,16 @@ pub(crate) fn pratt_parser(i: &mut &str) -> ModalResult<Expr> {
                 //                                 ^ infix addition operator
                 alt((
                     dispatch! {any;
-                        '*' => alt((
+                        "*" => alt((
                             // **
                             "*".value(Right(28, |_: &mut _, a, b| Ok(Expr::Pow(Box::new(a), Box::new(b))))),
                             Left(16, |_: &mut _, a, b| Ok(Expr::Mul(Box::new(a), Box::new(b)))),
                         )),
-                        '/' => Left(16, |_: &mut _, a, b| Ok(Expr::Div(Box::new(a), Box::new(b)))),
-                        '%' => Left(16, |_: &mut _, a, b| Ok(Expr::Rem(Box::new(a), Box::new(b)))),
+                        "/" => Left(16, |_: &mut _, a, b| Ok(Expr::Div(Box::new(a), Box::new(b)))),
+                        "%" => Left(16, |_: &mut _, a, b| Ok(Expr::Rem(Box::new(a), Box::new(b)))),
 
-                        '+' => Left(14, |_: &mut _, a, b| Ok(Expr::Add(Box::new(a), Box::new(b)))),
-                        '-' => alt((
+                        "+" => Left(14, |_: &mut _, a, b| Ok(Expr::Add(Box::new(a), Box::new(b)))),
+                        "-" => alt((
                             dispatch!{take(2usize);
                                 "ne" => Neither(10, |_: &mut _, a, b| Ok(Expr::NotEq(Box::new(a), Box::new(b)))),
                                 "eq" => Neither(10, |_: &mut _, a, b| Ok(Expr::Eq(Box::new(a), Box::new(b)))),
@@ -314,31 +314,31 @@ pub(crate) fn pratt_parser(i: &mut &str) -> ModalResult<Expr> {
                             '>'.value(Left(20, |_: &mut _, a, b| Ok(Expr::ArrowOp(Box::new(a), Box::new(b))))),
                             Left(14, |_: &mut _, a, b| Ok(Expr::Sub(Box::new(a), Box::new(b))))
                         )),
-                        '.' => Left(20, |_: &mut _, a, b| Ok(Expr::Dot(Box::new(a), Box::new(b)))),
-                        '&' => alt((
+                        "." => Left(20, |_: &mut _, a, b| Ok(Expr::Dot(Box::new(a), Box::new(b)))),
+                        "&" => alt((
                             // &&
                             "&".value(Left(6, |_: &mut _, a, b| Ok(Expr::And(Box::new(a), Box::new(b))))),
 
                             Left(12, |_: &mut _, a, b| Ok(Expr::BitAnd(Box::new(a), Box::new(b)))),
                         )),
-                        '^' => Left(8, |_: &mut _, a, b| Ok(Expr::BitXor(Box::new(a), Box::new(b)))),
-                        '=' => alt((
+                        "^" => Left(8, |_: &mut _, a, b| Ok(Expr::BitXor(Box::new(a), Box::new(b)))),
+                        "=" => alt((
                             // ==
                             "=".value(Neither(10, |_: &mut _, a, b| Ok(Expr::Eq(Box::new(a), Box::new(b))))),
                             Right(2, |_: &mut _, a, b| Ok(Expr::Assign(Box::new(a), Box::new(b))))
                         )),
 
-                        '>' => alt((
+                        ">" => alt((
                             // >=
                             "=".value(Neither(12, |_: &mut _, a, b| Ok(Expr::GreaterEqual(Box::new(a), Box::new(b))))),
                             Neither(12, |_: &mut _, a, b| Ok(Expr::Greater(Box::new(a), Box::new(b))))
                         )),
-                        '<' => alt((
+                        "<" => alt((
                             // <=
                             "=".value(Neither(12, |_: &mut _, a, b| Ok(Expr::LessEqual(Box::new(a), Box::new(b))))),
                             Neither(12, |_: &mut _, a, b| Ok(Expr::Less(Box::new(a), Box::new(b))))
                         )),
-                        ',' => Left(0, |_: &mut _, a, b| Ok(Expr::Comma(Box::new(a), Box::new(b)))),
+                        "," => Left(0, |_: &mut _, a, b| Ok(Expr::Comma(Box::new(a), Box::new(b)))),
                         _ => fail
                     },
                     dispatch! {take(2usize);
@@ -361,8 +361,8 @@ fn identifier<'i>(i: &mut &'i str) -> ModalResult<&'i str> {
     trace(
         "identifier",
         (
-            one_of(|c: char| c.is_alpha() || c == '_'),
-            take_while(0.., |c: char| c.is_alphanum() || c == '_'),
+            one_of(|c: &str| c.is_alpha() || c == "_"),
+            take_while(0.., |c: &str| c.is_alphanum() || c == "_"),
         ),
     )
     .take()

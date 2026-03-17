@@ -44,18 +44,18 @@ use crate::Result;
 ///         use Infix::*;
 ///         expression(digit1.parse_to::<i32>()) // operands are 32-bit integers
 ///             .prefix(dispatch! {any;
-///                 '-' => Prefix(12, |_, a: i32| Ok(-a)),
+///                 "-" => Prefix(12, |_, a: i32| Ok(-a)),
 ///                 _ => fail,
 ///             })
 ///             .infix(dispatch! {any;
-///                 '+' => Left(5, |_, a, b| Ok(a + b)),
-///                 '-' => Left(5, |_, a, b| Ok(a - b)),
-///                 '*' => Left(7, |_, a, b| Ok(a * b)),
-///                 '/' => Left(7, |_, a: i32, b| Ok(a.checked_div(b).unwrap_or_default())),
+///                 "+" => Left(5, |_, a, b| Ok(a + b)),
+///                 "-" => Left(5, |_, a, b| Ok(a - b)),
+///                 "*" => Left(7, |_, a, b| Ok(a * b)),
+///                 "/" => Left(7, |_, a: i32, b| Ok(a.checked_div(b).unwrap_or_default())),
 ///                 _ => fail,
 ///             })
 ///             .postfix(dispatch! {any;
-///                 '!' => Postfix(15, |_, a| if a < 1 { Ok(1) } else { Ok((1..=a).fold(1, |acc, a| acc*a)) }),
+///                 "!" => Postfix(15, |_, a| if a < 1 { Ok(1) } else { Ok((1..=a).fold(1, |acc, a| acc*a)) }),
 ///                 _ => fail,
 ///             })
 ///             .parse_next(i)
@@ -525,6 +525,7 @@ mod tests {
     use crate::combinator::fail;
     use crate::dispatch;
     use crate::error::ContextError;
+    use crate::stream::AsChar;
     use crate::token::any;
 
     use super::*;
@@ -534,12 +535,12 @@ mod tests {
             use Infix::*;
             expression(digit1.parse_to::<i32>())
                 .current_precedence_level(0)
-                .prefix(dispatch! {any;
+                .prefix(dispatch! {any.map(AsChar::as_char);
                     '+' => Prefix(12, |_, a| Ok(a)),
                     '-' => Prefix(12, |_, a: i32| Ok(-a)),
                     _ => fail
                 })
-                .infix(dispatch! {any;
+                .infix(dispatch! {any.map(AsChar::as_char);
                    '+' => Left(5, |_, a, b| Ok(a + b)),
                    '-' => Left(5, |_, a, b| Ok(a - b)),
                    '*' => Left(7, |_, a, b| Ok(a * b)),

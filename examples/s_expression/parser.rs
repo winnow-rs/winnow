@@ -135,11 +135,11 @@ fn parse_builtin_op(i: &mut &'_ str) -> ModalResult<BuiltIn> {
     // because we are matching single character tokens, we can do the matching logic
     // on the returned value
     Ok(match t {
-        '+' => BuiltIn::Plus,
-        '-' => BuiltIn::Minus,
-        '*' => BuiltIn::Times,
-        '/' => BuiltIn::Divide,
-        '=' => BuiltIn::Equal,
+        "+" => BuiltIn::Plus,
+        "-" => BuiltIn::Minus,
+        "*" => BuiltIn::Times,
+        "/" => BuiltIn::Divide,
+        "=" => BuiltIn::Equal,
         _ => unreachable!(),
     })
 }

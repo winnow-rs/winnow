@@ -25,7 +25,7 @@ use core::result::Result::Ok;
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn any(input: &mut &str) -> ModalResult<char>
+/// pub fn any<'i>(input: &mut &'i str) -> ModalResult<&'i str>
 /// # {
 /// #     winnow::token::any.parse_next(input)
 /// # }
@@ -36,11 +36,11 @@ use core::result::Result::Ok;
 /// ```rust
 /// # use winnow::{token::any, error::ErrMode, error::ContextError};
 /// # use winnow::prelude::*;
-/// fn parser(input: &mut &str) -> ModalResult<char> {
+/// fn parser<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
 ///     any.parse_next(input)
 /// }
 ///
-/// assert_eq!(parser.parse_peek("abc"), Ok(("bc",'a')));
+/// assert_eq!(parser.parse_peek("abc"), Ok(("bc","a")));
 /// assert!(parser.parse_peek("").is_err());
 /// ```
 ///
@@ -48,7 +48,7 @@ use core::result::Result::Ok;
 /// # use winnow::{token::any, error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// assert_eq!(any::<_, ErrMode<ContextError>>.parse_peek(Partial::new("abc")), Ok((Partial::new("bc"),'a')));
+/// assert_eq!(any::<_, ErrMode<ContextError>>.parse_peek(Partial::new("abc")), Ok((Partial::new("bc"),"a")));
 /// assert_eq!(any::<_, ErrMode<ContextError>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
@@ -217,7 +217,7 @@ where
 /// # use winnow::prelude::*;;
 /// # use winnow::stream::ContainsToken;
 /// # use winnow::error::ContextError;
-/// pub fn one_of<'i>(set: impl ContainsToken<char>) -> impl Parser<&'i str, char, ContextError>
+/// pub fn one_of<'i>(set: impl ContainsToken<&'i str>) -> impl Parser<&'i str, &'i str, ContextError>
 /// # {
 /// #     winnow::token::one_of(set)
 /// # }
@@ -229,12 +229,13 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ContextError};
 /// # use winnow::token::one_of;
-/// assert_eq!(one_of::<_, _, ContextError>(['a', 'b', 'c']).parse_peek("b"), Ok(("", 'b')));
+/// # use winnow::stream::AsChar;
+/// assert_eq!(one_of::<_, _, ContextError>(['a', 'b', 'c']).parse_peek("b"), Ok(("", "b")));
 /// assert!(one_of::<_, _, ContextError>('a').parse_peek("bc").is_err());
 /// assert!(one_of::<_, _, ContextError>('a').parse_peek("").is_err());
 ///
 /// fn parser_fn(i: &mut &str) -> ModalResult<char> {
-///     one_of(|c| c == 'a' || c == 'b').parse_next(i)
+///     one_of(|c: &str| c == "a" || c == "b").map(AsChar::as_char).parse_next(i)
 /// }
 /// assert_eq!(parser_fn.parse_peek("abc"), Ok(("bc", 'a')));
 /// assert!(parser_fn.parse_peek("cd").is_err());
@@ -246,12 +247,13 @@ where
 /// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::token::one_of;
-/// assert_eq!(one_of::<_, _, ErrMode<ContextError>>(['a', 'b', 'c']).parse_peek(Partial::new("b")), Ok((Partial::new(""), 'b')));
+/// # use winnow::stream::AsChar;
+/// assert_eq!(one_of::<_, _, ErrMode<ContextError>>(['a', 'b', 'c']).parse_peek(Partial::new("b")), Ok((Partial::new(""), "b")));
 /// assert!(one_of::<_, _, ErrMode<ContextError>>('a').parse_peek(Partial::new("bc")).is_err());
 /// assert_eq!(one_of::<_, _, ErrMode<ContextError>>('a').parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// fn parser_fn(i: &mut Partial<&str>) -> ModalResult<char> {
-///     one_of(|c| c == 'a' || c == 'b').parse_next(i)
+///     one_of(|c: &str| c == "a" || c == "b").map(AsChar::as_char).parse_next(i)
 /// }
 /// assert_eq!(parser_fn.parse_peek(Partial::new("abc")), Ok((Partial::new("bc"), 'a')));
 /// assert!(parser_fn.parse_peek(Partial::new("cd")).is_err());
@@ -287,7 +289,7 @@ where
 /// # use winnow::prelude::*;;
 /// # use winnow::stream::ContainsToken;
 /// # use winnow::error::ContextError;
-/// pub fn none_of<'i>(set: impl ContainsToken<char>) -> impl Parser<&'i str, char, ContextError>
+/// pub fn none_of<'i>(set: impl ContainsToken<&'i str>) -> impl Parser<&'i str, &'i str, ContextError>
 /// # {
 /// #     winnow::token::none_of(set)
 /// # }
@@ -299,7 +301,7 @@ where
 /// # use winnow::{error::ErrMode, error::ContextError};
 /// # use winnow::prelude::*;
 /// # use winnow::token::none_of;
-/// assert_eq!(none_of::<_, _, ContextError>(['a', 'b', 'c']).parse_peek("z"), Ok(("", 'z')));
+/// assert_eq!(none_of::<_, _, ContextError>(['a', 'b', 'c']).parse_peek("z"), Ok(("", "z")));
 /// assert!(none_of::<_, _, ContextError>(['a', 'b']).parse_peek("a").is_err());
 /// assert!(none_of::<_, _, ContextError>('a').parse_peek("").is_err());
 /// ```
@@ -309,7 +311,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
 /// # use winnow::token::none_of;
-/// assert_eq!(none_of::<_, _, ErrMode<ContextError>>(['a', 'b', 'c']).parse_peek(Partial::new("z")), Ok((Partial::new(""), 'z')));
+/// assert_eq!(none_of::<_, _, ErrMode<ContextError>>(['a', 'b', 'c']).parse_peek(Partial::new("z")), Ok((Partial::new(""), "z")));
 /// assert!(none_of::<_, _, ErrMode<ContextError>>(['a', 'b']).parse_peek(Partial::new("a")).is_err());
 /// assert_eq!(none_of::<_, _, ErrMode<ContextError>>('a').parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
@@ -344,7 +346,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::stream::ContainsToken;
 /// # use winnow::error::ContextError;
-/// pub fn take_while<'i>(occurrences: RangeFrom<usize>, set: impl ContainsToken<char>) -> impl Parser<&'i str, &'i str, ContextError>
+/// pub fn take_while<'i>(occurrences: RangeFrom<usize>, set: impl ContainsToken<&'i str>) -> impl Parser<&'i str, &'i str, ContextError>
 /// # {
 /// #     winnow::token::take_while(occurrences, set)
 /// # }
@@ -628,7 +630,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::stream::ContainsToken;
 /// # use winnow::error::ContextError;
-/// pub fn take_till<'i>(occurrences: RangeFrom<usize>, set: impl ContainsToken<char>) -> impl Parser<&'i str, &'i str, ContextError>
+/// pub fn take_till<'i>(occurrences: RangeFrom<usize>, set: impl ContainsToken<&'i str>) -> impl Parser<&'i str, &'i str, ContextError>
 /// # {
 /// #     winnow::token::take_till(occurrences, set)
 /// # }
@@ -642,7 +644,7 @@ where
 /// use winnow::token::take_till;
 ///
 /// fn till_colon<'i>(s: &mut &'i str) -> ModalResult<&'i str> {
-///   take_till(0.., |c| c == ':').parse_next(s)
+///   take_till(0.., |c: &str| c == ":").parse_next(s)
 /// }
 ///
 /// assert_eq!(till_colon.parse_peek("latin:123"), Ok((":123", "latin")));
@@ -658,7 +660,7 @@ where
 /// use winnow::token::take_till;
 ///
 /// fn till_colon<'i>(s: &mut Partial<&'i str>) -> ModalResult<&'i str> {
-///   take_till(0.., |c| c == ':').parse_next(s)
+///   take_till(0.., |c: &str| c == ":").parse_next(s)
 /// }
 ///
 /// assert_eq!(till_colon.parse_peek(Partial::new("latin:123")), Ok((Partial::new(":123"), "latin")));

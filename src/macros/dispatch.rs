@@ -60,13 +60,13 @@
 ///
 /// fn escape_seq_char(input: &mut &str) -> ModalResult<char> {
 ///     dispatch! {any;
-///         'b' => empty.value('\u{8}'),
-///         'f' => empty.value('\u{c}'),
-///         'n' => empty.value('\n'),
-///         'r' => empty.value('\r'),
-///         't' => empty.value('\t'),
-///         '\\' => empty.value('\\'),
-///         '"' => empty.value('"'),
+///         "b" => empty.value('\u{8}'),
+///         "f" => empty.value('\u{c}'),
+///         "n" => empty.value('\n'),
+///         "r" => empty.value('\r'),
+///         "t" => empty.value('\t'),
+///         "\\" => empty.value('\\'),
+///         "\"" => empty.value('"'),
 ///         _ => fail::<_, char, _>,
 ///     }
 ///     .parse_next(input)

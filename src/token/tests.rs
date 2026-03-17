@@ -17,7 +17,7 @@ use crate::Partial;
 #[test]
 fn complete_take_while_m_n_utf8_all_matching() {
     assert_parse!(
-        take_while(1..=4, |c: char| c.is_alphabetic()).parse_peek("øn"),
+        take_while(1..=4, |c: &str| c.is_alpha()).parse_peek("øn"),
         str![[r#"
 Ok(
     (
@@ -34,7 +34,7 @@ Ok(
 #[test]
 fn complete_take_while_m_n_utf8_all_matching_substring() {
     assert_parse!(
-        take_while(1, |c: char| c.is_alphabetic()).parse_peek("øn"),
+        take_while(1, |c: &str| c.is_alpha()).parse_peek("øn"),
         str![[r#"
 Ok(
     (
@@ -57,7 +57,7 @@ proptest! {
       let mut model_input = input.as_str();
       let expected = model_complete_take_while_m_n(m, n, valid, &mut model_input);
       if m <= n {
-          let actual = take_while(m..=n, |c: char| c == 'a').parse_peek(input.as_str());
+          let actual = take_while(m..=n, |c: &str| c == "a").parse_peek(input.as_str());
           assert_eq!(expected.map(|o| (model_input, o)), actual);
       }
   }
@@ -593,7 +593,7 @@ Ok(
             input: "",
             partial: true,
         },
-        'Ә',
+        "Ә",
     ),
 )
 
@@ -654,7 +654,7 @@ Err(
     );
 
     fn utf8<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, char> {
-        one_of(['+', '\u{FF0B}']).parse_next(i)
+        one_of(['+', '\u{FF0B}']).map(AsChar::as_char).parse_next(i)
     }
 
     assert!(utf8.parse_peek(Partial::new("+")).is_ok());
@@ -1817,7 +1817,7 @@ Err(
 #[test]
 fn partial_take_while_utf8() {
     fn f<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
-        take_while(0.., |c| c != '點').parse_next(i)
+        take_while(0.., |c: &str| c != "點").parse_next(i)
     }
 
     assert_parse!(
@@ -1882,7 +1882,7 @@ Ok(
     );
 
     fn g<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
-        take_while(0.., |c| c == '點').parse_next(i)
+        take_while(0.., |c: &str| c == "點").parse_next(i)
     }
 
     assert_parse!(
@@ -1936,7 +1936,7 @@ Ok(
 #[test]
 fn partial_take_till0_utf8() {
     fn f<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
-        take_till(0.., |c| c == '點').parse_next(i)
+        take_till(0.., |c: &str| c == "點").parse_next(i)
     }
 
     assert_parse!(
@@ -2001,7 +2001,7 @@ Ok(
     );
 
     fn g<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
-        take_till(0.., |c| c != '點').parse_next(i)
+        take_till(0.., |c: &str| c != "點").parse_next(i)
     }
 
     assert_parse!(
@@ -2144,7 +2144,7 @@ Ok(
     );
 
     fn g<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
-        take_while(0.., |c| c == '點').parse_next(i)
+        take_while(0.., |c: &str| c == "點").parse_next(i)
     }
 
     assert_parse!(
@@ -2198,7 +2198,7 @@ Ok(
 #[test]
 fn partial_take_while_m_n_utf8_fixed() {
     fn parser<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
-        take_while(1, |c| c == 'A' || c == '😃').parse_next(i)
+        take_while(1, |c: &str| c == "A" || c == "😃").parse_next(i)
     }
     assert_parse!(
         parser.parse_peek(Partial::new("A!")),
@@ -2237,7 +2237,7 @@ Ok(
 #[test]
 fn partial_take_while_m_n_utf8_range() {
     fn parser<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
-        take_while(1..=2, |c| c == 'A' || c == '😃').parse_next(i)
+        take_while(1..=2, |c: &str| c == "A" || c == "😃").parse_next(i)
     }
     assert_parse!(
         parser.parse_peek(Partial::new("A!")),
@@ -2276,7 +2276,7 @@ Ok(
 #[test]
 fn partial_take_while_m_n_utf8_full_match_fixed() {
     fn parser<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
-        take_while(1, |c: char| c.is_alphabetic()).parse_next(i)
+        take_while(1, |c: &str| c.is_alpha()).parse_next(i)
     }
     assert_parse!(
         parser.parse_peek(Partial::new("øn")),
@@ -2299,7 +2299,7 @@ Ok(
 #[test]
 fn partial_take_while_m_n_utf8_full_match_range() {
     fn parser<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
-        take_while(1..=2, |c: char| c.is_alphabetic()).parse_next(i)
+        take_while(1..=2, |c: &str| c.is_alpha()).parse_next(i)
     }
     assert_parse!(
         parser.parse_peek(Partial::new("øn")),

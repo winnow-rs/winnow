@@ -78,17 +78,17 @@ fn parser_tuple(input: &mut &str) -> ModalResult<usize> {
 }
 
 fn parser_closure_or(input: &mut &str) -> ModalResult<usize> {
-    let contains = |c: char| {
-        c == '0'
-            || c == '1'
-            || c == '2'
-            || c == '3'
-            || c == '4'
-            || c == '5'
-            || c == '6'
-            || c == '7'
-            || c == '8'
-            || c == '9'
+    let contains = |c: &str| {
+        c == "0"
+            || c == "1"
+            || c == "2"
+            || c == "3"
+            || c == "4"
+            || c == "5"
+            || c == "6"
+            || c == "7"
+            || c == "8"
+            || c == "9"
     };
     repeat(
         0..,
@@ -98,7 +98,8 @@ fn parser_closure_or(input: &mut &str) -> ModalResult<usize> {
 }
 
 fn parser_closure_matches(input: &mut &str) -> ModalResult<usize> {
-    let contains = |c: char| matches!(c, '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9');
+    let contains =
+        |c: &str| matches!(c, "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9");
     repeat(
         0..,
         alt((take_while(1.., contains), take_till(1.., contains))),

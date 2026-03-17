@@ -56,8 +56,8 @@ pub(crate) fn expr(i: &mut &str) -> Result<Expr> {
     repeat(0.., (one_of(['+', '-']), term))
         .fold(
             move || init.clone(),
-            |acc, (op, val): (char, Expr)| {
-                if op == '+' {
+            |acc, (op, val): (&str, Expr)| {
+                if op == "+" {
                     Expr::Add(Box::new(acc), Box::new(val))
                 } else {
                     Expr::Sub(Box::new(acc), Box::new(val))
@@ -73,8 +73,8 @@ pub(crate) fn term(i: &mut &str) -> Result<Expr> {
     repeat(0.., (one_of(['*', '/']), factor))
         .fold(
             move || init.clone(),
-            |acc, (op, val): (char, Expr)| {
-                if op == '*' {
+            |acc, (op, val): (&str, Expr)| {
+                if op == "*" {
                     Expr::Mul(Box::new(acc), Box::new(val))
                 } else {
                     Expr::Div(Box::new(acc), Box::new(val))

@@ -135,7 +135,7 @@ where
 {
     // `take_while` parses between `m` and `n` bytes (inclusive) that match
     // a predicate. `parse_hex` here parses between 1 and 6 hexadecimal numerals.
-    let parse_hex = take_while(1..=6, |c: char| c.is_ascii_hexdigit());
+    let parse_hex = take_while(1..=6, |c: &str| c.is_hex_digit());
 
     // `preceded` takes a prefix parser, and if it succeeds, returns the result
     // of the body parser. In this case, it parses u{XXXX}.

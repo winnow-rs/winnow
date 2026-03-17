@@ -4,10 +4,11 @@
 /// ```rust
 /// # #[cfg(all(feature = "std", feature = "parser"))] {
 /// # use winnow::prelude::*;
+/// # use winnow::stream::AsChar;
 /// # use winnow::token::any;
 /// # use winnow::combinator::repeat;
 /// # fn inner(input: &mut &str) -> ModalResult<char> {
-/// #     any.parse_next(input)
+/// #     any.map(AsChar::as_char).parse_next(input)
 /// # }
 /// # let mut input = "0123456789012345678901234567890123456789";
 /// # let input = &mut input;

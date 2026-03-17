@@ -14,7 +14,6 @@ use core::iter::{Cloned, Enumerate};
 use core::num::NonZeroUsize;
 use core::slice::Iter;
 use core::str::from_utf8;
-use core::str::CharIndices;
 use core::str::FromStr;
 
 #[allow(unused_imports)]
@@ -390,16 +389,19 @@ where
 }
 
 impl<'i> Stream for &'i str {
-    type Token = char;
+    type Token = &'i str;
     type Slice = &'i str;
 
-    type IterOffsets = CharIndices<'i>;
+    type IterOffsets = StrIterOffsets<'i>;
 
     type Checkpoint = Checkpoint<Self, Self>;
 
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
-        self.char_indices()
+        StrIterOffsets {
+            input: self,
+            offset: 0,
+        }
     }
     #[inline(always)]
     fn eof_offset(&self) -> usize {
@@ -408,15 +410,16 @@ impl<'i> Stream for &'i str {
 
     #[inline(always)]
     fn next_token(&mut self) -> Option<Self::Token> {
-        let mut iter = self.chars();
-        let c = iter.next()?;
-        *self = iter.as_str();
-        Some(c)
+        let end = next_char_boundary(self)?;
+        let (token, next) = self.split_at(end);
+        *self = next;
+        Some(token)
     }
 
     #[inline(always)]
     fn peek_token(&self) -> Option<Self::Token> {
-        self.chars().next()
+        let end = next_char_boundary(self)?;
+        Some(&self[..end])
     }
 
     #[inline(always)]
@@ -493,6 +496,39 @@ impl<'i> Stream for &'i str {
     fn trace(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{self:#?}")
     }
+}
+
+/// Iterator over UTF-8 token slices and their byte offsets.
+#[derive(Clone)]
+pub struct StrIterOffsets<'i> {
+    input: &'i str,
+    offset: usize,
+}
+
+impl<'i> Iterator for StrIterOffsets<'i> {
+    type Item = (usize, &'i str);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let start = self.offset;
+        let end = start + next_char_boundary(&self.input[start..])?;
+        self.offset = end;
+        Some((start, &self.input[start..end]))
+    }
+}
+
+#[inline(always)]
+fn next_char_boundary(input: &str) -> Option<usize> {
+    if input.is_empty() {
+        return None;
+    }
+
+    for offset in 1..input.len() {
+        if input.is_char_boundary(offset) {
+            return Some(offset);
+        }
+    }
+
+    Some(input.len())
 }
 
 /// Current parse locations offset
@@ -1622,6 +1658,46 @@ impl AsChar for &char {
     #[inline(always)]
     fn is_newline(self) -> bool {
         (*self).is_newline()
+    }
+}
+
+impl AsChar for &str {
+    #[inline(always)]
+    fn as_char(self) -> char {
+        debug_assert!(!self.is_empty());
+        self.chars().next().unwrap()
+    }
+    #[inline(always)]
+    fn is_alpha(self) -> bool {
+        self.as_char().is_alpha()
+    }
+    #[inline(always)]
+    fn is_alphanum(self) -> bool {
+        self.as_char().is_alphanum()
+    }
+    #[inline(always)]
+    fn is_dec_digit(self) -> bool {
+        self.as_char().is_dec_digit()
+    }
+    #[inline(always)]
+    fn is_hex_digit(self) -> bool {
+        self.as_char().is_hex_digit()
+    }
+    #[inline(always)]
+    fn is_oct_digit(self) -> bool {
+        self.as_char().is_oct_digit()
+    }
+    #[inline(always)]
+    fn len(self) -> usize {
+        self.len()
+    }
+    #[inline(always)]
+    fn is_space(self) -> bool {
+        self.as_char().is_space()
+    }
+    #[inline(always)]
+    fn is_newline(self) -> bool {
+        self.as_char().is_newline()
     }
 }
 

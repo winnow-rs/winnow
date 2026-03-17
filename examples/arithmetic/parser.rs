@@ -18,8 +18,8 @@ pub(crate) fn expr(i: &mut &str) -> Result<i64> {
     repeat(0.., (one_of(['+', '-']), term))
         .fold(
             move || init,
-            |acc, (op, val): (char, i64)| {
-                if op == '+' {
+            |acc, (op, val): (&str, i64)| {
+                if op == "+" {
                     acc + val
                 } else {
                     acc - val
@@ -38,8 +38,8 @@ pub(crate) fn term(i: &mut &str) -> Result<i64> {
     repeat(0.., (one_of(['*', '/']), factor))
         .fold(
             move || init,
-            |acc, (op, val): (char, i64)| {
-                if op == '*' {
+            |acc, (op, val): (&str, i64)| {
+                if op == "*" {
                     acc * val
                 } else {
                     acc / val

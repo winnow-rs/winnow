@@ -126,14 +126,14 @@ pub(crate) fn tokens<'s>(i: &mut &'s str) -> Result<Vec<Token<'s>>> {
 
 fn token<'s>(i: &mut &'s str) -> Result<Token<'s>> {
     dispatch! {peek(any);
-        '0'..='9' => digits.value(TokenKind::Value),
-        '(' => '('.value(TokenKind::OpenParen),
-        ')' => ')'.value(TokenKind::CloseParen),
-        '+' => '+'.value(TokenKind::Oper(Oper::Add)),
-        '-' => '-'.value(TokenKind::Oper(Oper::Sub)),
-        '*' => '*'.value(TokenKind::Oper(Oper::Mul)),
-        '/' => '/'.value(TokenKind::Oper(Oper::Div)),
-        ' '| '\t'| '\r'| '\n' => fail,
+        c if c.is_dec_digit() => digits.value(TokenKind::Value),
+        "(" => '('.value(TokenKind::OpenParen),
+        ")" => ')'.value(TokenKind::CloseParen),
+        "+" => '+'.value(TokenKind::Oper(Oper::Add)),
+        "-" => '-'.value(TokenKind::Oper(Oper::Sub)),
+        "*" => '*'.value(TokenKind::Oper(Oper::Mul)),
+        "/" => '/'.value(TokenKind::Oper(Oper::Div)),
+        " "| "\t"| "\r"| "\n" => fail,
         _ => take_till(.., ('0'..='9', '(', ')', '+', '-', '*', '/')).value(TokenKind::Unknown),
     }
     .with_taken()

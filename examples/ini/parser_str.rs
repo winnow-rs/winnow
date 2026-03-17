@@ -24,7 +24,7 @@ fn category_and_keys<'s>(i: &mut Stream<'s>) -> Result<(&'s str, HashMap<&'s str
 
 fn category<'s>(i: &mut Stream<'s>) -> Result<&'s str> {
     terminated(
-        delimited('[', take_while(0.., |c| c != ']'), ']'),
+        delimited('[', take_while(0.., |c: &str| c != "]"), ']'),
         opt(take_while(1.., [' ', '\r', '\n'])),
     )
     .parse_next(i)
@@ -45,12 +45,12 @@ fn key_value<'s>(i: &mut Stream<'s>) -> Result<(&'s str, &'s str)> {
     Ok((key, val))
 }
 
-fn is_line_ending_or_comment(chr: char) -> bool {
-    chr == ';' || chr == '\n'
+fn is_line_ending_or_comment(chr: &str) -> bool {
+    chr == ";" || chr == "\n"
 }
 
 fn till_line_ending<'s>(i: &mut Stream<'s>) -> Result<&'s str> {
-    take_while(0.., |c| c != '\r' && c != '\n').parse_next(i)
+    take_while(0.., |c: &str| c != "\r" && c != "\n").parse_next(i)
 }
 
 fn space_or_line_ending<'s>(i: &mut Stream<'s>) -> Result<&'s str> {

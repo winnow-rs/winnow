@@ -222,8 +222,8 @@ Err(
     );
 }
 
-fn is_alphabetic(c: char) -> bool {
-    (c as u8 >= 0x41 && c as u8 <= 0x5A) || (c as u8 >= 0x61 && c as u8 <= 0x7A)
+fn is_alphabetic(c: &str) -> bool {
+    c.is_alpha()
 }
 
 #[test]
@@ -305,8 +305,8 @@ fn take_while_succeed_none_str() {
     use winnow::token::take_while;
 
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
-    fn while_s(c: char) -> bool {
-        c == '9'
+    fn while_s(c: &str) -> bool {
+        c == "9"
     }
     fn test<'i>(input: &mut &'i str) -> TestResult<&'i str, &'i str> {
         take_while(0.., while_s).parse_next(input)
@@ -331,8 +331,8 @@ fn take_while_succeed_some_str() {
     use winnow::token::take_while;
 
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
-    fn while_s(c: char) -> bool {
-        matches!(c, 'β' | 'è' | 'ƒ' | 'ô' | 'ř' | 'Â' | 'ß' | 'Ç')
+    fn while_s(c: &str) -> bool {
+        matches!(c, "β" | "è" | "ƒ" | "ô" | "ř" | "Â" | "ß" | "Ç")
     }
     fn test<'i>(input: &mut &'i str) -> TestResult<&'i str, &'i str> {
         take_while(0.., while_s).parse_next(input)
@@ -430,8 +430,8 @@ fn take_while1_fn_succeed_str() {
     use winnow::token::take_while;
 
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
-    fn while1_s(c: char) -> bool {
-        matches!(c, 'β' | 'è' | 'ƒ' | 'ô' | 'ř' | 'Â' | 'ß' | 'Ç')
+    fn while1_s(c: &str) -> bool {
+        matches!(c, "β" | "è" | "ƒ" | "ô" | "ř" | "Â" | "ß" | "Ç")
     }
     fn test<'i>(input: &mut &'i str) -> TestResult<&'i str, &'i str> {
         take_while(1.., while1_s).parse_next(input)
@@ -478,8 +478,8 @@ fn take_while1_fn_fail_str() {
     use winnow::token::take_while;
 
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
-    fn while1_s(c: char) -> bool {
-        c == '9'
+    fn while1_s(c: &str) -> bool {
+        c == "9"
     }
     fn test<'i>(input: &mut &'i str) -> TestResult<&'i str, &'i str> {
         take_while(1.., while1_s).parse_next(input)
@@ -526,8 +526,8 @@ Err(
 #[test]
 fn take_till0_succeed_str() {
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
-    fn till_s(c: char) -> bool {
-        c == 'á'
+    fn till_s(c: &str) -> bool {
+        c == "á"
     }
     fn test<'i>(input: &mut &'i str) -> TestResult<&'i str, &'i str> {
         take_till(0.., till_s).parse_next(input)

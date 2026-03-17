@@ -417,7 +417,7 @@ fn issue_1282_findtoken_char() {
 Ok(
     (
         "aa",
-        'a',
+        "a",
     ),
 )
 

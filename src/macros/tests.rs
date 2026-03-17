@@ -16,13 +16,13 @@ use crate::token::any;
 fn dispatch_basics() {
     fn escape_seq_char<'i>(input: &mut &'i str) -> TestResult<&'i str, char> {
         dispatch! {any;
-            'b' => empty.value('\u{8}'),
-            'f' => empty.value('\u{c}'),
-            'n' => empty.value('\n'),
-            'r' => empty.value('\r'),
-            't' => empty.value('\t'),
-            '\\' => empty.value('\\'),
-            '"' => empty.value('"'),
+            "b" => empty.value('\u{8}'),
+            "f" => empty.value('\u{c}'),
+            "n" => empty.value('\n'),
+            "r" => empty.value('\r'),
+            "t" => empty.value('\t'),
+            "\\" => empty.value('\\'),
+            "\"" => empty.value('"'),
             _ => fail::<_, char, _>,
         }
         .parse_next(input)

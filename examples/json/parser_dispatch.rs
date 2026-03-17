@@ -44,15 +44,15 @@ fn json_value<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext
     // `dispatch` gives you `match`-like behavior compared to `alt` successively trying different
     // implementations.
     dispatch!(peek(any);
-        'n' => null.value(JsonValue::Null),
-        't' => true_.map(JsonValue::Boolean),
-        'f' => false_.map(JsonValue::Boolean),
-        '"' => string.map(JsonValue::Str),
-        '+' => float.map(JsonValue::Num),
-        '-' => float.map(JsonValue::Num),
-        '0'..='9' => float.map(JsonValue::Num),
-        '[' => array.map(JsonValue::Array),
-        '{' => object.map(JsonValue::Object),
+        "n" => null.value(JsonValue::Null),
+        "t" => true_.map(JsonValue::Boolean),
+        "f" => false_.map(JsonValue::Boolean),
+        "\"" => string.map(JsonValue::Str),
+        "+" => float.map(JsonValue::Num),
+        "-" => float.map(JsonValue::Num),
+        c if c.is_dec_digit() => float.map(JsonValue::Num),
+        "[" => array.map(JsonValue::Array),
+        "{" => object.map(JsonValue::Object),
         _ => fail,
     )
     .parse_next(input)
@@ -107,18 +107,18 @@ fn string<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
 /// You can mix the above declarative parsing with an imperative style to handle more unique cases,
 /// like escaping
 fn character<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> Result<char, E> {
-    let c = none_of('\"').parse_next(input)?;
+    let c = none_of('\"').parse_next(input)?.as_char();
     if c == '\\' {
         dispatch!(any;
-          '"' => empty.value('"'),
-          '\\' => empty.value('\\'),
-          '/'  => empty.value('/'),
-          'b' => empty.value('\x08'),
-          'f' => empty.value('\x0C'),
-          'n' => empty.value('\n'),
-          'r' => empty.value('\r'),
-          't' => empty.value('\t'),
-          'u' => unicode_escape,
+          "\"" => empty.value('"'),
+          "\\" => empty.value('\\'),
+          "/"  => empty.value('/'),
+          "b" => empty.value('\x08'),
+          "f" => empty.value('\x0C'),
+          "n" => empty.value('\n'),
+          "r" => empty.value('\r'),
+          "t" => empty.value('\t'),
+          "u" => unicode_escape,
           _ => fail,
         )
         .parse_next(input)

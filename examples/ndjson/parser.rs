@@ -108,17 +108,17 @@ fn string<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
 /// You can mix the above declarative parsing with an imperative style to handle more unique cases,
 /// like escaping
 fn character<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> ModalResult<char, E> {
-    let c = none_of('"').parse_next(input)?;
+    let c = none_of('"').parse_next(input)?.as_char();
     if c == '\\' {
         alt((
             any.verify_map(|c| {
                 Some(match c {
-                    '"' | '\\' | '/' => c,
-                    'b' => '\x08',
-                    'f' => '\x0C',
-                    'n' => '\n',
-                    'r' => '\r',
-                    't' => '\t',
+                    "\"" | "\\" | "/" => c.as_char(),
+                    "b" => '\x08',
+                    "f" => '\x0C',
+                    "n" => '\n',
+                    "r" => '\r',
+                    "t" => '\t',
                     _ => return None,
                 })
             }),
