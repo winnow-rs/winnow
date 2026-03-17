@@ -1,4 +1,4 @@
-## Compatibility Expectations
+## Compatibility expectations
 
 We aspire to the following release cadence:
 - Major releases (breaking changes): 6-9 months between releases
