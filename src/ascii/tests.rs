@@ -49,6 +49,7 @@ mod complete {
     use crate::stream::ParseSlice;
     use crate::token::none_of;
     use crate::token::one_of;
+    use crate::token::take_till;
     #[cfg(feature = "alloc")]
     use alloc::string::String;
     #[cfg(feature = "alloc")]
@@ -3063,6 +3064,89 @@ Ok(
 
 "#]]
             .raw()
+        );
+    }
+
+    #[test]
+    #[cfg(feature = "alloc")]
+    fn try_fesc() {
+        const FEND: u8 = 0xC0;
+        const FESC: u8 = 0xDB;
+        const TFEND: u8 = 0xDC;
+        const TFESC: u8 = 0xDD;
+
+        fn unescape<'i>(input: &mut &'i [u8]) -> TestResult<&'i [u8], Vec<u8>> {
+            escaped(
+                take_till(1.., [FESC].as_slice()),
+                FESC,
+                alt((
+                    (&[TFEND][..]).value(&[FEND][..]),
+                    (&[TFESC][..]).value(&[FESC][..]),
+                )),
+            )
+            .parse_next(input)
+        }
+
+        // fesc
+        let input = &[0x61, 0x62, FESC, TFEND, 0x63, 0x64, 0x65][..];
+        assert_parse!(
+            unescape.parse_peek(input),
+            str![[r#"
+Ok(
+    (
+        [],
+        [
+            97,
+            98,
+            192,
+            99,
+            100,
+            101,
+        ],
+    ),
+)
+
+"#]]
+        );
+
+        // fesczerozero
+        let input = &[0x61, FESC, 0x00, TFEND, 0x63, 0x64][..];
+        assert_parse!(
+            unescape.parse_peek(input),
+            str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: [
+                0,
+                220,
+                99,
+                100,
+            ],
+        },
+    ),
+)
+
+"#]]
+        );
+
+        // noesc
+        let input = &[0x61, 0x62, 0x63][..];
+        assert_parse!(
+            unescape.parse_peek(input),
+            str![[r#"
+Ok(
+    (
+        [],
+        [
+            97,
+            98,
+            99,
+        ],
+    ),
+)
+
+"#]]
         );
     }
 }

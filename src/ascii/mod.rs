@@ -1568,47 +1568,57 @@ where
 /// assert_eq!(esc.parse_peek(Partial::new("12\\\"34;")), Ok((Partial::new(";"), "12\\\"34")));
 /// ```
 #[inline(always)]
-pub fn take_escaped<Input, Error, Normal, Escapable, NormalOutput, EscapableOutput>(
+pub fn take_escaped<
+    Input,
+    Error,
+    Normal,
+    ControlChar,
+    Escapable,
+    NormalOutput,
+    ControlCharOutput,
+    EscapableOutput,
+>(
     mut normal: Normal,
-    control_char: char,
+    mut control_char: ControlChar,
     mut escapable: Escapable,
 ) -> impl Parser<Input, <Input as Stream>::Slice, Error>
 where
-    Input: StreamIsPartial + Stream + Compare<char>,
+    Input: StreamIsPartial + Stream,
     Normal: Parser<Input, NormalOutput, Error>,
+    ControlChar: Parser<Input, ControlCharOutput, ()>,
     Escapable: Parser<Input, EscapableOutput, Error>,
     Error: ParserError<Input>,
 {
     trace("take_escaped", move |input: &mut Input| {
         if <Input as StreamIsPartial>::is_partial_supported() && input.is_partial() {
-            escaped_internal::<_, _, _, _, _, _, true>(
+            escaped_internal::<_, _, _, _, _, _, _, _, true>(
                 input,
                 &mut normal,
-                control_char,
+                &mut control_char,
                 &mut escapable,
             )
         } else {
-            escaped_internal::<_, _, _, _, _, _, false>(
+            escaped_internal::<_, _, _, _, _, _, _, _, false>(
                 input,
                 &mut normal,
-                control_char,
+                &mut control_char,
                 &mut escapable,
             )
         }
     })
 }
 
-fn escaped_internal<I, Error, F, G, O1, O2, const PARTIAL: bool>(
+fn escaped_internal<I, Error, F, ControlChar, G, O1, O2, O3, const PARTIAL: bool>(
     input: &mut I,
     normal: &mut F,
-    control_char: char,
+    control_char: &mut ControlChar,
     escapable: &mut G,
 ) -> Result<<I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream,
-    I: Compare<char>,
     F: Parser<I, O1, Error>,
+    ControlChar: Parser<I, O3, ()>,
     G: Parser<I, O2, Error>,
     Error: ParserError<I>,
 {
@@ -1628,7 +1638,7 @@ where
                 }
             }
             None => {
-                if opt(control_char).parse_next(input)?.is_some() {
+                if control_char.by_ref().parse_next(input).is_ok() {
                     let _ = escapable.parse_next(input)?;
                 } else {
                     let offset = input.offset_from(&start);
@@ -1723,14 +1733,25 @@ where
 /// # }
 /// ```
 #[inline(always)]
-pub fn escaped<Input, Error, Normal, NormalOutput, Escape, EscapeOutput, Output>(
+pub fn escaped<
+    Input,
+    Error,
+    Normal,
+    ControlChar,
+    Escape,
+    NormalOutput,
+    ControlCharOutput,
+    EscapeOutput,
+    Output,
+>(
     mut normal: Normal,
-    control_char: char,
+    mut control_char: ControlChar,
     mut escape: Escape,
 ) -> impl Parser<Input, Output, Error>
 where
-    Input: StreamIsPartial + Stream + Compare<char>,
+    Input: StreamIsPartial + Stream,
     Normal: Parser<Input, NormalOutput, Error>,
+    ControlChar: Parser<Input, ControlCharOutput, ()>,
     Escape: Parser<Input, EscapeOutput, Error>,
     Output: crate::stream::Accumulate<NormalOutput>,
     Output: crate::stream::Accumulate<EscapeOutput>,
@@ -1738,17 +1759,17 @@ where
 {
     trace("escaped", move |input: &mut Input| {
         if <Input as StreamIsPartial>::is_partial_supported() && input.is_partial() {
-            escaped_transform_internal::<_, _, _, _, _, _, _, true>(
+            escaped_transform_internal::<_, _, _, _, _, _, _, _, _, true>(
                 input,
                 &mut normal,
-                control_char,
+                &mut control_char,
                 &mut escape,
             )
         } else {
-            escaped_transform_internal::<_, _, _, _, _, _, _, false>(
+            escaped_transform_internal::<_, _, _, _, _, _, _, _, _, false>(
                 input,
                 &mut normal,
-                control_char,
+                &mut control_char,
                 &mut escape,
             )
         }
@@ -1760,6 +1781,8 @@ fn escaped_transform_internal<
     Error,
     F,
     NormalOutput,
+    ControlChar,
+    ControlCharOutput,
     G,
     EscapeOutput,
     Output,
@@ -1767,16 +1790,16 @@ fn escaped_transform_internal<
 >(
     input: &mut I,
     normal: &mut F,
-    control_char: char,
+    control_char: &mut ControlChar,
     transform: &mut G,
 ) -> Result<Output, Error>
 where
     I: StreamIsPartial,
     I: Stream,
-    I: Compare<char>,
     Output: crate::stream::Accumulate<NormalOutput>,
     Output: crate::stream::Accumulate<EscapeOutput>,
     F: Parser<I, NormalOutput, Error>,
+    ControlChar: Parser<I, ControlCharOutput, ()>,
     G: Parser<I, EscapeOutput, Error>,
     Error: ParserError<I>,
 {
@@ -1798,7 +1821,7 @@ where
                 }
             }
             None => {
-                if opt(control_char).parse_next(input)?.is_some() {
+                if control_char.by_ref().parse_next(input).is_ok() {
                     let o = transform.parse_next(input)?;
                     res.accumulate(o);
                 } else {
