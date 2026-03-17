@@ -1,3 +1,38 @@
+## Compatibility Expectations
+
+We aspire to the following release cadence:
+- Major releases (breaking changes): 6-9 months between releases
+- Minor releases (minor incompatibilities): 2 months between releases
+- Patch releases: one per user-facing, user-contributed PR
+
+Most development should fit within a patch release, meaning:
+- No breaking changes, this requires a major release
+- No MSRV bump, this requires a minor release
+
+Anything outside of that should be coordinated beforehand.
+
+Practices to minimize breaking changes and reduce their impact:
+
+### Minimize breaking changes
+
+Develop new, extremely large features behind an `unstable-<name>` feature flag with a stabilization tracking issue.
+
+### Deprecate, rather than break
+
+Most breaking changes can be introduced today by offering a parallel API,
+deprecating the existing one.
+
+When deprecating an API, replace the docstring with the following:
+```rust
+/// Deprecated in [Issue #XXX](https://github.com/winnow-rs/winnow/issues/XXX), replaced with [intra-doc-link]`
+#[deprecated(since = "X.Y.Z", note = "replaced with `ITEM` in Issue #XXX")]`
+```
+
+For easier review, use separate commits for:
+- Introducing the new API
+- Deprecating the old API
+- Updating internal and documentation away from the old API
+
 ### `Parser`s
 
 Design guidelines
