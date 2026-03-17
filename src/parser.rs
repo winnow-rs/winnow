@@ -85,6 +85,57 @@ pub trait Parser<I, O, E> {
         Ok(o)
     }
 
+    /// Repeat this parse until all of `input` is consumed, generating `O` from it
+    ///
+    /// This is intended for integrating your parser into the rest of your application.
+    /// To instead iterate inside of a parser, see [iterator][crate::combinator::iterator].
+    ///
+    /// This assumes the [`Parser`] intends to read all of `input` and will return an
+    /// [`eof`][crate::combinator::eof] error if it does not.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # #[cfg(feature = "ascii")] {
+    /// # use winnow::ascii::dec_uint;
+    /// # use winnow::ascii::newline;
+    /// # use winnow::combinator::terminated;
+    /// # use winnow::combinator::opt;
+    /// # use winnow::prelude::*;
+    /// fn number(input: &mut &str) -> Result<u32, ()> {
+    ///   terminated(dec_uint, opt(newline)).parse_next(input)
+    /// }
+    ///
+    /// let input = "10\n20\n30";
+    /// let numbers = number.parse_iter(input)
+    ///     .map(|r| r.unwrap()).collect::<Vec<_>>();
+    /// assert_eq!(numbers, vec![10, 20, 30]);
+    /// # }
+    /// ```
+    #[inline]
+    fn parse_iter(&mut self, input: I) -> impls::ParseIter<'_, Self, I, O, E>
+    where
+        Self: core::marker::Sized,
+        I: Stream,
+        // Force users to deal with `Incomplete` when `StreamIsPartial<true>`
+        I: StreamIsPartial,
+        E: ParserError<I>,
+        <E as ParserError<I>>::Inner: ParserError<I>,
+    {
+        debug_assert!(
+            !I::is_partial_supported(),
+            "partial streams need to handle `ErrMode::Incomplete`"
+        );
+
+        let start = input.checkpoint();
+        impls::ParseIter {
+            parser: self,
+            input: Some(input),
+            start: Some(start),
+            marker: Default::default(),
+        }
+    }
+
     /// Take tokens from the [`Stream`], turning it into the output
     ///
     /// This includes advancing the input [`Stream`] to the next location.

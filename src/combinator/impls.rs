@@ -6,6 +6,7 @@ use crate::combinator::DisplayDebug;
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
 use crate::error::FromRecoverableError;
+use crate::error::ParseError;
 use crate::error::{AddContext, FromExternalError, ParserError};
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
@@ -15,6 +16,60 @@ use crate::stream::{Location, Stream};
 use crate::{Parser, Result};
 use core::borrow::Borrow;
 use core::ops::Range;
+
+/// Iterator implementation for [`Parser::parse_iter`]
+pub struct ParseIter<'p, P, I, O, E>
+where
+    I: Stream,
+{
+    pub(crate) parser: &'p mut P,
+    pub(crate) input: Option<I>,
+    pub(crate) start: Option<I::Checkpoint>,
+    pub(crate) marker: core::marker::PhantomData<(O, E)>,
+}
+
+impl<'p, I, O, E, P> Iterator for ParseIter<'p, P, I, O, E>
+where
+    P: Parser<I, O, E>,
+    I: Stream,
+    // Force users to deal with `Incomplete` when `StreamIsPartial<true>`
+    I: StreamIsPartial,
+    E: ParserError<I>,
+    <E as ParserError<I>>::Inner: ParserError<I>,
+{
+    type Item = Result<O, ParseError<I, <E as ParserError<I>>::Inner>>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let input = self.input.as_mut()?;
+        let len = input.eof_offset();
+        if len == 0 {
+            self.input = None;
+            return None;
+        }
+
+        let mut output = self.parser.parse_next(input);
+        // infinite loop check: the parser must always consume
+        if output.is_ok() && input.eof_offset() == len {
+            let err = <E as ParserError<I>>::assert(
+                input,
+                "`Parser::parse_iter` parsers must always consume",
+            );
+            output = Err(err);
+        }
+
+        match output {
+            Ok(output) => Some(Ok(output)),
+            Err(err) => {
+                let err = err.into_inner().unwrap_or_else(|_err| {
+                    panic!("complete parsers should not report `ErrMode::Incomplete(_)`")
+                });
+                let input = self.input.take()?;
+                let start = self.start.take()?;
+                Some(Err(ParseError::new(input, start, err)))
+            }
+        }
+    }
+}
 
 /// [`Parser`] implementation for [`Parser::by_ref`]
 pub struct ByRef<'p, P, I, O, E> {
