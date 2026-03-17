@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.0.0] - 2026-03-17
+
 Note: going to v1 is more a reflection of the rate of churn in Winnow's API than
 the quality of previous releases or any statement against future breaking changes.
 
@@ -2717,7 +2719,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.7.15...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/winnow-rs/winnow/compare/v0.7.15...v1.0.0
 [0.7.15]: https://github.com/winnow-rs/winnow/compare/v0.7.14...v0.7.15
 [0.7.14]: https://github.com/winnow-rs/winnow/compare/v0.7.13...v0.7.14
 [0.7.13]: https://github.com/winnow-rs/winnow/compare/v0.7.12...v0.7.13

@@ -96,7 +96,7 @@ lto = true
 
 [package]
 name = "winnow"
-version = "0.7.15"
+version = "1.0.0"
 description = "A byte-oriented, zero-copy, parser combinators library"
 categories = ["parsing"]
 keywords = ["parser", "parser-combinators", "parsing", "streaming", "bit"]
