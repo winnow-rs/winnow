@@ -26,7 +26,7 @@ Already have an idea? It might be good to first [create an issue][new issue]
 to propose it so we can make sure we are aligned and lower the risk of having
 to re-work some of it and the discouragement that goes along with that.
 
-Be sure to conform to winnow's [DESIGN.md](./DESIGN.md].
+Be sure to conform to winnow's [DESIGN.md](./DESIGN.md).
 
 ### Process
 
