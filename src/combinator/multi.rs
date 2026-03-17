@@ -11,6 +11,9 @@ use crate::Result;
 
 /// Repeats the embedded parser, lazily returning the results
 ///
+/// This can serve as a building block for custom parsers like [`repeat`].
+/// To iterate over all of the input in your application, see [`Parser::parse_iter`].
+///
 /// Call the iterator's [`ParserIterator::finish`] method to get the remaining input if successful,
 /// or the error value if we encountered an error.
 ///
