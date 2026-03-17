@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+Note: going to v1 is more a reflection of the rate of churn in Winnow's API than
+the quality of previous releases or any statement against future breaking changes.
+
+### Migration Guide
+
+1. Update to latest v0.7 release
+2. Resolve deprecations
+3. Upgrade to v1
+4. Add `ascii`, `binary`, or `parser` features as needed
+5. Break tuples into tuples-of-tuples as needed
+
+### Compatibility
+
+- Added `parser`, `ascii`, and `binary` feature gates to improve build times
+- Reduce 'impl ContainsToken for Tuple' to 10 elements to improve build times
+- Reduce 'impl Alt for Tuple' to 10 elements to improve build times
+- Reduce 'impl Parser for Tuple' to 10 elements to improve build times
+- Replaced `(I, usize)` with `binary::bits::Bits` to clarify intent
+- Moved `BitOffsets` from `stream` to `binary::bits` to consolidate the API
+- Make `iterator` impure like parsers
+- Replace `Stream::raw` with `Stream::trace`
+- Remove deprecated APIs
+
+### Performance
+
+Build time
+- Reduce macro-generated code
+- Split off `parser`, `ascii`, and `binary` features
+
+Runtime
+- Optimize `hex_uint`
+
+### Features
+
+- Add `Parser::parse_iter`
+
+### Fixes
+
+- Export `Needed` in `stream`
+- Correct trace for `oct_digit1`
+- Allow `escaped` into a `Cow`
+- Accept a parser for `escaped`, `take_escaped` control character for not-quite unicode parsing
+
 ## [0.7.15] - 2026-03-05
 
 ### Compatibility
