@@ -3068,6 +3068,7 @@ Ok(
     }
 
     #[test]
+    #[cfg(feature = "alloc")]
     fn try_fesc() {
         const FEND: u8 = 0xC0;
         const FESC: u8 = 0xDB;
@@ -3077,7 +3078,7 @@ Ok(
         fn unescape<'i>(input: &mut &'i [u8]) -> TestResult<&'i [u8], Vec<u8>> {
             escaped(
                 take_till(1.., [FESC].as_slice()),
-                FESC.as_char(),
+                FESC,
                 alt((
                     (&[TFEND][..]).value(&[FEND][..]),
                     (&[TFESC][..]).value(&[FESC][..]),
@@ -3093,16 +3094,14 @@ Ok(
             str![[r#"
 Ok(
     (
-        [
-            219,
-            220,
-            99,
-            100,
-            101,
-        ],
+        [],
         [
             97,
             98,
+            192,
+            99,
+            100,
+            101,
         ],
     ),
 )
@@ -3115,18 +3114,16 @@ Ok(
         assert_parse!(
             unescape.parse_peek(input),
             str![[r#"
-Ok(
-    (
-        [
-            219,
-            0,
-            220,
-            99,
-            100,
-        ],
-        [
-            97,
-        ],
+Err(
+    Backtrack(
+        InputError {
+            input: [
+                0,
+                220,
+                99,
+                100,
+            ],
+        },
     ),
 )
 
