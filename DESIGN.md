@@ -70,3 +70,25 @@ Guidelines
 
 See also
 - [Rust API Guidelines](https://rust-lang.github.io/api-guidelines/checklist.html)
+
+## Performance
+
+Keep the code simple unless a real-world benchmark shows benefits to a more complicated design.
+Microbenchmarks are not always sufficient as performance can vary from real-world cases.
+
+### Limit code generation for tuples
+
+Implementing traits for tuples can generate a lot of code.
+
+Limit trait implementations for tuples to 10 elements.
+
+Identify if a non-generic core can be split out.
+
+Consider alternatives, like macros.
+
+### Inlined wrapper around specialized cores
+
+The compiler does not always make the right inlining decisions that can lead to optimizations.
+One way of helping the compiler is to have a very thin `#[inline(always)]` wrapper that
+dispatches to one of several function bodies
+(whether syntactically or through monomorphization).
