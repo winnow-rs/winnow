@@ -25,6 +25,7 @@ deprecating the existing one.
 When deprecating an API, replace the docstring with the following:
 ```rust
 /// Deprecated in [Issue #XXX](https://github.com/winnow-rs/winnow/issues/XXX), replaced with [intra-doc-link]`
+#[doc(alias = "OLD_NAME")]
 #[deprecated(since = "X.Y.Z", note = "replaced with `ITEM` in Issue #XXX")]`
 ```
 
@@ -51,6 +52,10 @@ Organization:
 - `binary`: Oriented around byte and bit data processing
 - `impls`: Opaque types that offer no additional behavior than the `Parser` trait
 
+Invariants
+- Parsers that loop over user input should `ParseError::assert` if the `Stream` does not advance
+  - When multiple inputs are being evaluated in an iteration of the loop, prefer to check if one advances `Stream` so users are more likely to observe and fix the infinite loop
+
 Guidelines
 - `Parser`s that directly process tokens must support complete vs streaming
   parsing.
@@ -61,3 +66,7 @@ Guidelines
 - Name for the number of values, processed, returned, or expected to return is either a `count` or `occurrences`
 - Where possible, write `Parser`s in a straight-forward manner, reusing other
   `Parser`s, so they may serve as examples for the user.
+- `doc(alias)` parsers for other names people may expect to use to find the functionality
+
+See also
+- [Rust API Guidelines](https://rust-lang.github.io/api-guidelines/checklist.html)
