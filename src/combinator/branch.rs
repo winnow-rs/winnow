@@ -3,9 +3,6 @@ use crate::error::ParserError;
 use crate::stream::Stream;
 use crate::{Parser, Result};
 
-#[doc(inline)]
-pub use crate::dispatch;
-
 /// Helper trait for the [`alt()`] combinator.
 ///
 /// This trait is implemented for tuples of up to 21 elements
@@ -23,7 +20,7 @@ pub trait Alt<I, O, E> {
 /// Alternatively, with a [custom error type][crate::_topic::error], it is possible to track all
 /// errors or return the error of the parser that went the farthest in the input data.
 ///
-/// When the alternative cases have unique prefixes, [`dispatch`] can offer better performance.
+/// When the alternative cases have unique prefixes, [`dispatch`][crate::combinator::dispatch] can offer better performance.
 ///
 /// # Example
 ///
