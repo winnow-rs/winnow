@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Documentation
+
+- Ensure macros are visible at `winnow::combinator`
+
 ## [1.0.0] - 2026-03-17
 
 Note: going to v1 is more a reflection of the rate of churn in Winnow's API than
