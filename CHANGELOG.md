@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.0.1] - 2026-03-30
+
 ### Documentation
 
 - Ensure macros are visible at `winnow::combinator`
@@ -2723,7 +2725,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/winnow-rs/winnow/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/winnow-rs/winnow/compare/v0.7.15...v1.0.0
 [0.7.15]: https://github.com/winnow-rs/winnow/compare/v0.7.14...v0.7.15
 [0.7.14]: https://github.com/winnow-rs/winnow/compare/v0.7.13...v0.7.14
