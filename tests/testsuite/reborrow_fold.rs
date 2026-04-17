@@ -14,7 +14,7 @@ use crate::TestResult;
 fn atom<'a>(_tomb: &mut ()) -> impl ModalParser<&'a [u8], String, InputError<&'a [u8]>> {
     take_till(1.., [' ', '\t', '\r', '\n'])
         .try_map(str::from_utf8)
-        .map(ToString::to_string)
+        .map(str::to_owned)
 }
 
 // FIXME: should we support the use case of borrowing data mutably in a parser?
