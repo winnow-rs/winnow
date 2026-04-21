@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Support `TreeError` in `binary::bits` (regression from 1.0.0)
+
 ## [1.0.1] - 2026-03-30
 
 ### Documentation
