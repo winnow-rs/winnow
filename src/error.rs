@@ -23,6 +23,8 @@
 use alloc::borrow::ToOwned;
 use core::fmt;
 
+#[cfg(feature = "binary")]
+use crate::binary::bits::Bits;
 use crate::stream::AsBStr;
 use crate::stream::Stream;
 #[allow(unused_imports)] // Here for intra-doc links
@@ -1085,6 +1087,25 @@ where
 }
 
 #[cfg(feature = "std")]
+#[cfg(feature = "binary")]
+impl<I, C> ErrorConvert<TreeError<Bits<I>, C>> for TreeError<I, C> {
+    #[inline]
+    fn convert(self) -> TreeError<Bits<I>, C> {
+        self.map_input(|i| Bits(i, 0))
+    }
+}
+
+#[cfg(feature = "std")]
+#[cfg(feature = "binary")]
+impl<I, C> ErrorConvert<TreeError<I, C>> for TreeError<Bits<I>, C> {
+    #[inline]
+    fn convert(self) -> TreeError<I, C> {
+        self.map_input(|Bits(i, _o)| i)
+    }
+}
+
+/// deprecated since 1.0.2
+#[cfg(feature = "std")]
 impl<I, C> ErrorConvert<TreeError<(I, usize), C>> for TreeError<I, C> {
     #[inline]
     fn convert(self) -> TreeError<(I, usize), C> {
@@ -1092,6 +1113,7 @@ impl<I, C> ErrorConvert<TreeError<(I, usize), C>> for TreeError<I, C> {
     }
 }
 
+/// deprecated since 1.0.2
 #[cfg(feature = "std")]
 impl<I, C> ErrorConvert<TreeError<I, C>> for TreeError<(I, usize), C> {
     #[inline]
