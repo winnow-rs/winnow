@@ -1092,8 +1092,7 @@ where
             .take()
             .verify_map(|s: <Input as Stream>::Slice| {
                 let s = s.as_bstr();
-                // SAFETY: Only 7-bit ASCII characters are parsed
-                let s = unsafe { core::str::from_utf8_unchecked(s) };
+                let s = core::str::from_utf8(s).ok()?;
                 Output::try_from_dec_uint(s)
             })
             .parse_next(input)
@@ -1182,8 +1181,7 @@ where
             .take()
             .verify_map(|s: <Input as Stream>::Slice| {
                 let s = s.as_bstr();
-                // SAFETY: Only 7-bit ASCII characters are parsed
-                let s = unsafe { core::str::from_utf8_unchecked(s) };
+                let s = core::str::from_utf8(s).ok()?;
                 Output::try_from_dec_int(s)
             })
             .parse_next(input)
