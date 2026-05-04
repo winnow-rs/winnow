@@ -31,6 +31,7 @@ the quality of previous releases or any statement against future breaking change
 3. Upgrade to v1
 4. Add `ascii`, `binary`, or `parser` features as needed
 5. Break tuples into tuples-of-tuples as needed
+6. Break `alt` tuples into tuples of `alt` tuples as needed
 
 ### Compatibility
 
