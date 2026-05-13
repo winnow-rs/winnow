@@ -188,7 +188,7 @@ pub use self::multi::separated_foldr1;
 pub use self::multi::{
     fill, iterator, repeat, repeat_till, separated, separated_foldl1, ParserIterator, Repeat,
 };
-pub use self::sequence::{delimited, prec, preceded, separated_pair, terminated};
+pub use self::sequence::{delim, delimited, prec, preceded, separated_p, separated_pair, termin, terminated};
 
 pub(crate) use self::debug::{trace_result, DisplayDebug};
 

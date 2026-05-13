@@ -41,55 +41,6 @@ where
     })
 }
 
-pub fn prec<Input, Output, Error, IgnoredParser, ParseNext>(
-    ignored: IgnoredParser,
-    parser: ParseNext,
-) -> Prec<Input, Output, Error, IgnoredParser, ParseNext>
-where
-    Input: Stream,
-    Error: ParserError<Input>,
-    IgnoredParser: Parser<Input, (), Error>,
-    ParseNext: Parser<Input, Output, Error>,
-{
-    Prec {
-        ignored,
-        parser,
-        marker: Default::default(),
-    }
-}
-
-#[derive(Clone)]
-/// [`Parser`] implementation for [`prec`]
-struct Prec<Input, Output, Error, IgnoredParser, ParseNext>
-where
-    Input: Stream,
-    Error: ParserError<Input>,
-    IgnoredParser: Parser<Input, (), Error>,
-    ParseNext: Parser<Input, Output, Error>,
-{
-    pub(crate) ignored: IgnoredParser,
-    pub(crate) parser: ParseNext,
-    pub(crate) marker: core::marker::PhantomData<(Input, Output, Error)>,
-}
-
-impl<Input, Output, Error, IgnoredParser, ParseNext> Parser<Input, Output, Error>
-    for Prec<Input, Output, Error, IgnoredParser, ParseNext>
-where
-    Input: Stream,
-    Error: ParserError<Input>,
-    IgnoredParser: Parser<Input, (), Error>,
-    ParseNext: Parser<Input, Output, Error>,
-{
-    #[inline(always)]
-    fn parse_next(&mut self, input: &mut Input) -> crate::Result<Output, Error> {
-        trace("prec", move |input: &mut Input| {
-            let _ = self.ignored.parse_next(input)?;
-            self.parser.parse_next(input)
-        })
-        .parse_next(input)
-    }
-}
-
 /// Sequence two parsers, only returning the output of the first.
 ///
 /// See also [`seq`][crate::combinator::seq] to generalize this across any number of fields.
@@ -217,4 +168,214 @@ where
         let o2 = parser.parse_next(input)?;
         ignored2.parse_next(input).map(|_| o2)
     })
+}
+
+pub fn prec<Input, Output, Error, IgnoredParser, ParseNext>(
+    ignored: IgnoredParser,
+    parser: ParseNext,
+) -> Prec<Input, Output, Error, IgnoredParser, ParseNext>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    IgnoredParser: Parser<Input, (), Error>,
+    ParseNext: Parser<Input, Output, Error>,
+{
+    Prec {
+        ignored,
+        parser,
+        marker: Default::default(),
+    }
+}
+
+/// [`Parser`] implementation for [`prec`]
+#[derive(Clone, Copy)]
+pub struct Prec<Input, Output, Error, IgnoredParser, ParseNext>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    IgnoredParser: Parser<Input, (), Error>,
+    ParseNext: Parser<Input, Output, Error>,
+{
+    pub(crate) ignored: IgnoredParser,
+    pub(crate) parser: ParseNext,
+    pub(crate) marker: core::marker::PhantomData<(Input, Output, Error)>,
+}
+
+impl<Input, Output, Error, IgnoredParser, ParseNext> Parser<Input, Output, Error>
+    for Prec<Input, Output, Error, IgnoredParser, ParseNext>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    IgnoredParser: Parser<Input, (), Error>,
+    ParseNext: Parser<Input, Output, Error>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> Result<Output, Error> {
+        trace("prec", move |input: &mut Input| {
+            let _ = self.ignored.parse_next(input)?;
+            self.parser.parse_next(input)
+        })
+        .parse_next(input)
+    }
+}
+
+pub fn termin<Input, Output, Error, ParseNext, IgnoredParser>(
+    mut parser: ParseNext,
+    mut ignored: IgnoredParser,
+) -> impl Parser<Input, Output, Error>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    ParseNext: Parser<Input, Output, Error>,
+    IgnoredParser: Parser<Input, (), Error>,
+{
+    Termin {
+        ignored,
+        parser,
+        marker: Default::default(),
+    }
+}
+
+/// [`Parser`] implementation for [`termin`]
+#[derive(Clone, Copy)]
+pub struct Termin<Input, Output, Error, IgnoredParser, ParseNext>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    IgnoredParser: Parser<Input, (), Error>,
+    ParseNext: Parser<Input, Output, Error>,
+{
+    pub(crate) ignored: IgnoredParser,
+    pub(crate) parser: ParseNext,
+    pub(crate) marker: core::marker::PhantomData<(Input, Output, Error)>,
+}
+
+impl<Input, Output, Error, IgnoredParser, ParseNext> Parser<Input, Output, Error>
+    for Termin<Input, Output, Error, IgnoredParser, ParseNext>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    IgnoredParser: Parser<Input, (), Error>,
+    ParseNext: Parser<Input, Output, Error>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> Result<Output, Error> {
+        trace("termin", move |input: &mut Input| {
+            let o = self.parser.parse_next(input)?;
+            self.ignored.parse_next(input).map(|_| o)
+        })
+        .parse_next(input)
+    }
+}
+
+pub fn separated_p<Input, O1, O2, Error, P1, SepParser, P2>(
+    mut first: P1,
+    mut sep: SepParser,
+    mut second: P2,
+) -> impl Parser<Input, (O1, O2), Error>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    P1: Parser<Input, O1, Error>,
+    SepParser: Parser<Input, (), Error>,
+    P2: Parser<Input, O2, Error>,
+{
+    SeparatedP {
+        first,
+        sep,
+        second,
+        marker: Default::default(),
+    }
+}
+
+/// [`Parser`] implementation for [`separated_p`]
+#[derive(Clone, Copy)]
+pub struct SeparatedP<Input, O1, O2, Error, P1, SepParser, P2>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    P1: Parser<Input, O1, Error>,
+    SepParser: Parser<Input, (), Error>,
+    P2: Parser<Input, O2, Error>,
+{
+    pub(crate) first: P1,
+    pub(crate) sep: SepParser,
+    pub(crate) second: P2,
+    pub(crate) marker: core::marker::PhantomData<(Input, (O1, O2), Error)>,
+}
+
+impl<Input, O1, O2, Error, P1, SepParser, P2> Parser<Input, (O1, O2), Error>
+    for SeparatedP<Input, O1, O2, Error, P1, SepParser, P2>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    P1: Parser<Input, O1, Error>,
+    SepParser: Parser<Input, (), Error>,
+    P2: Parser<Input, O2, Error>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> Result<(O1, O2), Error> {
+        trace("separated_p", move |input: &mut Input| {
+            let o1 = self.first.parse_next(input)?;
+            let _ = self.sep.parse_next(input)?;
+            self.second.parse_next(input).map(|o2| (o1, o2))
+        })
+        .parse_next(input)
+    }
+}
+
+pub fn delim<Input, Output, Error, IgnoredParser1, ParseNext, IgnoredParser2>(
+    mut ignored1: IgnoredParser1,
+    mut parser: ParseNext,
+    mut ignored2: IgnoredParser2,
+) -> impl Parser<Input, Output, Error>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    IgnoredParser1: Parser<Input, (), Error>,
+    ParseNext: Parser<Input, Output, Error>,
+    IgnoredParser2: Parser<Input, (), Error>,
+{
+    Delim {
+        ignored1,
+        parser,
+        ignored2,
+        marker: Default::default(),
+    }
+}
+
+/// [`Parser`] implementation for [`delim`]
+#[derive(Clone, Copy)]
+pub struct Delim<Input, Output, Error, IgnoredParser1, ParseNext, IgnoredParser2>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    IgnoredParser1: Parser<Input, (), Error>,
+    ParseNext: Parser<Input, Output, Error>,
+    IgnoredParser2: Parser<Input, (), Error>,
+{
+    pub(crate) ignored1: IgnoredParser1,
+    pub(crate) parser: ParseNext,
+    pub(crate) ignored2: IgnoredParser2,
+    pub(crate) marker: core::marker::PhantomData<(Input, Output, Error)>,
+}
+
+impl<Input, Output, Error, IgnoredParser1, ParseNext, IgnoredParser2> Parser<Input, Output, Error>
+    for Delim<Input, Output, Error, IgnoredParser1, ParseNext, IgnoredParser2>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    IgnoredParser1: Parser<Input, (), Error>,
+    ParseNext: Parser<Input, Output, Error>,
+    IgnoredParser2: Parser<Input, (), Error>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> Result<Output, Error> {
+        trace("delim", move |input: &mut Input| {
+            let _ = self.ignored1.parse_next(input)?;
+            let o2 = self.parser.parse_next(input)?;
+            self.ignored2.parse_next(input).map(|_| o2)
+        })
+        .parse_next(input)
+    }
 }
