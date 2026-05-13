@@ -1438,7 +1438,7 @@ impl HexUint for u128 {
 #[allow(clippy::trait_duplication_in_bounds)] // HACK: clippy 1.64.0 bug
 pub fn float<Input, Output, Error>(input: &mut Input) -> Result<Output, Error>
 where
-    Input: StreamIsPartial + Stream + Compare<Caseless<&'static str>> + Compare<char> + AsBStr,
+    Input: StreamIsPartial + Stream + Compare<Caseless<&'static str>> + Compare<char>,
     <Input as Stream>::Slice: ParseSlice<Output>,
     <Input as Stream>::Token: AsChar + Clone,
     <Input as Stream>::IterOffsets: Clone,
@@ -1461,7 +1461,6 @@ where
     I: Compare<char>,
     <I as Stream>::Token: AsChar + Clone,
     <I as Stream>::IterOffsets: Clone,
-    I: AsBStr,
 {
     dispatch! {opt(peek(any).map(AsChar::as_char));
         Some('N') | Some('n') => Caseless("nan").void(),
@@ -1481,7 +1480,6 @@ where
     I: Compare<char>,
     <I as Stream>::Token: AsChar + Clone,
     <I as Stream>::IterOffsets: Clone,
-    I: AsBStr,
 {
     dispatch! {opt(peek(any).map(AsChar::as_char));
         Some('I') | Some('i') => (Caseless("inf"), opt(Caseless("inity"))).void(),
@@ -1499,7 +1497,6 @@ where
     I: Compare<char>,
     <I as Stream>::Token: AsChar + Clone,
     <I as Stream>::IterOffsets: Clone,
-    I: AsBStr,
 {
     dispatch! {opt(peek(any).map(AsChar::as_char));
         Some('E') | Some('e') => (one_of(['e', 'E']), opt(one_of(['+', '-'])), digit1).void(),
