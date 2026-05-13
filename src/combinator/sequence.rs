@@ -41,6 +41,55 @@ where
     })
 }
 
+pub fn prec<Input, Output, Error, IgnoredParser, ParseNext>(
+    ignored: IgnoredParser,
+    parser: ParseNext,
+) -> Prec<Input, Output, Error, IgnoredParser, ParseNext>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    IgnoredParser: Parser<Input, (), Error>,
+    ParseNext: Parser<Input, Output, Error>,
+{
+    Prec {
+        ignored,
+        parser,
+        marker: Default::default(),
+    }
+}
+
+#[derive(Clone)]
+/// [`Parser`] implementation for [`prec`]
+struct Prec<Input, Output, Error, IgnoredParser, ParseNext>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    IgnoredParser: Parser<Input, (), Error>,
+    ParseNext: Parser<Input, Output, Error>,
+{
+    pub(crate) ignored: IgnoredParser,
+    pub(crate) parser: ParseNext,
+    pub(crate) marker: core::marker::PhantomData<(Input, Output, Error)>,
+}
+
+impl<Input, Output, Error, IgnoredParser, ParseNext> Parser<Input, Output, Error>
+    for Prec<Input, Output, Error, IgnoredParser, ParseNext>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    IgnoredParser: Parser<Input, (), Error>,
+    ParseNext: Parser<Input, Output, Error>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> crate::Result<Output, Error> {
+        trace("prec", move |input: &mut Input| {
+            let _ = self.ignored.parse_next(input)?;
+            self.parser.parse_next(input)
+        })
+        .parse_next(input)
+    }
+}
+
 /// Sequence two parsers, only returning the output of the first.
 ///
 /// See also [`seq`][crate::combinator::seq] to generalize this across any number of fields.
