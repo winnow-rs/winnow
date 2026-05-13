@@ -396,6 +396,15 @@ where
     }
 }
 
+impl<F: Parser<I, O, E> + Clone, I, O, E> Clone for Void<F, I, O, E> {
+    fn clone(&self) -> Self {
+        Void {
+            parser: self.parser.clone(),
+            marker: self.marker,
+        }
+    }
+}
+
 /// [`Parser`] implementation for [`Parser::take`]
 pub struct Take<F, I, O, E>
 where
