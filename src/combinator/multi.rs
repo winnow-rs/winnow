@@ -425,28 +425,15 @@ where
     /// ```
     #[inline(always)]
     pub fn verify_fold<Init, Op, Result>(
-        mut self,
-        mut init: Init,
-        mut op: Op,
-    ) -> impl Parser<Input, Result, Error>
+        self,
+        init: Init,
+        op: Op,
+    ) -> VerifyFold<Input, Output, Error, Result, Init, Op, ParseNext>
     where
         Init: FnMut() -> Result,
         Op: FnMut(Result, Output) -> Option<Result>,
     {
-        let Range {
-            start_inclusive,
-            end_inclusive,
-        } = self.occurrences;
-        trace("repeat_verify_fold", move |input: &mut Input| {
-            verify_fold_m_n(
-                start_inclusive,
-                end_inclusive.unwrap_or(usize::MAX),
-                &mut self.parser,
-                &mut init,
-                &mut op,
-                input,
-            )
-        })
+        VerifyFold::new(self, init, op)
     }
 
     /// Akin to [`Repeat::fold`], but for containers that can error when an element is accumulated.
@@ -497,29 +484,16 @@ where
     /// assert_eq!(parser.parse_peek(""), Ok(("", vec![])));
     #[inline(always)]
     pub fn try_fold<Init, Op, OpError, Result>(
-        mut self,
-        mut init: Init,
-        mut op: Op,
+        self,
+        init: Init,
+        op: Op,
     ) -> impl Parser<Input, Result, Error>
     where
         Init: FnMut() -> Result,
         Op: FnMut(Result, Output) -> core::result::Result<Result, OpError>,
         Error: FromExternalError<Input, OpError>,
     {
-        let Range {
-            start_inclusive,
-            end_inclusive,
-        } = self.occurrences;
-        trace("repeat_try_fold", move |input: &mut Input| {
-            try_fold_m_n(
-                start_inclusive,
-                end_inclusive.unwrap_or(usize::MAX),
-                &mut self.parser,
-                &mut init,
-                &mut op,
-                input,
-            )
-        })
+        TryFold::new(self, init, op)
     }
 }
 
@@ -1703,6 +1677,142 @@ where
                     i,
                 ),
             }
+        })
+        .parse_next(input)
+    }
+}
+
+/// [`Parser`] implementation for [`verify_fold`]
+#[derive(Clone, Copy)]
+pub struct VerifyFold<Input, Output, Error, Result, Init, Op, ParseNext>
+where
+    Input: Stream,
+    Init: FnMut() -> Result,
+    Op: FnMut(Result, Output) -> Option<Result>,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    repeat: Repeat<ParseNext, Input, Output, (), Error>,
+    init: Init,
+    op: Op,
+    marker: PhantomData<(Input, Output, Error)>,
+}
+
+impl<Input, Output, Error, Result, Init, Op, ParseNext>
+    VerifyFold<Input, Output, Error, Result, Init, Op, ParseNext>
+where
+    Input: Stream,
+    Init: FnMut() -> Result,
+    Op: FnMut(Result, Output) -> Option<Result>,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    pub(crate) fn new(
+        repeat: Repeat<ParseNext, Input, Output, (), Error>,
+        init: Init,
+        op: Op,
+    ) -> Self {
+        Self {
+            repeat,
+            init,
+            op,
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Output, Error, Result, Init, Op, ParseNext> Parser<Input, Result, Error>
+    for VerifyFold<Input, Output, Error, Result, Init, Op, ParseNext>
+where
+    Input: Stream,
+    Init: FnMut() -> Result,
+    Op: FnMut(Result, Output) -> Option<Result>,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> crate::Result<Result, Error> {
+        let Range {
+            start_inclusive,
+            end_inclusive,
+        } = self.repeat.occurrences;
+        trace("repeat_verify_fold", move |input: &mut Input| {
+            verify_fold_m_n(
+                start_inclusive,
+                end_inclusive.unwrap_or(usize::MAX),
+                &mut self.repeat.parser,
+                &mut self.init,
+                &mut self.op,
+                input,
+            )
+        })
+        .parse_next(input)
+    }
+}
+
+/// [`Parser`] implementation for [`try_fold`]
+#[derive(Clone, Copy)]
+pub struct TryFold<Input, Output, Error, Result, Init, OpError, Op, ParseNext>
+where
+    Input: Stream,
+    Init: FnMut() -> Result,
+    Op: FnMut(Result, Output) -> core::result::Result<Result, OpError>,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input> + FromExternalError<Input, OpError>,
+{
+    repeat: Repeat<ParseNext, Input, Output, (), Error>,
+    init: Init,
+    op: Op,
+    marker: PhantomData<(Input, Output, Error)>,
+}
+
+impl<Input, Output, Error, Result, Init, OpError, Op, ParseNext>
+    TryFold<Input, Output, Error, Result, Init, OpError, Op, ParseNext>
+where
+    Input: Stream,
+    Init: FnMut() -> Result,
+    Op: FnMut(Result, Output) -> core::result::Result<Result, OpError>,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input> + FromExternalError<Input, OpError>,
+{
+    pub(crate) fn new(
+        repeat: Repeat<ParseNext, Input, Output, (), Error>,
+        init: Init,
+        op: Op,
+    ) -> Self {
+        Self {
+            repeat,
+            init,
+            op,
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Output, Error, Result, Init, OpError, Op, ParseNext> Parser<Input, Result, Error>
+    for TryFold<Input, Output, Error, Result, Init, OpError, Op, ParseNext>
+where
+    Input: Stream,
+    Init: FnMut() -> Result,
+    Op: FnMut(Result, Output) -> core::result::Result<Result, OpError>,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input> + FromExternalError<Input, OpError>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> crate::Result<Result, Error> {
+        let Range {
+            start_inclusive,
+            end_inclusive,
+        } = self.repeat.occurrences;
+        trace("repeat_try_fold", move |input: &mut Input| {
+            try_fold_m_n(
+                start_inclusive,
+                end_inclusive.unwrap_or(usize::MAX),
+                &mut self.repeat.parser,
+                &mut self.init,
+                &mut self.op,
+                input,
+            )
         })
         .parse_next(input)
     }

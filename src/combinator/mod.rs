@@ -187,6 +187,7 @@ pub use self::expression::{expression, Expression, Infix, Postfix, Prefix};
 pub use self::multi::separated_foldr1;
 pub use self::multi::{
     fill, iterator, repeat, repeat_till, separated, separated_foldl1, Fold, ParserIterator, Repeat,
+    TryFold, VerifyFold,
 };
 pub use self::sequence::{delimited, preceded, separated_pair, terminated};
 
