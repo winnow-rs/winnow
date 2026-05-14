@@ -3,7 +3,6 @@ use crate::combinator::trace;
 use crate::error::{ModalError, ParserError};
 use crate::stream::Stream;
 use crate::{Parser, Result};
-use std::marker::PhantomData;
 
 /// Apply a [`Parser`], producing `None` on [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack].
 ///

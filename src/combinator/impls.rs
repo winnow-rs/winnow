@@ -1,6 +1,6 @@
 //! Opaque implementations of [`Parser`]
 
-use crate::combinator::DisplayDebug;
+use crate::combinator::{alt, Alt, DisplayDebug};
 use crate::combinator::{backtrack_err, cut_err, trace_result};
 use crate::combinator::{cond, not, peek, trace};
 #[cfg(feature = "unstable-recover")]
@@ -1301,5 +1301,44 @@ where
             self.parser.parse_next(input).map_err(|e| e.backtrack())
         })
         .parse_next(input)
+    }
+}
+
+/// [`Parser`] implementation for [`alt`]
+#[derive(Clone, Copy)]
+pub struct AltParser<Input, Output, Error, Alternatives>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    Alternatives: Alt<Input, Output, Error>,
+{
+    alternatives: Alternatives,
+    marker: PhantomData<(Input, Output, Error)>,
+}
+
+impl<Input, Output, Error, Alternatives> AltParser<Input, Output, Error, Alternatives>
+where
+    Input: Stream,
+    Alternatives: Alt<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    pub(crate) fn new(alternatives: Alternatives) -> Self {
+        Self {
+            alternatives,
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Output, Error, Alternatives> Parser<Input, Output, Error>
+    for AltParser<Input, Output, Error, Alternatives>
+where
+    Input: Stream,
+    Alternatives: Alt<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> Result<Output, Error> {
+        trace("alt", move |i: &mut Input| self.alternatives.choice(i)).parse_next(input)
     }
 }
