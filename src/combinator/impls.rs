@@ -1,8 +1,6 @@
 //! Opaque implementations of [`Parser`]
 
-use crate::combinator::{alt, Alt, DisplayDebug};
-use crate::combinator::{backtrack_err, cut_err, trace_result};
-use crate::combinator::{cond, not, peek, trace};
+use crate::combinator::{trace, trace_result, Alt, DisplayDebug};
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
 use crate::error::FromRecoverableError;
@@ -11,7 +9,7 @@ use crate::error::{ModalError, ParseError};
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
 use crate::stream::Recover;
-use crate::stream::{Accumulate, StreamIsPartial};
+use crate::stream::StreamIsPartial;
 use crate::stream::{Location, Stream};
 use crate::{Parser, Result};
 use core::borrow::Borrow;
