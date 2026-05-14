@@ -1,13 +1,13 @@
 //! Opaque implementations of [`Parser`]
 
-use crate::combinator::trace;
-use crate::combinator::trace_result;
 use crate::combinator::DisplayDebug;
+use crate::combinator::{backtrack_err, cut_err, trace_result};
+use crate::combinator::{cond, not, peek, trace};
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
 use crate::error::FromRecoverableError;
-use crate::error::ParseError;
 use crate::error::{AddContext, FromExternalError, ParserError};
+use crate::error::{ModalError, ParseError};
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
 use crate::stream::Recover;
@@ -16,6 +16,7 @@ use crate::stream::{Location, Stream};
 use crate::{Parser, Result};
 use core::borrow::Borrow;
 use core::ops::Range;
+use std::marker::PhantomData;
 
 /// Iterator implementation for [`Parser::parse_iter`]
 pub struct ParseIter<'p, P, I, O, E>
@@ -1021,6 +1022,283 @@ where
             let _ = self.ignored1.parse_next(input)?;
             let o2 = self.parser.parse_next(input)?;
             self.ignored2.parse_next(input).map(|_| o2)
+        })
+        .parse_next(input)
+    }
+}
+
+/// [`Parser`] implementation for [`opt`]
+#[derive(Clone, Copy)]
+pub struct Opt<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    parser: ParseNext,
+    marker: PhantomData<(Input, Output, Error)>,
+}
+
+impl<Input, Output, Error, ParseNext> Opt<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    pub(crate) fn new(parser: ParseNext) -> Self {
+        Self {
+            parser,
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Output, Error, ParseNext> Parser<Input, Option<Output>, Error>
+    for Opt<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> Result<Option<Output>, Error> {
+        trace("opt", move |input: &mut Input| {
+            let start = input.checkpoint();
+            match self.parser.parse_next(input) {
+                Ok(o) => Ok(Some(o)),
+                Err(e) if e.is_backtrack() => {
+                    input.reset(&start);
+                    Ok(None)
+                }
+                Err(e) => Err(e),
+            }
+        })
+        .parse_next(input)
+    }
+}
+
+/// [`Parser`] implementation for [`cond`]
+#[derive(Clone, Copy)]
+pub struct Cond<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    cond: bool,
+    parser: ParseNext,
+    marker: PhantomData<(Input, Output, Error)>,
+}
+
+impl<Input, Output, Error, ParseNext> Cond<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    pub(crate) fn new(cond: bool, parser: ParseNext) -> Self {
+        Self {
+            cond,
+            parser,
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Output, Error, ParseNext> Parser<Input, Option<Output>, Error>
+    for Cond<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> Result<Option<Output>, Error> {
+        trace("cond", move |input: &mut Input| {
+            if self.cond {
+                self.parser.parse_next(input).map(Some)
+            } else {
+                Ok(None)
+            }
+        })
+        .parse_next(input)
+    }
+}
+
+/// [`Parser`] implementation for [`peek`]
+#[derive(Clone, Copy)]
+pub struct Peek<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    parser: ParseNext,
+    marker: PhantomData<(Input, Output, Error)>,
+}
+
+impl<Input, Output, Error, ParseNext> Peek<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    pub(crate) fn new(parser: ParseNext) -> Self {
+        Self {
+            parser,
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Output, Error, ParseNext> Parser<Input, Output, Error>
+    for Peek<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> Result<Output, Error> {
+        trace("peek", move |input: &mut Input| {
+            let start = input.checkpoint();
+            let res = self.parser.parse_next(input);
+            input.reset(&start);
+            res
+        })
+        .parse_next(input)
+    }
+}
+
+/// [`Parser`] implementation for [`not`]
+#[derive(Clone, Copy)]
+pub struct Not<Input, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, (), Error>,
+    Error: ParserError<Input>,
+{
+    parser: ParseNext,
+    marker: PhantomData<(Input, Error)>,
+}
+
+impl<Input, Error, ParseNext> Not<Input, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, (), Error>,
+    Error: ParserError<Input>,
+{
+    pub(crate) fn new_voided<Ignore, MaskedParser: Parser<Input, Ignore, Error>>(
+        parser: MaskedParser,
+    ) -> Not<Input, Error, Void<MaskedParser, Input, Ignore, Error>> {
+        Not {
+            parser: parser.void(),
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Error, ParseNext> Parser<Input, (), Error> for Not<Input, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, (), Error>,
+    Error: ParserError<Input>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> Result<(), Error> {
+        trace("not", move |input: &mut Input| {
+            let start = input.checkpoint();
+            let res = self.parser.parse_next(input);
+            input.reset(&start);
+            match res {
+                Ok(_) => Err(ParserError::from_input(input)),
+                Err(e) if e.is_backtrack() => Ok(()),
+                Err(e) => Err(e),
+            }
+        })
+        .parse_next(input)
+    }
+}
+
+/// [`Parser`] implementation for [`cut_err`]
+#[derive(Clone, Copy)]
+pub struct CutErr<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input> + ModalError,
+{
+    parser: ParseNext,
+    marker: PhantomData<(Input, Output, Error)>,
+}
+
+impl<Input, Output, Error, ParseNext> CutErr<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input> + ModalError,
+{
+    pub(crate) fn new(parser: ParseNext) -> Self {
+        Self {
+            parser,
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Output, Error, ParseNext> Parser<Input, Output, Error>
+    for CutErr<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input> + ModalError,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> Result<Output, Error> {
+        trace("cut_err", move |input: &mut Input| {
+            self.parser.parse_next(input).map_err(|e| e.cut())
+        })
+        .parse_next(input)
+    }
+}
+
+/// [`Parser`] implementation for [`backtrack_err`]
+#[derive(Clone, Copy)]
+pub struct BacktrackErr<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input> + ModalError,
+{
+    parser: ParseNext,
+    marker: PhantomData<(Input, Output, Error)>,
+}
+
+impl<Input, Output, Error, ParseNext> BacktrackErr<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input> + ModalError,
+{
+    pub(crate) fn new(parser: ParseNext) -> Self {
+        Self {
+            parser,
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Output, Error, ParseNext> Parser<Input, Output, Error>
+    for BacktrackErr<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input> + ModalError,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> Result<Output, Error> {
+        trace("backtrack_err", move |input: &mut Input| {
+            self.parser.parse_next(input).map_err(|e| e.backtrack())
         })
         .parse_next(input)
     }
