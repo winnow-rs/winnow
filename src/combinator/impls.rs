@@ -87,6 +87,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::map`]
+#[derive(Clone, Copy)]
 pub struct Map<F, G, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -112,6 +113,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::try_map`]
+#[derive(Clone, Copy)]
 pub struct TryMap<F, G, I, O, O2, E, E2>
 where
     F: Parser<I, O, E>,
@@ -147,6 +149,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::verify_map`]
+#[derive(Clone, Copy)]
 pub struct VerifyMap<F, G, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -180,6 +183,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::and_then`]
+#[derive(Clone, Copy)]
 pub struct AndThen<F, G, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -213,6 +217,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::parse_to`]
+#[derive(Clone, Copy)]
 pub struct ParseTo<P, I, O, O2, E>
 where
     P: Parser<I, O, E>,
@@ -245,6 +250,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::flat_map`]
+#[derive(Clone, Copy)]
 pub struct FlatMap<F, G, H, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -270,6 +276,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::complete_err`]
+#[derive(Clone, Copy)]
 pub struct CompleteErr<P, I, O, E> {
     pub(crate) p: P,
     pub(crate) marker: core::marker::PhantomData<(I, O, E)>,
@@ -297,6 +304,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::verify`]
+#[derive(Clone, Copy)]
 pub struct Verify<F, G, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -334,6 +342,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::value`]
+#[derive(Clone, Copy)]
 pub struct Value<F, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -356,6 +365,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::default_value`]
+#[derive(Clone, Copy)]
 pub struct DefaultValue<F, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -377,6 +387,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::void`]
+#[derive(Clone, Copy)]
 pub struct Void<F, I, O, E>
 where
     F: Parser<I, O, E>,
@@ -396,6 +407,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::take`]
+#[derive(Clone, Copy)]
 pub struct Take<F, I, O, E>
 where
     F: Parser<I, O, E>,
@@ -426,6 +438,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::with_taken`]
+#[derive(Clone, Copy)]
 pub struct WithTaken<F, I, O, E>
 where
     F: Parser<I, O, E>,
@@ -456,6 +469,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::span`]
+#[derive(Clone, Copy)]
 pub struct Span<F, I, O, E>
 where
     F: Parser<I, O, E>,
@@ -481,6 +495,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::with_span`]
+#[derive(Clone, Copy)]
 pub struct WithSpan<F, I, O, E>
 where
     F: Parser<I, O, E>,
@@ -506,6 +521,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::output_into`]
+#[derive(Clone, Copy)]
 pub struct OutputInto<F, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -527,6 +543,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::err_into`]
+#[derive(Clone, Copy)]
 pub struct ErrInto<F, I, O, E, E2>
 where
     F: Parser<I, O, E>,
@@ -548,6 +565,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::context`]
+#[derive(Clone, Copy)]
 pub struct Context<F, I, O, E, C>
 where
     F: Parser<I, O, E>,
@@ -583,6 +601,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::context`]
+#[derive(Clone, Copy)]
 pub struct ContextWith<P, I, O, E, F, C, FI>
 where
     P: Parser<I, O, E>,
@@ -622,6 +641,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::map_err`]
+#[derive(Clone, Copy)]
 pub struct MapErr<F, G, I, O, E, E2>
 where
     F: Parser<I, O, E>,
