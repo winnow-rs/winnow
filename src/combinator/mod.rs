@@ -186,7 +186,7 @@ pub use self::expression::{expression, Expression, Infix, Postfix, Prefix};
 #[cfg(feature = "alloc")]
 pub use self::multi::separated_foldr1;
 pub use self::multi::{
-    fill, iterator, repeat, repeat_till, separated, separated_foldl1, ParserIterator, Repeat,
+    fill, iterator, repeat, repeat_till, separated, separated_foldl1, Fold, ParserIterator, Repeat,
 };
 pub use self::sequence::{delimited, preceded, separated_pair, terminated};
 

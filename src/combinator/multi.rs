@@ -8,6 +8,7 @@ use crate::stream::Range;
 use crate::stream::Stream;
 use crate::Parser;
 use crate::Result;
+use std::marker::PhantomData;
 
 /// Repeats the embedded parser, lazily returning the results
 ///
@@ -64,7 +65,7 @@ where
     parser: F,
     input: &'i mut I,
     state: State<E>,
-    marker: core::marker::PhantomData<O>,
+    marker: PhantomData<O>,
 }
 
 impl<F, I, O, E> ParserIterator<'_, F, I, O, E>
@@ -241,6 +242,7 @@ where
 }
 
 /// Customizable [`Parser`] implementation for [`repeat`]
+#[derive(Clone, Copy)]
 pub struct Repeat<P, I, O, C, E>
 where
     P: Parser<I, O, E>,
@@ -250,7 +252,7 @@ where
 {
     occurrences: Range,
     parser: P,
-    marker: core::marker::PhantomData<(I, O, C, E)>,
+    marker: PhantomData<(I, O, C, E)>,
 }
 
 impl<ParseNext, Input, Output, Error> Repeat<ParseNext, Input, Output, (), Error>
@@ -360,35 +362,15 @@ where
     #[doc(alias = "fold_repeat")]
     #[inline(always)]
     pub fn fold<Init, Op, Result>(
-        mut self,
-        mut init: Init,
-        mut op: Op,
-    ) -> impl Parser<Input, Result, Error>
+        self,
+        init: Init,
+        op: Op,
+    ) -> Fold<Input, Output, Error, Result, Init, Op, ParseNext>
     where
         Init: FnMut() -> Result,
         Op: FnMut(Result, Output) -> Result,
     {
-        let Range {
-            start_inclusive,
-            end_inclusive,
-        } = self.occurrences;
-        trace("repeat_fold", move |i: &mut Input| {
-            match (start_inclusive, end_inclusive) {
-                (0, None) => fold_repeat0_(&mut self.parser, &mut init, &mut op, i),
-                (1, None) => fold_repeat1_(&mut self.parser, &mut init, &mut op, i),
-                (start, end) if Some(start) == end => {
-                    fold_repeat_n_(start, &mut self.parser, &mut init, &mut op, i)
-                }
-                (start, end) => fold_repeat_m_n_(
-                    start,
-                    end.unwrap_or(usize::MAX),
-                    &mut self.parser,
-                    &mut init,
-                    &mut op,
-                    i,
-                ),
-            }
-        })
+        Fold::new(self, init, op)
     }
 
     /// Akin to [`Repeat::fold`], but for containers that can reject an element.
@@ -1641,4 +1623,87 @@ where
 
         Ok(())
     })
+}
+
+/// [`Parser`] implementation for [`fold`]
+#[derive(Clone, Copy)]
+pub struct Fold<Input, Output, Error, Result, Init, Op, ParseNext>
+where
+    Input: Stream,
+    Init: FnMut() -> Result,
+    Op: FnMut(Result, Output) -> Result,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    repeat: Repeat<ParseNext, Input, Output, (), Error>,
+    init: Init,
+    op: Op,
+    marker: PhantomData<(Input, Output, Error)>,
+}
+
+impl<Input, Output, Error, Result, Init, Op, ParseNext>
+    Fold<Input, Output, Error, Result, Init, Op, ParseNext>
+where
+    Input: Stream,
+    Init: FnMut() -> Result,
+    Op: FnMut(Result, Output) -> Result,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    pub(crate) fn new(
+        repeat: Repeat<ParseNext, Input, Output, (), Error>,
+        init: Init,
+        op: Op,
+    ) -> Self {
+        Self {
+            repeat,
+            init,
+            op,
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Output, Error, Result, Init, Op, ParseNext> Parser<Input, Result, Error>
+    for Fold<Input, Output, Error, Result, Init, Op, ParseNext>
+where
+    Input: Stream,
+    Init: FnMut() -> Result,
+    Op: FnMut(Result, Output) -> Result,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> crate::Result<Result, Error> {
+        let Range {
+            start_inclusive,
+            end_inclusive,
+        } = self.repeat.occurrences;
+        trace("repeat_fold", move |i: &mut Input| {
+            match (start_inclusive, end_inclusive) {
+                (0, None) => {
+                    fold_repeat0_(&mut self.repeat.parser, &mut self.init, &mut self.op, i)
+                }
+                (1, None) => {
+                    fold_repeat1_(&mut self.repeat.parser, &mut self.init, &mut self.op, i)
+                }
+                (start, end) if Some(start) == end => fold_repeat_n_(
+                    start,
+                    &mut self.repeat.parser,
+                    &mut self.init,
+                    &mut self.op,
+                    i,
+                ),
+                (start, end) => fold_repeat_m_n_(
+                    start,
+                    end.unwrap_or(usize::MAX),
+                    &mut self.repeat.parser,
+                    &mut self.init,
+                    &mut self.op,
+                    i,
+                ),
+            }
+        })
+        .parse_next(input)
+    }
 }

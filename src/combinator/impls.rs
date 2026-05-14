@@ -11,7 +11,7 @@ use crate::error::{ModalError, ParseError};
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
 use crate::stream::Recover;
-use crate::stream::StreamIsPartial;
+use crate::stream::{Accumulate, StreamIsPartial};
 use crate::stream::{Location, Stream};
 use crate::{Parser, Result};
 use core::borrow::Borrow;
