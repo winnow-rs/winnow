@@ -1,13 +1,11 @@
 //! Opaque implementations of [`Parser`]
 
-use crate::combinator::trace;
-use crate::combinator::trace_result;
-use crate::combinator::DisplayDebug;
+use crate::combinator::{trace, trace_result, Alt, DisplayDebug};
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
 use crate::error::FromRecoverableError;
-use crate::error::ParseError;
 use crate::error::{AddContext, FromExternalError, ParserError};
+use crate::error::{ModalError, ParseError};
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
 use crate::stream::Recover;
@@ -16,6 +14,7 @@ use crate::stream::{Location, Stream};
 use crate::{Parser, Result};
 use core::borrow::Borrow;
 use core::ops::Range;
+use std::marker::PhantomData;
 
 /// Iterator implementation for [`Parser::parse_iter`]
 pub struct ParseIter<'p, P, I, O, E>
@@ -88,6 +87,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::map`]
+#[derive(Clone, Copy)]
 pub struct Map<F, G, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -113,6 +113,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::try_map`]
+#[derive(Clone, Copy)]
 pub struct TryMap<F, G, I, O, O2, E, E2>
 where
     F: Parser<I, O, E>,
@@ -148,6 +149,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::verify_map`]
+#[derive(Clone, Copy)]
 pub struct VerifyMap<F, G, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -181,6 +183,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::and_then`]
+#[derive(Clone, Copy)]
 pub struct AndThen<F, G, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -214,6 +217,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::parse_to`]
+#[derive(Clone, Copy)]
 pub struct ParseTo<P, I, O, O2, E>
 where
     P: Parser<I, O, E>,
@@ -246,6 +250,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::flat_map`]
+#[derive(Clone, Copy)]
 pub struct FlatMap<F, G, H, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -271,6 +276,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::complete_err`]
+#[derive(Clone, Copy)]
 pub struct CompleteErr<P, I, O, E> {
     pub(crate) p: P,
     pub(crate) marker: core::marker::PhantomData<(I, O, E)>,
@@ -298,6 +304,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::verify`]
+#[derive(Clone, Copy)]
 pub struct Verify<F, G, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -335,6 +342,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::value`]
+#[derive(Clone, Copy)]
 pub struct Value<F, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -357,6 +365,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::default_value`]
+#[derive(Clone, Copy)]
 pub struct DefaultValue<F, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -378,6 +387,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::void`]
+#[derive(Clone, Copy)]
 pub struct Void<F, I, O, E>
 where
     F: Parser<I, O, E>,
@@ -397,6 +407,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::take`]
+#[derive(Clone, Copy)]
 pub struct Take<F, I, O, E>
 where
     F: Parser<I, O, E>,
@@ -427,6 +438,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::with_taken`]
+#[derive(Clone, Copy)]
 pub struct WithTaken<F, I, O, E>
 where
     F: Parser<I, O, E>,
@@ -457,6 +469,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::span`]
+#[derive(Clone, Copy)]
 pub struct Span<F, I, O, E>
 where
     F: Parser<I, O, E>,
@@ -482,6 +495,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::with_span`]
+#[derive(Clone, Copy)]
 pub struct WithSpan<F, I, O, E>
 where
     F: Parser<I, O, E>,
@@ -507,6 +521,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::output_into`]
+#[derive(Clone, Copy)]
 pub struct OutputInto<F, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -528,6 +543,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::err_into`]
+#[derive(Clone, Copy)]
 pub struct ErrInto<F, I, O, E, E2>
 where
     F: Parser<I, O, E>,
@@ -549,6 +565,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::context`]
+#[derive(Clone, Copy)]
 pub struct Context<F, I, O, E, C>
 where
     F: Parser<I, O, E>,
@@ -584,6 +601,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::context`]
+#[derive(Clone, Copy)]
 pub struct ContextWith<P, I, O, E, F, C, FI>
 where
     P: Parser<I, O, E>,
@@ -623,6 +641,7 @@ where
 }
 
 /// [`Parser`] implementation for [`Parser::map_err`]
+#[derive(Clone, Copy)]
 pub struct MapErr<F, G, I, O, E, E2>
 where
     F: Parser<I, O, E>,
@@ -791,4 +810,553 @@ where
     i.reset(&err_start);
     err = FromRecoverableError::from_recoverable_error(&token_start, &err_start, i, err);
     Err(err)
+}
+
+/// [`Parser`] implementation for [`preceded`]
+#[derive(Clone, Copy)]
+pub struct Preceded<Input, Output, Error, IgnoredParser, ParseNext>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    IgnoredParser: Parser<Input, (), Error>,
+    ParseNext: Parser<Input, Output, Error>,
+{
+    pub(crate) ignored: IgnoredParser,
+    pub(crate) parser: ParseNext,
+    pub(crate) marker: core::marker::PhantomData<(Input, Output, Error)>,
+}
+
+impl<Input, Output, Error, IgnoredParser, ParseNext>
+    Preceded<Input, Output, Error, IgnoredParser, ParseNext>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    IgnoredParser: Parser<Input, (), Error>,
+    ParseNext: Parser<Input, Output, Error>,
+{
+    pub(crate) fn new_voided<Ignore, MaskedParser: Parser<Input, Ignore, Error>>(
+        ignore: MaskedParser,
+        parser: ParseNext,
+    ) -> Preceded<Input, Output, Error, Void<MaskedParser, Input, Ignore, Error>, ParseNext> {
+        Preceded {
+            ignored: ignore.void(),
+            parser,
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Output, Error, IgnoredParser, ParseNext> Parser<Input, Output, Error>
+    for Preceded<Input, Output, Error, IgnoredParser, ParseNext>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    IgnoredParser: Parser<Input, (), Error>,
+    ParseNext: Parser<Input, Output, Error>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> std::result::Result<Output, Error> {
+        trace("preceded", move |input: &mut Input| {
+            let _ = self.ignored.parse_next(input)?;
+            self.parser.parse_next(input)
+        })
+        .parse_next(input)
+    }
+}
+
+/// [`Parser`] implementation for [`terminated`]
+#[derive(Clone, Copy)]
+pub struct Terminated<Input, Output, Error, IgnoredParser, ParseNext>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    IgnoredParser: Parser<Input, (), Error>,
+    ParseNext: Parser<Input, Output, Error>,
+{
+    pub(crate) ignored: IgnoredParser,
+    pub(crate) parser: ParseNext,
+    pub(crate) marker: core::marker::PhantomData<(Input, Output, Error)>,
+}
+
+impl<Input, Output, Error, IgnoredParser, ParseNext>
+    Terminated<Input, Output, Error, IgnoredParser, ParseNext>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    IgnoredParser: Parser<Input, (), Error>,
+    ParseNext: Parser<Input, Output, Error>,
+{
+    pub(crate) fn new_voided<Ignore, MaskedParser: Parser<Input, Ignore, Error>>(
+        ignored: MaskedParser,
+        parser: ParseNext,
+    ) -> Terminated<Input, Output, Error, Void<MaskedParser, Input, Ignore, Error>, ParseNext> {
+        Terminated {
+            ignored: ignored.void(),
+            parser,
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Output, Error, IgnoredParser, ParseNext> Parser<Input, Output, Error>
+    for Terminated<Input, Output, Error, IgnoredParser, ParseNext>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    IgnoredParser: Parser<Input, (), Error>,
+    ParseNext: Parser<Input, Output, Error>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> std::result::Result<Output, Error> {
+        trace("termin", move |input: &mut Input| {
+            let o = self.parser.parse_next(input)?;
+            self.ignored.parse_next(input).map(|_| o)
+        })
+        .parse_next(input)
+    }
+}
+
+/// [`Parser`] implementation for [`separated_pair`]
+#[derive(Clone, Copy)]
+pub struct SeparatedPair<Input, O1, O2, Error, P1, SepParser, P2>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    P1: Parser<Input, O1, Error>,
+    SepParser: Parser<Input, (), Error>,
+    P2: Parser<Input, O2, Error>,
+{
+    pub(crate) first: P1,
+    pub(crate) sep: SepParser,
+    pub(crate) second: P2,
+    pub(crate) marker: core::marker::PhantomData<(Input, (O1, O2), Error)>,
+}
+
+impl<Input, O1, O2, Error, P1, SepParser, P2> SeparatedPair<Input, O1, O2, Error, P1, SepParser, P2>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    P1: Parser<Input, O1, Error>,
+    SepParser: Parser<Input, (), Error>,
+    P2: Parser<Input, O2, Error>,
+{
+    pub(crate) fn new_voided<Ignore, MaskedParser: Parser<Input, Ignore, Error>>(
+        first: P1,
+        sep: MaskedParser,
+        second: P2,
+    ) -> SeparatedPair<Input, O1, O2, Error, P1, Void<MaskedParser, Input, Ignore, Error>, P2> {
+        SeparatedPair {
+            first,
+            sep: sep.void(),
+            second,
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, O1, O2, Error, P1, SepParser, P2> Parser<Input, (O1, O2), Error>
+    for SeparatedPair<Input, O1, O2, Error, P1, SepParser, P2>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    P1: Parser<Input, O1, Error>,
+    SepParser: Parser<Input, (), Error>,
+    P2: Parser<Input, O2, Error>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> std::result::Result<(O1, O2), Error> {
+        trace("separated_pair", move |input: &mut Input| {
+            let o1 = self.first.parse_next(input)?;
+            let _ = self.sep.parse_next(input)?;
+            self.second.parse_next(input).map(|o2| (o1, o2))
+        })
+        .parse_next(input)
+    }
+}
+
+/// [`Parser`] implementation for [`delimited`]
+#[derive(Clone, Copy)]
+pub struct Delimited<Input, Output, Error, IgnoredParser1, ParseNext, IgnoredParser2>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    IgnoredParser1: Parser<Input, (), Error>,
+    ParseNext: Parser<Input, Output, Error>,
+    IgnoredParser2: Parser<Input, (), Error>,
+{
+    pub(crate) ignored1: IgnoredParser1,
+    pub(crate) parser: ParseNext,
+    pub(crate) ignored2: IgnoredParser2,
+    pub(crate) marker: core::marker::PhantomData<(Input, Output, Error)>,
+}
+
+impl<Input, Output, Error, IgnoredParser1, ParseNext, IgnoredParser2>
+    Delimited<Input, Output, Error, IgnoredParser1, ParseNext, IgnoredParser2>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    IgnoredParser1: Parser<Input, (), Error>,
+    ParseNext: Parser<Input, Output, Error>,
+    IgnoredParser2: Parser<Input, (), Error>,
+{
+    pub(crate) fn new_voided<
+        Ignore1,
+        MaskedParser1: Parser<Input, Ignore1, Error>,
+        Ignore2,
+        MaskedParser2: Parser<Input, Ignore2, Error>,
+    >(
+        ignored1: MaskedParser1,
+        parser: ParseNext,
+        ignored2: MaskedParser2,
+    ) -> Delimited<
+        Input,
+        Output,
+        Error,
+        Void<MaskedParser1, Input, Ignore1, Error>,
+        ParseNext,
+        Void<MaskedParser2, Input, Ignore2, Error>,
+    > {
+        Delimited {
+            ignored1: ignored1.void(),
+            parser,
+            ignored2: ignored2.void(),
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Output, Error, IgnoredParser1, ParseNext, IgnoredParser2> Parser<Input, Output, Error>
+    for Delimited<Input, Output, Error, IgnoredParser1, ParseNext, IgnoredParser2>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    IgnoredParser1: Parser<Input, (), Error>,
+    ParseNext: Parser<Input, Output, Error>,
+    IgnoredParser2: Parser<Input, (), Error>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> std::result::Result<Output, Error> {
+        trace("delimited", move |input: &mut Input| {
+            let _ = self.ignored1.parse_next(input)?;
+            let o2 = self.parser.parse_next(input)?;
+            self.ignored2.parse_next(input).map(|_| o2)
+        })
+        .parse_next(input)
+    }
+}
+
+/// [`Parser`] implementation for [`opt`]
+#[derive(Clone, Copy)]
+pub struct Opt<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    parser: ParseNext,
+    marker: PhantomData<(Input, Output, Error)>,
+}
+
+impl<Input, Output, Error, ParseNext> Opt<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    pub(crate) fn new(parser: ParseNext) -> Self {
+        Self {
+            parser,
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Output, Error, ParseNext> Parser<Input, Option<Output>, Error>
+    for Opt<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> Result<Option<Output>, Error> {
+        trace("opt", move |input: &mut Input| {
+            let start = input.checkpoint();
+            match self.parser.parse_next(input) {
+                Ok(o) => Ok(Some(o)),
+                Err(e) if e.is_backtrack() => {
+                    input.reset(&start);
+                    Ok(None)
+                }
+                Err(e) => Err(e),
+            }
+        })
+        .parse_next(input)
+    }
+}
+
+/// [`Parser`] implementation for [`cond`]
+#[derive(Clone, Copy)]
+pub struct Cond<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    cond: bool,
+    parser: ParseNext,
+    marker: PhantomData<(Input, Output, Error)>,
+}
+
+impl<Input, Output, Error, ParseNext> Cond<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    pub(crate) fn new(cond: bool, parser: ParseNext) -> Self {
+        Self {
+            cond,
+            parser,
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Output, Error, ParseNext> Parser<Input, Option<Output>, Error>
+    for Cond<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> Result<Option<Output>, Error> {
+        trace("cond", move |input: &mut Input| {
+            if self.cond {
+                self.parser.parse_next(input).map(Some)
+            } else {
+                Ok(None)
+            }
+        })
+        .parse_next(input)
+    }
+}
+
+/// [`Parser`] implementation for [`peek`]
+#[derive(Clone, Copy)]
+pub struct Peek<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    parser: ParseNext,
+    marker: PhantomData<(Input, Output, Error)>,
+}
+
+impl<Input, Output, Error, ParseNext> Peek<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    pub(crate) fn new(parser: ParseNext) -> Self {
+        Self {
+            parser,
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Output, Error, ParseNext> Parser<Input, Output, Error>
+    for Peek<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> Result<Output, Error> {
+        trace("peek", move |input: &mut Input| {
+            let start = input.checkpoint();
+            let res = self.parser.parse_next(input);
+            input.reset(&start);
+            res
+        })
+        .parse_next(input)
+    }
+}
+
+/// [`Parser`] implementation for [`not`]
+#[derive(Clone, Copy)]
+pub struct Not<Input, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, (), Error>,
+    Error: ParserError<Input>,
+{
+    parser: ParseNext,
+    marker: PhantomData<(Input, Error)>,
+}
+
+impl<Input, Error, ParseNext> Not<Input, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, (), Error>,
+    Error: ParserError<Input>,
+{
+    pub(crate) fn new_voided<Ignore, MaskedParser: Parser<Input, Ignore, Error>>(
+        parser: MaskedParser,
+    ) -> Not<Input, Error, Void<MaskedParser, Input, Ignore, Error>> {
+        Not {
+            parser: parser.void(),
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Error, ParseNext> Parser<Input, (), Error> for Not<Input, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, (), Error>,
+    Error: ParserError<Input>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> Result<(), Error> {
+        trace("not", move |input: &mut Input| {
+            let start = input.checkpoint();
+            let res = self.parser.parse_next(input);
+            input.reset(&start);
+            match res {
+                Ok(_) => Err(ParserError::from_input(input)),
+                Err(e) if e.is_backtrack() => Ok(()),
+                Err(e) => Err(e),
+            }
+        })
+        .parse_next(input)
+    }
+}
+
+/// [`Parser`] implementation for [`cut_err`]
+#[derive(Clone, Copy)]
+pub struct CutErr<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input> + ModalError,
+{
+    parser: ParseNext,
+    marker: PhantomData<(Input, Output, Error)>,
+}
+
+impl<Input, Output, Error, ParseNext> CutErr<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input> + ModalError,
+{
+    pub(crate) fn new(parser: ParseNext) -> Self {
+        Self {
+            parser,
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Output, Error, ParseNext> Parser<Input, Output, Error>
+    for CutErr<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input> + ModalError,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> Result<Output, Error> {
+        trace("cut_err", move |input: &mut Input| {
+            self.parser.parse_next(input).map_err(|e| e.cut())
+        })
+        .parse_next(input)
+    }
+}
+
+/// [`Parser`] implementation for [`backtrack_err`]
+#[derive(Clone, Copy)]
+pub struct BacktrackErr<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input> + ModalError,
+{
+    parser: ParseNext,
+    marker: PhantomData<(Input, Output, Error)>,
+}
+
+impl<Input, Output, Error, ParseNext> BacktrackErr<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input> + ModalError,
+{
+    pub(crate) fn new(parser: ParseNext) -> Self {
+        Self {
+            parser,
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Output, Error, ParseNext> Parser<Input, Output, Error>
+    for BacktrackErr<Input, Output, Error, ParseNext>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input> + ModalError,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> Result<Output, Error> {
+        trace("backtrack_err", move |input: &mut Input| {
+            self.parser.parse_next(input).map_err(|e| e.backtrack())
+        })
+        .parse_next(input)
+    }
+}
+
+/// [`Parser`] implementation for [`alt`]
+#[derive(Clone, Copy)]
+pub struct AltParser<Input, Output, Error, Alternatives>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+    Alternatives: Alt<Input, Output, Error>,
+{
+    alternatives: Alternatives,
+    marker: PhantomData<(Input, Output, Error)>,
+}
+
+impl<Input, Output, Error, Alternatives> AltParser<Input, Output, Error, Alternatives>
+where
+    Input: Stream,
+    Alternatives: Alt<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    pub(crate) fn new(alternatives: Alternatives) -> Self {
+        Self {
+            alternatives,
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Output, Error, Alternatives> Parser<Input, Output, Error>
+    for AltParser<Input, Output, Error, Alternatives>
+where
+    Input: Stream,
+    Alternatives: Alt<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> Result<Output, Error> {
+        trace("alt", move |i: &mut Input| self.alternatives.choice(i)).parse_next(input)
+    }
 }

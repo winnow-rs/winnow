@@ -1,4 +1,4 @@
-use crate::combinator::trace;
+use crate::combinator::impls::{Delimited, Preceded, SeparatedPair, Terminated, Void};
 use crate::error::ParserError;
 use crate::stream::Stream;
 use crate::Parser;
@@ -25,20 +25,17 @@ use crate::Parser;
 /// assert!(parser.parse_peek("123").is_err());
 /// ```
 #[doc(alias = "ignore_then")]
-pub fn preceded<Input, Ignored, Output, Error, IgnoredParser, ParseNext>(
-    mut ignored: IgnoredParser,
-    mut parser: ParseNext,
-) -> impl Parser<Input, Output, Error>
+pub fn preceded<Input, Output, Error, Ignore, IgnoredParser, ParseNext>(
+    ignored: IgnoredParser,
+    parser: ParseNext,
+) -> Preceded<Input, Output, Error, Void<IgnoredParser, Input, Ignore, Error>, ParseNext>
 where
     Input: Stream,
     Error: ParserError<Input>,
-    IgnoredParser: Parser<Input, Ignored, Error>,
+    IgnoredParser: Parser<Input, Ignore, Error>,
     ParseNext: Parser<Input, Output, Error>,
 {
-    trace("preceded", move |input: &mut Input| {
-        let _ = ignored.parse_next(input)?;
-        parser.parse_next(input)
-    })
+    Preceded::<_, _, _, Void<IgnoredParser, _, _, _>, _>::new_voided(ignored, parser)
 }
 
 /// Sequence two parsers, only returning the output of the first.
@@ -63,20 +60,17 @@ where
 /// assert!(parser.parse_peek("123").is_err());
 /// ```
 #[doc(alias = "then_ignore")]
-pub fn terminated<Input, Output, Ignored, Error, ParseNext, IgnoredParser>(
-    mut parser: ParseNext,
-    mut ignored: IgnoredParser,
-) -> impl Parser<Input, Output, Error>
+pub fn terminated<Input, Output, Error, ParseNext, Ignore, IgnoredParser>(
+    parser: ParseNext,
+    ignored: IgnoredParser,
+) -> Terminated<Input, Output, Error, Void<IgnoredParser, Input, Ignore, Error>, ParseNext>
 where
     Input: Stream,
     Error: ParserError<Input>,
     ParseNext: Parser<Input, Output, Error>,
-    IgnoredParser: Parser<Input, Ignored, Error>,
+    IgnoredParser: Parser<Input, Ignore, Error>,
 {
-    trace("terminated", move |input: &mut Input| {
-        let o = parser.parse_next(input)?;
-        ignored.parse_next(input).map(|_| o)
-    })
+    Terminated::<_, _, _, Void<IgnoredParser, _, _, _>, _>::new_voided(ignored, parser)
 }
 
 /// Sequence three parsers, only returning the values of the first and third.
@@ -100,23 +94,19 @@ where
 /// assert!(parser.parse_peek("").is_err());
 /// assert!(parser.parse_peek("123").is_err());
 /// ```
-pub fn separated_pair<Input, O1, Sep, O2, Error, P1, SepParser, P2>(
-    mut first: P1,
-    mut sep: SepParser,
-    mut second: P2,
-) -> impl Parser<Input, (O1, O2), Error>
+pub fn separated_pair<Input, O1, O2, Error, P1, Ignore, SepParser, P2>(
+    first: P1,
+    sep: SepParser,
+    second: P2,
+) -> SeparatedPair<Input, O1, O2, Error, P1, Void<SepParser, Input, Ignore, Error>, P2>
 where
     Input: Stream,
     Error: ParserError<Input>,
     P1: Parser<Input, O1, Error>,
-    SepParser: Parser<Input, Sep, Error>,
+    SepParser: Parser<Input, Ignore, Error>,
     P2: Parser<Input, O2, Error>,
 {
-    trace("separated_pair", move |input: &mut Input| {
-        let o1 = first.parse_next(input)?;
-        let _ = sep.parse_next(input)?;
-        second.parse_next(input).map(|o2| (o1, o2))
-    })
+    SeparatedPair::<_, _, _, _, _, Void<SepParser, _, _, _>, _>::new_voided(first, sep, second)
 }
 
 /// Sequence three parsers, only returning the output of the second.
@@ -144,28 +134,31 @@ where
 #[doc(alias = "padded")]
 pub fn delimited<
     Input,
-    Ignored1,
     Output,
-    Ignored2,
     Error,
+    Ignore1,
     IgnoredParser1,
     ParseNext,
+    Ignore2,
     IgnoredParser2,
 >(
-    mut ignored1: IgnoredParser1,
-    mut parser: ParseNext,
-    mut ignored2: IgnoredParser2,
-) -> impl Parser<Input, Output, Error>
+    ignored1: IgnoredParser1,
+    parser: ParseNext,
+    ignored2: IgnoredParser2,
+) -> Delimited<
+    Input,
+    Output,
+    Error,
+    Void<IgnoredParser1, Input, Ignore1, Error>,
+    ParseNext,
+    Void<IgnoredParser2, Input, Ignore2, Error>,
+>
 where
     Input: Stream,
     Error: ParserError<Input>,
-    IgnoredParser1: Parser<Input, Ignored1, Error>,
+    IgnoredParser1: Parser<Input, Ignore1, Error>,
     ParseNext: Parser<Input, Output, Error>,
-    IgnoredParser2: Parser<Input, Ignored2, Error>,
+    IgnoredParser2: Parser<Input, Ignore2, Error>,
 {
-    trace("delimited", move |input: &mut Input| {
-        let _ = ignored1.parse_next(input)?;
-        let o2 = parser.parse_next(input)?;
-        ignored2.parse_next(input).map(|_| o2)
-    })
+    Delimited::<_, _, _, Void<IgnoredParser1, _, _, _>, _, Void<IgnoredParser2, _, _, _>>::new_voided(ignored1, parser, ignored2)
 }
