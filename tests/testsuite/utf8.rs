@@ -119,6 +119,21 @@ Ok(
 "#]]
         .raw()
     );
+    // U+212A (KELVIN SIGN, 3 bytes) case-folds to ASCII 'k' (1 byte)
+    assert_parse!(
+        Caseless("k").parse_peek("\u{212A}xyz"),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: "Kxyz",
+        },
+    ),
+)
+
+"#]]
+        .raw()
+    );
 }
 
 #[test]
