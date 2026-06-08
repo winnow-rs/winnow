@@ -1,4 +1,4 @@
-use crate::combinator::trace;
+use crate::combinator::impls::AltParser;
 use crate::error::ParserError;
 use crate::stream::Stream;
 use crate::{Parser, Result};
@@ -47,13 +47,13 @@ pub trait Alt<I, O, E> {
 #[doc(alias = "choice")]
 #[inline(always)]
 pub fn alt<Input: Stream, Output, Error, Alternatives>(
-    mut alternatives: Alternatives,
-) -> impl Parser<Input, Output, Error>
+    alternatives: Alternatives,
+) -> AltParser<Input, Output, Error, Alternatives>
 where
     Alternatives: Alt<Input, Output, Error>,
     Error: ParserError<Input>,
 {
-    trace("alt", move |i: &mut Input| alternatives.choice(i))
+    AltParser::new(alternatives)
 }
 
 impl<const N: usize, I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I, O, E> for [P; N] {

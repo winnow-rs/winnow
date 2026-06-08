@@ -1,3 +1,4 @@
+use crate::combinator::impls::{BacktrackErr, Cond, CutErr, Not, Opt, Peek, Void};
 use crate::combinator::trace;
 use crate::error::{ModalError, ParserError};
 use crate::stream::Stream;
@@ -23,24 +24,15 @@ use crate::{Parser, Result};
 /// assert_eq!(parser.parse_peek("123;"), Ok(("123;", None)));
 /// # }
 /// ```
-pub fn opt<Input: Stream, Output, Error, ParseNext>(
-    mut parser: ParseNext,
-) -> impl Parser<Input, Option<Output>, Error>
+pub fn opt<Input, Output, Error, ParseNext>(
+    parser: ParseNext,
+) -> Opt<Input, Output, Error, ParseNext>
 where
+    Input: Stream,
     ParseNext: Parser<Input, Output, Error>,
     Error: ParserError<Input>,
 {
-    trace("opt", move |input: &mut Input| {
-        let start = input.checkpoint();
-        match parser.parse_next(input) {
-            Ok(o) => Ok(Some(o)),
-            Err(e) if e.is_backtrack() => {
-                input.reset(&start);
-                Ok(None)
-            }
-            Err(e) => Err(e),
-        }
-    })
+    Opt::new(parser)
 }
 
 /// Calls the parser if the condition is met.
@@ -68,20 +60,14 @@ where
 /// ```
 pub fn cond<Input, Output, Error, ParseNext>(
     cond: bool,
-    mut parser: ParseNext,
-) -> impl Parser<Input, Option<Output>, Error>
+    parser: ParseNext,
+) -> Cond<Input, Output, Error, ParseNext>
 where
     Input: Stream,
     ParseNext: Parser<Input, Output, Error>,
     Error: ParserError<Input>,
 {
-    trace("cond", move |input: &mut Input| {
-        if cond {
-            parser.parse_next(input).map(Some)
-        } else {
-            Ok(None)
-        }
-    })
+    Cond::new(cond, parser)
 }
 
 /// Apply the parser without advancing the input.
@@ -107,19 +93,14 @@ where
 #[doc(alias = "look_ahead")]
 #[doc(alias = "rewind")]
 pub fn peek<Input, Output, Error, ParseNext>(
-    mut parser: ParseNext,
-) -> impl Parser<Input, Output, Error>
+    parser: ParseNext,
+) -> Peek<Input, Output, Error, ParseNext>
 where
     Input: Stream,
     Error: ParserError<Input>,
     ParseNext: Parser<Input, Output, Error>,
 {
-    trace("peek", move |input: &mut Input| {
-        let start = input.checkpoint();
-        let res = parser.parse_next(input);
-        input.reset(&start);
-        res
-    })
+    Peek::new(parser)
 }
 
 /// Match the end of the [`Stream`]
@@ -191,22 +172,15 @@ where
 /// assert!(parser.parse_peek("abcd").is_err());
 /// # }
 /// ```
-pub fn not<Input, Output, Error, ParseNext>(mut parser: ParseNext) -> impl Parser<Input, (), Error>
+pub fn not<Input, Output, Error, ParseNext>(
+    parser: ParseNext,
+) -> Not<Input, Error, Void<ParseNext, Input, Output, Error>>
 where
     Input: Stream,
     Error: ParserError<Input>,
     ParseNext: Parser<Input, Output, Error>,
 {
-    trace("not", move |input: &mut Input| {
-        let start = input.checkpoint();
-        let res = parser.parse_next(input);
-        input.reset(&start);
-        match res {
-            Ok(_) => Err(ParserError::from_input(input)),
-            Err(e) if e.is_backtrack() => Ok(()),
-            Err(e) => Err(e),
-        }
-    })
+    Not::<_, _, Void<ParseNext, _, _, _>>::new_voided(parser)
 }
 
 /// Transforms an [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack] (recoverable) to [`ErrMode::Cut`][crate::error::ErrMode::Cut] (unrecoverable)
@@ -266,16 +240,14 @@ where
 /// # }
 /// ```
 pub fn cut_err<Input, Output, Error, ParseNext>(
-    mut parser: ParseNext,
-) -> impl Parser<Input, Output, Error>
+    parser: ParseNext,
+) -> CutErr<Input, Output, Error, ParseNext>
 where
     Input: Stream,
     Error: ParserError<Input> + ModalError,
     ParseNext: Parser<Input, Output, Error>,
 {
-    trace("cut_err", move |input: &mut Input| {
-        parser.parse_next(input).map_err(|e| e.cut())
-    })
+    CutErr::new(parser)
 }
 
 /// Transforms an [`ErrMode::Cut`][crate::error::ErrMode::Cut] (unrecoverable) to [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack] (recoverable)
@@ -283,16 +255,14 @@ where
 /// This attempts the parse, allowing other parsers to be tried on failure, like with
 /// [`winnow::combinator::alt`][crate::combinator::alt].
 pub fn backtrack_err<Input, Output, Error, ParseNext>(
-    mut parser: ParseNext,
-) -> impl Parser<Input, Output, Error>
+    parser: ParseNext,
+) -> BacktrackErr<Input, Output, Error, ParseNext>
 where
     Input: Stream,
     Error: ParserError<Input> + ModalError,
     ParseNext: Parser<Input, Output, Error>,
 {
-    trace("backtrack_err", move |input: &mut Input| {
-        parser.parse_next(input).map_err(|e| e.backtrack())
-    })
+    BacktrackErr::new(parser)
 }
 
 /// A placeholder for a not-yet-implemented [`Parser`]

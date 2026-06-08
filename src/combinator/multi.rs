@@ -1,6 +1,6 @@
 //! Combinators applying their child parser multiple times
 
-use crate::combinator::trace;
+use crate::combinator::{impls, trace};
 use crate::error::FromExternalError;
 use crate::error::ParserError;
 use crate::stream::Accumulate;
@@ -8,6 +8,7 @@ use crate::stream::Range;
 use crate::stream::Stream;
 use crate::Parser;
 use crate::Result;
+use std::marker::PhantomData;
 
 /// Repeats the embedded parser, lazily returning the results
 ///
@@ -64,7 +65,7 @@ where
     parser: F,
     input: &'i mut I,
     state: State<E>,
-    marker: core::marker::PhantomData<O>,
+    marker: PhantomData<O>,
 }
 
 impl<F, I, O, E> ParserIterator<'_, F, I, O, E>
@@ -241,6 +242,7 @@ where
 }
 
 /// Customizable [`Parser`] implementation for [`repeat`]
+#[derive(Clone, Copy)]
 pub struct Repeat<P, I, O, C, E>
 where
     P: Parser<I, O, E>,
@@ -250,7 +252,7 @@ where
 {
     occurrences: Range,
     parser: P,
-    marker: core::marker::PhantomData<(I, O, C, E)>,
+    marker: PhantomData<(I, O, C, E)>,
 }
 
 impl<ParseNext, Input, Output, Error> Repeat<ParseNext, Input, Output, (), Error>
@@ -360,35 +362,15 @@ where
     #[doc(alias = "fold_repeat")]
     #[inline(always)]
     pub fn fold<Init, Op, Result>(
-        mut self,
-        mut init: Init,
-        mut op: Op,
-    ) -> impl Parser<Input, Result, Error>
+        self,
+        init: Init,
+        op: Op,
+    ) -> Fold<Input, Output, Error, Result, Init, Op, ParseNext>
     where
         Init: FnMut() -> Result,
         Op: FnMut(Result, Output) -> Result,
     {
-        let Range {
-            start_inclusive,
-            end_inclusive,
-        } = self.occurrences;
-        trace("repeat_fold", move |i: &mut Input| {
-            match (start_inclusive, end_inclusive) {
-                (0, None) => fold_repeat0_(&mut self.parser, &mut init, &mut op, i),
-                (1, None) => fold_repeat1_(&mut self.parser, &mut init, &mut op, i),
-                (start, end) if Some(start) == end => {
-                    fold_repeat_n_(start, &mut self.parser, &mut init, &mut op, i)
-                }
-                (start, end) => fold_repeat_m_n_(
-                    start,
-                    end.unwrap_or(usize::MAX),
-                    &mut self.parser,
-                    &mut init,
-                    &mut op,
-                    i,
-                ),
-            }
-        })
+        Fold::new(self, init, op)
     }
 
     /// Akin to [`Repeat::fold`], but for containers that can reject an element.
@@ -443,28 +425,15 @@ where
     /// ```
     #[inline(always)]
     pub fn verify_fold<Init, Op, Result>(
-        mut self,
-        mut init: Init,
-        mut op: Op,
-    ) -> impl Parser<Input, Result, Error>
+        self,
+        init: Init,
+        op: Op,
+    ) -> VerifyFold<Input, Output, Error, Result, Init, Op, ParseNext>
     where
         Init: FnMut() -> Result,
         Op: FnMut(Result, Output) -> Option<Result>,
     {
-        let Range {
-            start_inclusive,
-            end_inclusive,
-        } = self.occurrences;
-        trace("repeat_verify_fold", move |input: &mut Input| {
-            verify_fold_m_n(
-                start_inclusive,
-                end_inclusive.unwrap_or(usize::MAX),
-                &mut self.parser,
-                &mut init,
-                &mut op,
-                input,
-            )
-        })
+        VerifyFold::new(self, init, op)
     }
 
     /// Akin to [`Repeat::fold`], but for containers that can error when an element is accumulated.
@@ -515,29 +484,16 @@ where
     /// assert_eq!(parser.parse_peek(""), Ok(("", vec![])));
     #[inline(always)]
     pub fn try_fold<Init, Op, OpError, Result>(
-        mut self,
-        mut init: Init,
-        mut op: Op,
-    ) -> impl Parser<Input, Result, Error>
+        self,
+        init: Init,
+        op: Op,
+    ) -> TryFold<Input, Output, Error, Result, Init, OpError, Op, ParseNext>
     where
         Init: FnMut() -> Result,
         Op: FnMut(Result, Output) -> core::result::Result<Result, OpError>,
         Error: FromExternalError<Input, OpError>,
     {
-        let Range {
-            start_inclusive,
-            end_inclusive,
-        } = self.occurrences;
-        trace("repeat_try_fold", move |input: &mut Input| {
-            try_fold_m_n(
-                start_inclusive,
-                end_inclusive.unwrap_or(usize::MAX),
-                &mut self.parser,
-                &mut init,
-                &mut op,
-                input,
-            )
-        })
+        TryFold::new(self, init, op)
     }
 }
 
@@ -943,9 +899,9 @@ where
 #[doc(alias = "many_till0")]
 pub fn repeat_till<Input, Output, Accumulator, Terminator, Error, ParseNext, TerminatorParser>(
     occurrences: impl Into<Range>,
-    mut parse: ParseNext,
-    mut terminator: TerminatorParser,
-) -> impl Parser<Input, (Accumulator, Terminator), Error>
+    parse: ParseNext,
+    terminator: TerminatorParser,
+) -> RepeatTill<Input, Output, Accumulator, Terminator, Error, ParseNext, TerminatorParser>
 where
     Input: Stream,
     Accumulator: Accumulate<Output>,
@@ -953,22 +909,7 @@ where
     TerminatorParser: Parser<Input, Terminator, Error>,
     Error: ParserError<Input>,
 {
-    let Range {
-        start_inclusive,
-        end_inclusive,
-    } = occurrences.into();
-    trace("repeat_till", move |i: &mut Input| {
-        match (start_inclusive, end_inclusive) {
-            (0, None) => repeat_till0_(&mut parse, &mut terminator, i),
-            (start, end) => repeat_till_m_n_(
-                start,
-                end.unwrap_or(usize::MAX),
-                &mut parse,
-                &mut terminator,
-                i,
-            ),
-        }
-    })
+    RepeatTill::new(occurrences.into(), parse, terminator)
 }
 
 fn repeat_till0_<I, O, C, P, E, F, G>(f: &mut F, g: &mut G, i: &mut I) -> Result<(C, P), E>
@@ -1176,9 +1117,16 @@ where
 #[inline(always)]
 pub fn separated<Input, Output, Accumulator, Sep, Error, ParseNext, SepParser>(
     occurrences: impl Into<Range>,
-    mut parser: ParseNext,
-    mut separator: SepParser,
-) -> impl Parser<Input, Accumulator, Error>
+    parser: ParseNext,
+    separator: SepParser,
+) -> Separated<
+    Input,
+    Output,
+    Accumulator,
+    Error,
+    ParseNext,
+    impls::Void<SepParser, Input, Sep, Error>,
+>
 where
     Input: Stream,
     Accumulator: Accumulate<Output>,
@@ -1186,26 +1134,11 @@ where
     SepParser: Parser<Input, Sep, Error>,
     Error: ParserError<Input>,
 {
-    let Range {
-        start_inclusive,
-        end_inclusive,
-    } = occurrences.into();
-    trace("separated", move |input: &mut Input| {
-        match (start_inclusive, end_inclusive) {
-            (0, None) => separated0_(&mut parser, &mut separator, input),
-            (1, None) => separated1_(&mut parser, &mut separator, input),
-            (start, end) if Some(start) == end => {
-                separated_n_(start, &mut parser, &mut separator, input)
-            }
-            (start, end) => separated_m_n_(
-                start,
-                end.unwrap_or(usize::MAX),
-                &mut parser,
-                &mut separator,
-                input,
-            ),
-        }
-    })
+    Separated::<_, _, _, _, _, impls::Void<SepParser, _, _, _>>::new_voided(
+        occurrences.into(),
+        parser,
+        separator,
+    )
 }
 
 fn separated0_<I, O, C, O2, E, P, S>(
@@ -1492,10 +1425,10 @@ where
 /// # }
 /// ```
 pub fn separated_foldl1<Input, Output, Sep, Error, ParseNext, SepParser, Op>(
-    mut parser: ParseNext,
-    mut sep: SepParser,
-    mut op: Op,
-) -> impl Parser<Input, Output, Error>
+    parser: ParseNext,
+    sep: SepParser,
+    op: Op,
+) -> SeparatedFoldl1<Input, Output, Error, ParseNext, Sep, SepParser, Op>
 where
     Input: Stream,
     ParseNext: Parser<Input, Output, Error>,
@@ -1503,41 +1436,7 @@ where
     Error: ParserError<Input>,
     Op: FnMut(Output, Sep, Output) -> Output,
 {
-    trace("separated_foldl1", move |i: &mut Input| {
-        let mut ol = parser.parse_next(i)?;
-
-        loop {
-            let start = i.checkpoint();
-            let len = i.eof_offset();
-            match sep.parse_next(i) {
-                Err(e) if e.is_backtrack() => {
-                    i.reset(&start);
-                    return Ok(ol);
-                }
-                Err(e) => return Err(e),
-                Ok(s) => {
-                    // infinite loop check: the parser must always consume
-                    if i.eof_offset() == len {
-                        return Err(ParserError::assert(
-                            i,
-                            "`repeat` parsers must always consume",
-                        ));
-                    }
-
-                    match parser.parse_next(i) {
-                        Err(e) if e.is_backtrack() => {
-                            i.reset(&start);
-                            return Ok(ol);
-                        }
-                        Err(e) => return Err(e),
-                        Ok(or) => {
-                            ol = op(ol, s, or);
-                        }
-                    }
-                }
-            }
-        }
-    })
+    SeparatedFoldl1::new(parser, sep, op)
 }
 
 /// Alternates between two parsers, merging the results (right associative)
@@ -1566,10 +1465,10 @@ where
 /// ```
 #[cfg(feature = "alloc")]
 pub fn separated_foldr1<Input, Output, Sep, Error, ParseNext, SepParser, Op>(
-    mut parser: ParseNext,
-    mut sep: SepParser,
-    mut op: Op,
-) -> impl Parser<Input, Output, Error>
+    parser: ParseNext,
+    sep: SepParser,
+    op: Op,
+) -> SeparatedFoldr1<Input, Output, Error, ParseNext, Sep, SepParser, Op>
 where
     Input: Stream,
     ParseNext: Parser<Input, Output, Error>,
@@ -1577,21 +1476,7 @@ where
     Error: ParserError<Input>,
     Op: FnMut(Output, Sep, Output) -> Output,
 {
-    trace("separated_foldr1", move |i: &mut Input| {
-        let ol = parser.parse_next(i)?;
-        let all: alloc::vec::Vec<(Sep, Output)> =
-            repeat(0.., (sep.by_ref(), parser.by_ref())).parse_next(i)?;
-        if let Some((s, or)) = all
-            .into_iter()
-            .rev()
-            .reduce(|(sr, or), (sl, ol)| (sl, op(ol, sr, or)))
-        {
-            let merged = op(ol, s, or);
-            Ok(merged)
-        } else {
-            Ok(ol)
-        }
-    })
+    SeparatedFoldr1::new(parser, sep, op)
 }
 
 /// Repeats the embedded parser, filling the given slice with results.
@@ -1618,7 +1503,7 @@ where
 /// assert_eq!(parser.parse_peek("abcabcabc"), Ok(("abc", ["abc", "abc"])));
 /// ```
 pub fn fill<'i, Input, Output, Error, ParseNext>(
-    mut parser: ParseNext,
+    parser: ParseNext,
     buf: &'i mut [Output],
 ) -> impl Parser<Input, (), Error> + 'i
 where
@@ -1626,19 +1511,577 @@ where
     ParseNext: Parser<Input, Output, Error> + 'i,
     Error: ParserError<Input> + 'i,
 {
-    trace("fill", move |i: &mut Input| {
-        for elem in buf.iter_mut() {
-            let start = i.checkpoint();
-            match parser.parse_next(i) {
-                Ok(o) => {
-                    *elem = o;
+    Fill::new(parser, buf)
+}
+
+/// [`Parser`] implementation for [`fold`]
+#[derive(Clone, Copy)]
+pub struct Fold<Input, Output, Error, Result, Init, Op, ParseNext>
+where
+    Input: Stream,
+    Init: FnMut() -> Result,
+    Op: FnMut(Result, Output) -> Result,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    repeat: Repeat<ParseNext, Input, Output, (), Error>,
+    init: Init,
+    op: Op,
+    marker: PhantomData<(Input, Output, Error)>,
+}
+
+impl<Input, Output, Error, Result, Init, Op, ParseNext>
+    Fold<Input, Output, Error, Result, Init, Op, ParseNext>
+where
+    Input: Stream,
+    Init: FnMut() -> Result,
+    Op: FnMut(Result, Output) -> Result,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    pub(crate) fn new(
+        repeat: Repeat<ParseNext, Input, Output, (), Error>,
+        init: Init,
+        op: Op,
+    ) -> Self {
+        Self {
+            repeat,
+            init,
+            op,
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Output, Error, Result, Init, Op, ParseNext> Parser<Input, Result, Error>
+    for Fold<Input, Output, Error, Result, Init, Op, ParseNext>
+where
+    Input: Stream,
+    Init: FnMut() -> Result,
+    Op: FnMut(Result, Output) -> Result,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> crate::Result<Result, Error> {
+        let Range {
+            start_inclusive,
+            end_inclusive,
+        } = self.repeat.occurrences;
+        trace("repeat_fold", move |i: &mut Input| {
+            match (start_inclusive, end_inclusive) {
+                (0, None) => {
+                    fold_repeat0_(&mut self.repeat.parser, &mut self.init, &mut self.op, i)
                 }
-                Err(e) => {
-                    return Err(e.append(i, &start));
+                (1, None) => {
+                    fold_repeat1_(&mut self.repeat.parser, &mut self.init, &mut self.op, i)
+                }
+                (start, end) if Some(start) == end => fold_repeat_n_(
+                    start,
+                    &mut self.repeat.parser,
+                    &mut self.init,
+                    &mut self.op,
+                    i,
+                ),
+                (start, end) => fold_repeat_m_n_(
+                    start,
+                    end.unwrap_or(usize::MAX),
+                    &mut self.repeat.parser,
+                    &mut self.init,
+                    &mut self.op,
+                    i,
+                ),
+            }
+        })
+        .parse_next(input)
+    }
+}
+
+/// [`Parser`] implementation for [`verify_fold`]
+#[derive(Clone, Copy)]
+pub struct VerifyFold<Input, Output, Error, Result, Init, Op, ParseNext>
+where
+    Input: Stream,
+    Init: FnMut() -> Result,
+    Op: FnMut(Result, Output) -> Option<Result>,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    repeat: Repeat<ParseNext, Input, Output, (), Error>,
+    init: Init,
+    op: Op,
+    marker: PhantomData<(Input, Output, Error)>,
+}
+
+impl<Input, Output, Error, Result, Init, Op, ParseNext>
+    VerifyFold<Input, Output, Error, Result, Init, Op, ParseNext>
+where
+    Input: Stream,
+    Init: FnMut() -> Result,
+    Op: FnMut(Result, Output) -> Option<Result>,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    pub(crate) fn new(
+        repeat: Repeat<ParseNext, Input, Output, (), Error>,
+        init: Init,
+        op: Op,
+    ) -> Self {
+        Self {
+            repeat,
+            init,
+            op,
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Output, Error, Result, Init, Op, ParseNext> Parser<Input, Result, Error>
+    for VerifyFold<Input, Output, Error, Result, Init, Op, ParseNext>
+where
+    Input: Stream,
+    Init: FnMut() -> Result,
+    Op: FnMut(Result, Output) -> Option<Result>,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> crate::Result<Result, Error> {
+        let Range {
+            start_inclusive,
+            end_inclusive,
+        } = self.repeat.occurrences;
+        trace("repeat_verify_fold", move |input: &mut Input| {
+            verify_fold_m_n(
+                start_inclusive,
+                end_inclusive.unwrap_or(usize::MAX),
+                &mut self.repeat.parser,
+                &mut self.init,
+                &mut self.op,
+                input,
+            )
+        })
+        .parse_next(input)
+    }
+}
+
+/// [`Parser`] implementation for [`try_fold`]
+#[derive(Clone, Copy)]
+pub struct TryFold<Input, Output, Error, Result, Init, OpError, Op, ParseNext>
+where
+    Input: Stream,
+    Init: FnMut() -> Result,
+    Op: FnMut(Result, Output) -> core::result::Result<Result, OpError>,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input> + FromExternalError<Input, OpError>,
+{
+    repeat: Repeat<ParseNext, Input, Output, (), Error>,
+    init: Init,
+    op: Op,
+    marker: PhantomData<(Input, Output, Error)>,
+}
+
+impl<Input, Output, Error, Result, Init, OpError, Op, ParseNext>
+    TryFold<Input, Output, Error, Result, Init, OpError, Op, ParseNext>
+where
+    Input: Stream,
+    Init: FnMut() -> Result,
+    Op: FnMut(Result, Output) -> core::result::Result<Result, OpError>,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input> + FromExternalError<Input, OpError>,
+{
+    pub(crate) fn new(
+        repeat: Repeat<ParseNext, Input, Output, (), Error>,
+        init: Init,
+        op: Op,
+    ) -> Self {
+        Self {
+            repeat,
+            init,
+            op,
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Output, Error, Result, Init, OpError, Op, ParseNext> Parser<Input, Result, Error>
+    for TryFold<Input, Output, Error, Result, Init, OpError, Op, ParseNext>
+where
+    Input: Stream,
+    Init: FnMut() -> Result,
+    Op: FnMut(Result, Output) -> core::result::Result<Result, OpError>,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input> + FromExternalError<Input, OpError>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> crate::Result<Result, Error> {
+        let Range {
+            start_inclusive,
+            end_inclusive,
+        } = self.repeat.occurrences;
+        trace("repeat_try_fold", move |input: &mut Input| {
+            try_fold_m_n(
+                start_inclusive,
+                end_inclusive.unwrap_or(usize::MAX),
+                &mut self.repeat.parser,
+                &mut self.init,
+                &mut self.op,
+                input,
+            )
+        })
+        .parse_next(input)
+    }
+}
+
+/// [`Parser`] implementation for [`repeat_till`]
+#[derive(Clone, Copy)]
+pub struct RepeatTill<Input, Output, Accumulator, Terminator, Error, ParseNext, TerminatorParser>
+where
+    Input: Stream,
+    Accumulator: Accumulate<Output>,
+    ParseNext: Parser<Input, Output, Error>,
+    TerminatorParser: Parser<Input, Terminator, Error>,
+    Error: ParserError<Input>,
+{
+    occurrences: Range,
+    parse: ParseNext,
+    terminator: TerminatorParser,
+    marker: PhantomData<(Input, Output, Accumulator, Terminator, Error)>,
+}
+
+impl<Input, Output, Accumulator, Terminator, Error, ParseNext, TerminatorParser>
+    RepeatTill<Input, Output, Accumulator, Terminator, Error, ParseNext, TerminatorParser>
+where
+    Input: Stream,
+    Accumulator: Accumulate<Output>,
+    ParseNext: Parser<Input, Output, Error>,
+    TerminatorParser: Parser<Input, Terminator, Error>,
+    Error: ParserError<Input>,
+{
+    pub(crate) fn new(occurrences: Range, parse: ParseNext, terminator: TerminatorParser) -> Self {
+        Self {
+            occurrences,
+            parse,
+            terminator,
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Output, Accumulator, Terminator, Error, ParseNext, TerminatorParser>
+    Parser<Input, (Accumulator, Terminator), Error>
+    for RepeatTill<Input, Output, Accumulator, Terminator, Error, ParseNext, TerminatorParser>
+where
+    Input: Stream,
+    Accumulator: Accumulate<Output>,
+    ParseNext: Parser<Input, Output, Error>,
+    TerminatorParser: Parser<Input, Terminator, Error>,
+    Error: ParserError<Input>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> crate::Result<(Accumulator, Terminator), Error> {
+        let Range {
+            start_inclusive,
+            end_inclusive,
+        } = self.occurrences.into();
+        trace("repeat_till", move |i: &mut Input| {
+            match (start_inclusive, end_inclusive) {
+                (0, None) => repeat_till0_(&mut self.parse, &mut self.terminator, i),
+                (start, end) => repeat_till_m_n_(
+                    start,
+                    end.unwrap_or(usize::MAX),
+                    &mut self.parse,
+                    &mut self.terminator,
+                    i,
+                ),
+            }
+        })
+        .parse_next(input)
+    }
+}
+
+/// [`Parser`] implementation for [`separated`]
+#[derive(Clone, Copy)]
+pub struct Separated<Input, Output, Accumulator, Error, ParseNext, SepParser>
+where
+    Input: Stream,
+    Accumulator: Accumulate<Output>,
+    ParseNext: Parser<Input, Output, Error>,
+    SepParser: Parser<Input, (), Error>,
+    Error: ParserError<Input>,
+{
+    occurrences: Range,
+    parser: ParseNext,
+    separator: SepParser,
+    marker: PhantomData<(Input, Output, Accumulator, Error)>,
+}
+
+impl<Input, Output, Accumulator, Error, ParseNext, SepParser>
+    Separated<Input, Output, Accumulator, Error, ParseNext, SepParser>
+where
+    Input: Stream,
+    Accumulator: Accumulate<Output>,
+    ParseNext: Parser<Input, Output, Error>,
+    SepParser: Parser<Input, (), Error>,
+    Error: ParserError<Input>,
+{
+    pub(crate) fn new_voided<Ignore, MaskedParser: Parser<Input, Ignore, Error>>(
+        occurrences: Range,
+        parser: ParseNext,
+        separator: MaskedParser,
+    ) -> Separated<
+        Input,
+        Output,
+        Accumulator,
+        Error,
+        ParseNext,
+        impls::Void<MaskedParser, Input, Ignore, Error>,
+    > {
+        Separated {
+            occurrences,
+            parser,
+            separator: separator.void(),
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Output, Accumulator, Error, ParseNext, SepParser> Parser<Input, Accumulator, Error>
+    for Separated<Input, Output, Accumulator, Error, ParseNext, SepParser>
+where
+    Input: Stream,
+    Accumulator: Accumulate<Output>,
+    ParseNext: Parser<Input, Output, Error>,
+    SepParser: Parser<Input, (), Error>,
+    Error: ParserError<Input>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> crate::Result<Accumulator, Error> {
+        let Range {
+            start_inclusive,
+            end_inclusive,
+        } = self.occurrences.into();
+        trace("separated", move |input: &mut Input| {
+            match (start_inclusive, end_inclusive) {
+                (0, None) => separated0_(&mut self.parser, &mut self.separator, input),
+                (1, None) => separated1_(&mut self.parser, &mut self.separator, input),
+                (start, end) if Some(start) == end => {
+                    separated_n_(start, &mut self.parser, &mut self.separator, input)
+                }
+                (start, end) => separated_m_n_(
+                    start,
+                    end.unwrap_or(usize::MAX),
+                    &mut self.parser,
+                    &mut self.separator,
+                    input,
+                ),
+            }
+        })
+        .parse_next(input)
+    }
+}
+
+/// [`Parser`] implementation for [`separated_foldl1`]
+#[derive(Clone, Copy)]
+pub struct SeparatedFoldl1<Input, Output, Error, ParseNext, Sep, SepParser, Op>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    SepParser: Parser<Input, Sep, Error>,
+    Error: ParserError<Input>,
+    Op: FnMut(Output, Sep, Output) -> Output,
+{
+    parser: ParseNext,
+    separator: SepParser,
+    op: Op,
+    marker: PhantomData<(Input, Sep, Output, Error)>,
+}
+
+impl<Input, Output, Error, ParseNext, Sep, SepParser, Op>
+    SeparatedFoldl1<Input, Output, Error, ParseNext, Sep, SepParser, Op>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    SepParser: Parser<Input, Sep, Error>,
+    Error: ParserError<Input>,
+    Op: FnMut(Output, Sep, Output) -> Output,
+{
+    pub(crate) fn new(parser: ParseNext, separator: SepParser, op: Op) -> Self {
+        Self {
+            parser,
+            separator,
+            op,
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Output, Error, ParseNext, Sep, SepParser, Op> Parser<Input, Output, Error>
+    for SeparatedFoldl1<Input, Output, Error, ParseNext, Sep, SepParser, Op>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    SepParser: Parser<Input, Sep, Error>,
+    Error: ParserError<Input>,
+    Op: FnMut(Output, Sep, Output) -> Output,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> crate::Result<Output, Error> {
+        trace("separated_foldl1", move |input: &mut Input| {
+            let mut ol = self.parser.parse_next(input)?;
+
+            loop {
+                let start = input.checkpoint();
+                let len = input.eof_offset();
+                match self.separator.parse_next(input) {
+                    Err(e) if e.is_backtrack() => {
+                        input.reset(&start);
+                        return Ok(ol);
+                    }
+                    Err(e) => return Err(e),
+                    Ok(s) => {
+                        // infinite loop check: the parser must always consume
+                        if input.eof_offset() == len {
+                            return Err(ParserError::assert(
+                                input,
+                                "`repeat` parsers must always consume",
+                            ));
+                        }
+
+                        match self.parser.parse_next(input) {
+                            Err(e) if e.is_backtrack() => {
+                                input.reset(&start);
+                                return Ok(ol);
+                            }
+                            Err(e) => return Err(e),
+                            Ok(or) => {
+                                ol = (self.op)(ol, s, or);
+                            }
+                        }
+                    }
                 }
             }
-        }
+        })
+        .parse_next(input)
+    }
+}
 
-        Ok(())
-    })
+/// [`Parser`] implementation for [`separated_foldr1`]
+#[derive(Clone, Copy)]
+pub struct SeparatedFoldr1<Input, Output, Error, ParseNext, Sep, SepParser, Op>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    SepParser: Parser<Input, Sep, Error>,
+    Error: ParserError<Input>,
+    Op: FnMut(Output, Sep, Output) -> Output,
+{
+    parser: ParseNext,
+    separator: SepParser,
+    op: Op,
+    marker: PhantomData<(Input, Sep, Output, Error)>,
+}
+
+impl<Input, Output, Error, ParseNext, Sep, SepParser, Op>
+    SeparatedFoldr1<Input, Output, Error, ParseNext, Sep, SepParser, Op>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    SepParser: Parser<Input, Sep, Error>,
+    Error: ParserError<Input>,
+    Op: FnMut(Output, Sep, Output) -> Output,
+{
+    pub(crate) fn new(parser: ParseNext, separator: SepParser, op: Op) -> Self {
+        Self {
+            parser,
+            separator,
+            op,
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<Input, Output, Error, ParseNext, Sep, SepParser, Op> Parser<Input, Output, Error>
+    for SeparatedFoldr1<Input, Output, Error, ParseNext, Sep, SepParser, Op>
+where
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    SepParser: Parser<Input, Sep, Error>,
+    Error: ParserError<Input>,
+    Op: FnMut(Output, Sep, Output) -> Output,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> crate::Result<Output, Error> {
+        trace("separated_foldr1", move |i: &mut Input| {
+            let ol = self.parser.parse_next(i)?;
+            let all: Vec<(Sep, Output)> =
+                repeat(0.., (self.separator.by_ref(), self.parser.by_ref())).parse_next(i)?;
+            if let Some((s, or)) = all
+                .into_iter()
+                .rev()
+                .reduce(|(sr, or), (sl, ol)| (sl, (self.op)(ol, sr, or)))
+            {
+                let merged = (self.op)(ol, s, or);
+                Ok(merged)
+            } else {
+                Ok(ol)
+            }
+        })
+        .parse_next(input)
+    }
+}
+
+/// [`Parser`] implementation for [`fill`]
+pub struct Fill<'i, Input, Output, Error, ParseNext>
+where
+    Input: Stream + 'i,
+    ParseNext: Parser<Input, Output, Error> + 'i,
+    Error: ParserError<Input> + 'i,
+{
+    parser: ParseNext,
+    buf: &'i mut [Output],
+    marker: PhantomData<(Input, Output, Error)>,
+}
+
+impl<'i, Input, Output, Error, ParseNext> Fill<'i, Input, Output, Error, ParseNext>
+where
+    Input: Stream + 'i,
+    ParseNext: Parser<Input, Output, Error> + 'i,
+    Error: ParserError<Input> + 'i,
+{
+    pub(crate) fn new(parser: ParseNext, buf: &'i mut [Output]) -> Self {
+        Self {
+            parser,
+            buf,
+            marker: Default::default(),
+        }
+    }
+}
+
+impl<'i, Input, Output, Error, ParseNext> Parser<Input, (), Error>
+    for Fill<'i, Input, Output, Error, ParseNext>
+where
+    Input: Stream + 'i,
+    ParseNext: Parser<Input, Output, Error> + 'i,
+    Error: ParserError<Input> + 'i,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut Input) -> crate::Result<(), Error> {
+        trace("fill", move |i: &mut Input| {
+            for elem in self.buf.iter_mut() {
+                let start = i.checkpoint();
+                match self.parser.parse_next(i) {
+                    Ok(o) => {
+                        *elem = o;
+                    }
+                    Err(e) => {
+                        return Err(e.append(i, &start));
+                    }
+                }
+            }
+
+            Ok(())
+        })
+        .parse_next(input)
+    }
 }
