@@ -121,7 +121,7 @@ enum State<E> {
     Cut(E),
 }
 
-/// [`Accumulate`] the output of a parser into a container, like `Vec`
+/// [`Accumulate`] the output of a parser into a container, like `Vec` (bound by `occurrences`)
 ///
 /// This stops before `n` when the parser returns [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack]. To instead chain an error up, see
 /// [`cut_err`][crate::combinator::cut_err].
@@ -129,6 +129,9 @@ enum State<E> {
 /// To take a series of tokens, [`Accumulate`] into a `()`
 /// (e.g. with [`.map(|()| ())`][Parser::map])
 /// and then [`Parser::take`].
+///
+/// It will return an `ErrMode::Backtrack(_)` if the set of tokens wasn't met or is out
+/// of `occurrences` range.
 ///
 /// <div class="warning">
 ///
@@ -907,11 +910,17 @@ where
 }
 
 /// [`Accumulate`] the output of parser `f` into a container, like `Vec`, until the parser `g`
-/// produces a result.
+/// produces a result (bound by `occurrences`).
 ///
 /// Returns a tuple of the results of `f` in a `Vec` and the result of `g`.
 ///
+/// It will return an `ErrMode::Backtrack(_)` if the set of tokens wasn't met or is out
+/// of `occurrences` range.
+///
 /// `f` keeps going so long as `g` produces [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack]. To instead chain an error up, see [`cut_err`][crate::combinator::cut_err].
+///
+/// It will return an `ErrMode::Backtrack(_)` if the set of tokens wasn't met or is out
+/// of `occurrences` range.
 ///
 /// To take a series of tokens, [`Accumulate`] into a `()`
 /// (e.g. with [`.map(|((), _)| ())`][Parser::map])
@@ -1074,7 +1083,7 @@ where
     unreachable!()
 }
 
-/// [`Accumulate`] the output of a parser, interleaved with `sep`
+/// [`Accumulate`] the output of a parser, interleaved with `sep` (bound by `occurrences`)
 ///
 /// This stops when either parser returns [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack]. To instead chain an error up, see
 /// [`cut_err`][crate::combinator::cut_err].
@@ -1082,6 +1091,9 @@ where
 /// To take a series of tokens, [`Accumulate`] into a `()`
 /// (e.g. with [`.map(|()| ())`][Parser::map])
 /// and then [`Parser::take`].
+///
+/// It will return an `ErrMode::Backtrack(_)` if the set of tokens wasn't met or is out
+/// of `occurrences` range.
 ///
 /// <div class="warning">
 ///

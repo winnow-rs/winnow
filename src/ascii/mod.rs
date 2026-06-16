@@ -265,11 +265,11 @@ where
 /// assert_eq!(newline::<_, ErrMode<ContextError>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// ```
 #[inline(always)]
-pub fn newline<I, Error: ParserError<I>>(input: &mut I) -> Result<char, Error>
+pub fn newline<Input, Error: ParserError<Input>>(input: &mut Input) -> Result<char, Error>
 where
-    I: StreamIsPartial,
-    I: Stream,
-    I: Compare<char>,
+    Input: StreamIsPartial,
+    Input: Stream,
+    Input: Compare<char>,
 {
     trace("newline", '\n').parse_next(input)
 }
