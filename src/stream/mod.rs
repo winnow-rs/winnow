@@ -1964,13 +1964,30 @@ fn memmem3_(slice: &[u8], literal: (&[u8], &[u8], &[u8])) -> Option<core::ops::R
 
 #[cfg(not(feature = "simd"))]
 fn memmem_(slice: &[u8], literal: &[u8]) -> Option<core::ops::Range<usize>> {
-    for i in 0..slice.len() {
-        let subslice = &slice[i..];
-        if subslice.starts_with(literal) {
-            let i_end = i + literal.len();
-            return Some(i..i_end);
-        }
+    let lit_len = literal.len();
+    debug_assert!(lit_len > 1);
+
+    if lit_len > slice.len() {
+        return None;
     }
+
+    let last_index = lit_len - 1;
+    let last = literal[last_index];
+    let prefix = &literal[..last_index];
+    let mut offset = last_index;
+
+    while offset < slice.len() {
+        let found = memchr(last, &slice[offset..])?;
+        let end = offset + found;
+        let start = end - last_index;
+
+        if slice[start..end].starts_with(prefix) {
+            return Some(start..end + 1);
+        }
+
+        offset = end + 1;
+    }
+
     None
 }
 
