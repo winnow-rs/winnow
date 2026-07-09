@@ -1294,12 +1294,8 @@ where
     let mut acc = C::initial(None);
 
     // Parse the first element
-    match parser.parse_next(input) {
-        Err(e) => return Err(e),
-        Ok(o) => {
-            acc.accumulate(o);
-        }
-    }
+    let o = parser.parse_next(input)?;
+    acc.accumulate(o);
 
     loop {
         let start = input.checkpoint();
