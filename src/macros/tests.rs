@@ -355,6 +355,102 @@ fn seq_struct_borrow() {
 }
 
 #[test]
+fn seq_struct_many_fields() {
+    #[derive(Debug, PartialEq)]
+    struct Fields {
+        field_00: u8,
+        field_01: u8,
+        field_02: u8,
+        field_03: u8,
+        field_04: u8,
+        field_05: u8,
+        field_06: u8,
+        field_07: u8,
+        field_08: u8,
+        field_09: u8,
+        field_10: u8,
+        field_11: u8,
+        field_12: u8,
+        field_13: u8,
+        field_14: u8,
+        field_15: u8,
+        field_16: u8,
+        field_17: u8,
+        field_18: u8,
+        field_19: u8,
+        field_20: u8,
+        field_21: u8,
+    }
+
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Fields> {
+        seq! {
+            Fields {
+                field_00: empty.value(0),
+                field_01: empty.value(1),
+                field_02: empty.value(2),
+                field_03: empty.value(3),
+                field_04: empty.value(4),
+                field_05: empty.value(5),
+                field_06: empty.value(6),
+                field_07: empty.value(7),
+                field_08: empty.value(8),
+                field_09: empty.value(9),
+                field_10: empty.value(10),
+                field_11: empty.value(11),
+                field_12: empty.value(12),
+                field_13: empty.value(13),
+                field_14: empty.value(14),
+                field_15: empty.value(15),
+                field_16: empty.value(16),
+                field_17: empty.value(17),
+                field_18: empty.value(18),
+                field_19: empty.value(19),
+                field_20: empty.value(20),
+                field_21: empty.value(21),
+            }
+        }
+        .parse_next(input)
+    }
+
+    assert_parse!(
+        parser.parse_peek("remaining"),
+        str![[r#"
+Ok(
+    (
+        "remaining",
+        Fields {
+            field_00: 0,
+            field_01: 1,
+            field_02: 2,
+            field_03: 3,
+            field_04: 4,
+            field_05: 5,
+            field_06: 6,
+            field_07: 7,
+            field_08: 8,
+            field_09: 9,
+            field_10: 10,
+            field_11: 11,
+            field_12: 12,
+            field_13: 13,
+            field_14: 14,
+            field_15: 15,
+            field_16: 16,
+            field_17: 17,
+            field_18: 18,
+            field_19: 19,
+            field_20: 20,
+            field_21: 21,
+        },
+    ),
+)
+
+"#]]
+        .raw()
+    );
+}
+
+#[test]
 fn seq_tuple_struct_basics() {
     #[derive(Debug, PartialEq)]
     struct Point(u32, u32);
