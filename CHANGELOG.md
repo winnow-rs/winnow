@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Expand the number of supported fields for `seq!` from 22 to 32
+
 ## [1.0.3] - 2026-05-14
 
 ### Fixes
