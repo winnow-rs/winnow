@@ -4,8 +4,6 @@ use crate::stream::Stream;
 use crate::{Parser, Result};
 
 /// Helper trait for the [`alt()`] combinator.
-///
-/// This trait is implemented for tuples of up to 21 elements
 pub trait Alt<I, O, E> {
     /// Tests each parser in the tuple and returns the result of the first one that succeeds
     fn choice(&mut self, input: &mut I) -> Result<O, E>;
