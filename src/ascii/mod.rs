@@ -1074,6 +1074,15 @@ where
 /// #     winnow::ascii::dec_uint.parse_next(input)
 /// # }
 /// ```
+///
+/// # Syntax
+///
+/// ```ignore
+/// <uint> ::= "0" | <nonzero_uint>
+/// <nonzero_uint> ::= <nonzero_digit> | <nonzero_uint> <digit>
+/// <nonzero_digit> ::= "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+/// <digit> ::= "0" | <nonzero_digit>
+/// ```
 #[doc(alias = "u8")]
 #[doc(alias = "u16")]
 #[doc(alias = "u32")]
@@ -1157,6 +1166,17 @@ impl Uint for usize {
 /// # {
 /// #     winnow::ascii::dec_int.parse_next(input)
 /// # }
+/// ```
+///
+/// # Syntax
+///
+/// ```ignore
+/// <int> ::= <sign> <uint> | <uint>
+/// <uint> ::= "0" | <nonzero_uint>
+/// <nonzero_uint> ::= <nonzero_digit> | <nonzero_uint> <digit>
+/// <nonzero_digit> ::= "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+/// <digit> ::= "0" | <nonzero_digit>
+/// <sign> ::= "+" | "-"
 /// ```
 #[doc(alias = "i8")]
 #[doc(alias = "i16")]
