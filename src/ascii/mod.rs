@@ -1074,6 +1074,14 @@ where
 /// #     winnow::ascii::dec_uint.parse_next(input)
 /// # }
 /// ```
+///
+/// # Syntax
+///
+/// ```abnf
+/// dec_uint = "0" / digit_1_9 *digit
+/// digit_1_9 = "1" / "2" / "3" / "4" / "5" / "6" / "7" / "8" / "9"
+/// digit = "0" / digit_1_9
+/// ```
 #[doc(alias = "u8")]
 #[doc(alias = "u16")]
 #[doc(alias = "u32")]
@@ -1157,6 +1165,16 @@ impl Uint for usize {
 /// # {
 /// #     winnow::ascii::dec_int.parse_next(input)
 /// # }
+/// ```
+///
+/// # Syntax
+///
+/// ```abnf
+/// dec_int = "0" / [ minus / plus ] digit_1_9 *digit
+/// digit_1_9 = "1" / "2" / "3" / "4" / "5" / "6" / "7" / "8" / "9"
+/// digit = "0" / digit_1_9
+/// minus = "-"
+/// plus = "+"
 /// ```
 #[doc(alias = "i8")]
 #[doc(alias = "i16")]
@@ -1278,6 +1296,14 @@ impl Int for isize {
 /// assert_eq!(parser.parse_peek(Partial::new(&b"01AE;"[..])), Ok((Partial::new(&b";"[..]), 0x01AE)));
 /// assert_eq!(parser.parse_peek(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// assert!(parser.parse_peek(Partial::new(&b"ggg"[..])).is_err());
+/// ```
+///
+/// # Syntax
+///
+/// ```abnf
+/// hex_uint = *hexdig
+/// hexdig = digit / "A" / "B" / "C" / "D" / "E" / "F"  ;; case-insensitive
+/// digit = "0" / "1" / "2" / "3" / "4" / "5" / "6" / "7" / "8" / "9"
 /// ```
 #[inline]
 pub fn hex_uint<Input, Output, Error>(input: &mut Input) -> Result<Output, Error>
@@ -1431,6 +1457,17 @@ impl HexUint for u128 {
 /// assert_eq!(parser.parse_peek(Partial::new("123E-02")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// assert_eq!(parser.parse_peek(Partial::new("123K-01")), Ok((Partial::new("K-01"), 123.0)));
 /// assert!(parser.parse_peek(Partial::new("abc")).is_err());
+/// ```
+///
+/// # Syntax
+///
+/// ```abnf
+/// float = "nan" / [ minus / plus ] 1*digit [ "." 1*digit ] [ "e" [ minus / plus ] 1*digit ]
+/// digit = "0" / "1" / "2" / "3" / "4" / "5" / "6" / "7" / "8" / "9"
+/// nan = "nan"  ;; case-insensitive
+/// inf = "inf" / "infinity"  ;; case-insensitive
+/// minus = "-"
+/// plus = "+"
 /// ```
 #[inline(always)]
 #[doc(alias = "f32")]
