@@ -170,6 +170,25 @@ Ok(
 }
 
 #[test]
+fn issue_342_zero_sized_token() {
+    use winnow::token::any;
+
+    #[derive(Clone, Debug)]
+    struct Token;
+
+    fn fail_on_third<'i>(input: &mut &'i [Token]) -> TestResult<&'i [Token], ()> {
+        let _ = any.parse_next(input)?;
+        let _ = any.parse_next(input)?;
+        any.verify(|_| false).void().parse_next(input)
+    }
+
+    // shouldn't panic
+    let tokens = [Token, Token, Token];
+    let err = fail_on_third.parse(&tokens[..]).unwrap_err();
+    assert_eq!(err.offset(), 2);
+}
+
+#[test]
 #[cfg(feature = "ascii")]
 fn issue_655() {
     use winnow::ascii::{line_ending, till_line_ending};

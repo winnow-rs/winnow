@@ -47,6 +47,14 @@ fn test_offset_str() {
 }
 
 #[test]
+fn test_offset_zst() {
+    let s = [(); 7];
+    let a = &s[..];
+    let b = &a[2..];
+    assert_eq!(b.offset_from(&a), 2);
+}
+
+#[test]
 fn test_partial_complete() {
     let mut i = Partial::new(&b""[..]);
     assert!(Partial::<&[u8]>::is_partial_supported());

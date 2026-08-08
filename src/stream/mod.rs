@@ -648,7 +648,11 @@ impl<T> Offset for &[T] {
             fst <= snd,
             "`Offset::offset_from({snd:?}, {fst:?})` only accepts slices of `self`"
         );
-        (snd as usize - fst as usize) / core::mem::size_of::<T>()
+        (snd as usize - fst as usize)
+            .checked_div(core::mem::size_of::<T>())
+            // Every element of a zero-sized type shares an address, so the offset can only be
+            // recovered from how much of `start` is left in `self`
+            .unwrap_or_else(|| start.len() - self.len())
     }
 }
 
