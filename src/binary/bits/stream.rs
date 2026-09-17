@@ -221,12 +221,12 @@ where
     }
 }
 
-impl<I> Offset<<Bits<I> as Stream>::Checkpoint> for Bits<I>
+impl<I> Offset<<Self as Stream>::Checkpoint> for Bits<I>
 where
     I: Stream<Token = u8> + Clone,
 {
     #[inline(always)]
-    fn offset_from(&self, other: &<Bits<I> as Stream>::Checkpoint) -> usize {
+    fn offset_from(&self, other: &<Self as Stream>::Checkpoint) -> usize {
         self.checkpoint().offset_from(other)
     }
 }

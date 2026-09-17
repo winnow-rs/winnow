@@ -130,9 +130,9 @@ impl Compare<Caseless<char>> for &str {
 /// assert!(parser.parse_peek(&b"Some"[..]).is_err());
 /// assert!(parser.parse_peek(&b""[..]).is_err());
 /// ```
-impl<'s, I, E: ParserError<I>> Parser<I, <I as Stream>::Slice, E> for Caseless<&'s [u8]>
+impl<I, E: ParserError<I>> Parser<I, <I as Stream>::Slice, E> for Caseless<&[u8]>
 where
-    I: Compare<Caseless<&'s [u8]>> + StreamIsPartial,
+    I: Compare<Self> + StreamIsPartial,
     I: Stream,
 {
     #[inline(always)]
@@ -162,10 +162,9 @@ where
 /// assert!(parser.parse_peek(&b"Some"[..]).is_err());
 /// assert!(parser.parse_peek(&b""[..]).is_err());
 /// ```
-impl<'s, I, E: ParserError<I>, const N: usize> Parser<I, <I as Stream>::Slice, E>
-    for Caseless<&'s [u8; N]>
+impl<I, E: ParserError<I>, const N: usize> Parser<I, <I as Stream>::Slice, E> for Caseless<&[u8; N]>
 where
-    I: Compare<Caseless<&'s [u8; N]>> + StreamIsPartial,
+    I: Compare<Self> + StreamIsPartial,
     I: Stream,
 {
     #[inline(always)]
@@ -195,9 +194,9 @@ where
 /// assert!(parser.parse_peek("Some").is_err());
 /// assert!(parser.parse_peek("").is_err());
 /// ```
-impl<'s, I, E: ParserError<I>> Parser<I, <I as Stream>::Slice, E> for Caseless<&'s str>
+impl<I, E: ParserError<I>> Parser<I, <I as Stream>::Slice, E> for Caseless<&str>
 where
-    I: Compare<Caseless<&'s str>> + StreamIsPartial,
+    I: Compare<Self> + StreamIsPartial,
     I: Stream,
 {
     #[inline(always)]

@@ -274,13 +274,13 @@ where
     }
 }
 
-impl<I, E> Offset<<Recoverable<I, E> as Stream>::Checkpoint> for Recoverable<I, E>
+impl<I, E> Offset<<Self as Stream>::Checkpoint> for Recoverable<I, E>
 where
     I: Stream,
     E: core::fmt::Debug,
 {
     #[inline(always)]
-    fn offset_from(&self, other: &<Recoverable<I, E> as Stream>::Checkpoint) -> usize {
+    fn offset_from(&self, other: &<Self as Stream>::Checkpoint) -> usize {
         self.checkpoint().offset_from(other)
     }
 }

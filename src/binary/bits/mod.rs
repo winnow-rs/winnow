@@ -225,7 +225,7 @@ where
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {
     if count == 0 {
-        Ok(0u8.into())
+        Ok(0_u8.into())
     } else {
         let Bits(mut input, bit_offset) = bit_input.clone();
         if input.eof_offset() * BYTE < count + bit_offset {
@@ -398,7 +398,7 @@ where
     Input: Stream<Token = u8> + StreamIsPartial + Clone,
 {
     trace("bool", |input: &mut Bits<Input>| {
-        let bit: u32 = take(1usize).parse_next(input)?;
+        let bit: u32 = take(1_usize).parse_next(input)?;
         Ok(bit != 0)
     })
     .parse_next(input)

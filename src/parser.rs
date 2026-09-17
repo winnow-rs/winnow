@@ -1022,15 +1022,15 @@ where
 /// assert!(parser.parse_peek(&b"bc"[..]).is_err());
 /// assert!(parser.parse_peek(&b""[..]).is_err());
 /// ```
-impl<I, E> Parser<I, u8, E> for u8
+impl<I, E> Parser<I, Self, E> for u8
 where
     I: StreamIsPartial,
     I: Stream,
-    I: Compare<u8>,
+    I: Compare<Self>,
     E: ParserError<I>,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> Result<u8, E> {
+    fn parse_next(&mut self, i: &mut I) -> Result<Self, E> {
         crate::token::literal(*self).value(*self).parse_next(i)
     }
 }
@@ -1050,15 +1050,15 @@ where
 /// assert!(parser.parse_peek("bc").is_err());
 /// assert!(parser.parse_peek("").is_err());
 /// ```
-impl<I, E> Parser<I, char, E> for char
+impl<I, E> Parser<I, Self, E> for char
 where
     I: StreamIsPartial,
     I: Stream,
-    I: Compare<char>,
+    I: Compare<Self>,
     E: ParserError<I>,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> Result<char, E> {
+    fn parse_next(&mut self, i: &mut I) -> Result<Self, E> {
         crate::token::literal(*self).value(*self).parse_next(i)
     }
 }
@@ -1359,7 +1359,7 @@ Err(
         fn tuple_3<'i>(
             i: &mut Partial<&'i [u8]>,
         ) -> TestResult<Partial<&'i [u8]>, (u16, &'i [u8], &'i [u8])> {
-            (be_u16, take(3u8), "fg").parse_next(i)
+            (be_u16, take(3_u8), "fg").parse_next(i)
         }
 
         assert_parse!(

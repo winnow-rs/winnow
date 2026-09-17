@@ -286,10 +286,7 @@ where
     /// given expression. That's a language-specific detail, and it depends on
     /// what you want to parse.
     #[inline(always)]
-    pub fn current_precedence_level(
-        mut self,
-        level: i64,
-    ) -> Expression<I, O, ParseOperand, Pre, Post, Pix, E> {
+    pub fn current_precedence_level(mut self, level: i64) -> Self {
         self.precedence_level = level;
         self
     }
@@ -424,13 +421,13 @@ pub struct Prefix<I, O, E>(
 impl<I, O, E> Clone for Prefix<I, O, E> {
     #[inline(always)]
     fn clone(&self) -> Self {
-        Prefix(self.0, self.1)
+        Self(self.0, self.1)
     }
 }
 
-impl<I: Stream, O, E: ParserError<I>> Parser<I, Prefix<I, O, E>, E> for Prefix<I, O, E> {
+impl<I: Stream, O, E: ParserError<I>> Parser<I, Self, E> for Prefix<I, O, E> {
     #[inline(always)]
-    fn parse_next(&mut self, input: &mut I) -> Result<Prefix<I, O, E>, E> {
+    fn parse_next(&mut self, input: &mut I) -> Result<Self, E> {
         empty.value(self.clone()).parse_next(input)
     }
 }
@@ -449,13 +446,13 @@ pub struct Postfix<I, O, E>(
 impl<I, O, E> Clone for Postfix<I, O, E> {
     #[inline(always)]
     fn clone(&self) -> Self {
-        Postfix(self.0, self.1)
+        Self(self.0, self.1)
     }
 }
 
-impl<I: Stream, O, E: ParserError<I>> Parser<I, Postfix<I, O, E>, E> for Postfix<I, O, E> {
+impl<I: Stream, O, E: ParserError<I>> Parser<I, Self, E> for Postfix<I, O, E> {
     #[inline(always)]
-    fn parse_next(&mut self, input: &mut I) -> Result<Postfix<I, O, E>, E> {
+    fn parse_next(&mut self, input: &mut I) -> Result<Self, E> {
         empty.value(self.clone()).parse_next(input)
     }
 }
@@ -505,16 +502,16 @@ impl<I, O, E> Clone for Infix<I, O, E> {
     #[inline(always)]
     fn clone(&self) -> Self {
         match self {
-            Infix::Left(p, f) => Infix::Left(*p, *f),
-            Infix::Right(p, f) => Infix::Right(*p, *f),
-            Infix::Neither(p, f) => Infix::Neither(*p, *f),
+            Self::Left(p, f) => Self::Left(*p, *f),
+            Self::Right(p, f) => Self::Right(*p, *f),
+            Self::Neither(p, f) => Self::Neither(*p, *f),
         }
     }
 }
 
-impl<I: Stream, O, E: ParserError<I>> Parser<I, Infix<I, O, E>, E> for Infix<I, O, E> {
+impl<I: Stream, O, E: ParserError<I>> Parser<I, Self, E> for Infix<I, O, E> {
     #[inline(always)]
-    fn parse_next(&mut self, input: &mut I) -> Result<Infix<I, O, E>, E> {
+    fn parse_next(&mut self, input: &mut I) -> Result<Self, E> {
         empty.value(self.clone()).parse_next(input)
     }
 }
