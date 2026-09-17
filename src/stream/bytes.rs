@@ -294,56 +294,56 @@ impl ops::Index<usize> for Bytes {
 }
 
 impl ops::Index<ops::RangeFull> for Bytes {
-    type Output = Bytes;
+    type Output = Self;
 
     #[inline]
-    fn index(&self, _: ops::RangeFull) -> &Bytes {
+    fn index(&self, _: ops::RangeFull) -> &Self {
         self
     }
 }
 
 impl ops::Index<ops::Range<usize>> for Bytes {
-    type Output = Bytes;
+    type Output = Self;
 
     #[inline]
-    fn index(&self, r: ops::Range<usize>) -> &Bytes {
-        Bytes::new(&self.as_bytes()[r.start..r.end])
+    fn index(&self, r: ops::Range<usize>) -> &Self {
+        Self::new(&self.as_bytes()[r.start..r.end])
     }
 }
 
 impl ops::Index<ops::RangeInclusive<usize>> for Bytes {
-    type Output = Bytes;
+    type Output = Self;
 
     #[inline]
-    fn index(&self, r: ops::RangeInclusive<usize>) -> &Bytes {
-        Bytes::new(&self.as_bytes()[*r.start()..=*r.end()])
+    fn index(&self, r: ops::RangeInclusive<usize>) -> &Self {
+        Self::new(&self.as_bytes()[*r.start()..=*r.end()])
     }
 }
 
 impl ops::Index<ops::RangeFrom<usize>> for Bytes {
-    type Output = Bytes;
+    type Output = Self;
 
     #[inline]
-    fn index(&self, r: ops::RangeFrom<usize>) -> &Bytes {
-        Bytes::new(&self.as_bytes()[r.start..])
+    fn index(&self, r: ops::RangeFrom<usize>) -> &Self {
+        Self::new(&self.as_bytes()[r.start..])
     }
 }
 
 impl ops::Index<ops::RangeTo<usize>> for Bytes {
-    type Output = Bytes;
+    type Output = Self;
 
     #[inline]
-    fn index(&self, r: ops::RangeTo<usize>) -> &Bytes {
-        Bytes::new(&self.as_bytes()[..r.end])
+    fn index(&self, r: ops::RangeTo<usize>) -> &Self {
+        Self::new(&self.as_bytes()[..r.end])
     }
 }
 
 impl ops::Index<ops::RangeToInclusive<usize>> for Bytes {
-    type Output = Bytes;
+    type Output = Self;
 
     #[inline]
-    fn index(&self, r: ops::RangeToInclusive<usize>) -> &Bytes {
-        Bytes::new(&self.as_bytes()[..=r.end])
+    fn index(&self, r: ops::RangeToInclusive<usize>) -> &Self {
+        Self::new(&self.as_bytes()[..=r.end])
     }
 }
 
@@ -415,9 +415,9 @@ impl<'a> From<&'a str> for &'a Bytes {
 
 impl Eq for Bytes {}
 
-impl PartialEq<Bytes> for Bytes {
+impl PartialEq<Self> for Bytes {
     #[inline]
-    fn eq(&self, other: &Bytes) -> bool {
+    fn eq(&self, other: &Self) -> bool {
         self.as_bytes() == other.as_bytes()
     }
 }
@@ -429,14 +429,14 @@ impl_partial_eq!(Bytes, &'a str);
 
 impl PartialOrd for Bytes {
     #[inline]
-    fn partial_cmp(&self, other: &Bytes) -> Option<Ordering> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
 impl Ord for Bytes {
     #[inline]
-    fn cmp(&self, other: &Bytes) -> Ordering {
+    fn cmp(&self, other: &Self) -> Ordering {
         Ord::cmp(self.as_bytes(), other.as_bytes())
     }
 }

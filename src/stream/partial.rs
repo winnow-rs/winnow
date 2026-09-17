@@ -291,12 +291,12 @@ where
     }
 }
 
-impl<I> Offset<<Partial<I> as Stream>::Checkpoint> for Partial<I>
+impl<I> Offset<<Self as Stream>::Checkpoint> for Partial<I>
 where
     I: Stream,
 {
     #[inline(always)]
-    fn offset_from(&self, other: &<Partial<I> as Stream>::Checkpoint) -> usize {
+    fn offset_from(&self, other: &<Self as Stream>::Checkpoint) -> usize {
         self.checkpoint().offset_from(other)
     }
 }
@@ -347,7 +347,7 @@ where
 {
     #[inline(always)]
     fn update_slice(self, inner: Self::Slice) -> Self {
-        Partial {
+        Self {
             input: I::update_slice(self.input, inner),
             partial: self.partial,
         }

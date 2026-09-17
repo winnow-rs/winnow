@@ -272,22 +272,22 @@ impl Needed {
     /// Creates `Needed` instance, returns `Needed::Unknown` if the argument is zero
     pub fn new(s: usize) -> Self {
         match NonZeroUsize::new(s) {
-            Some(sz) => Needed::Size(sz),
-            None => Needed::Unknown,
+            Some(sz) => Self::Size(sz),
+            None => Self::Unknown,
         }
     }
 
     /// Indicates if we know how many bytes we need
     pub fn is_known(&self) -> bool {
-        *self != Needed::Unknown
+        *self != Self::Unknown
     }
 
     /// Maps a `Needed` to `Needed` by applying a function to a contained `Size` value.
     #[inline]
-    pub fn map<F: Fn(NonZeroUsize) -> usize>(self, f: F) -> Needed {
+    pub fn map<F: Fn(NonZeroUsize) -> usize>(self, f: F) -> Self {
         match self {
-            Needed::Unknown => Needed::Unknown,
-            Needed::Size(n) => Needed::new(f(n)),
+            Self::Unknown => Self::Unknown,
+            Self::Size(n) => Self::new(f(n)),
         }
     }
 }
@@ -1139,8 +1139,8 @@ impl<T> Accumulate<T> for Vec<T> {
     #[inline(always)]
     fn initial(capacity: Option<usize>) -> Self {
         match capacity {
-            Some(capacity) => Vec::with_capacity(clamp_capacity::<T>(capacity)),
-            None => Vec::new(),
+            Some(capacity) => Self::with_capacity(clamp_capacity::<T>(capacity)),
+            None => Self::new(),
         }
     }
     #[inline(always)]
@@ -1154,8 +1154,8 @@ impl<'i, T: Clone> Accumulate<&'i [T]> for Vec<T> {
     #[inline(always)]
     fn initial(capacity: Option<usize>) -> Self {
         match capacity {
-            Some(capacity) => Vec::with_capacity(clamp_capacity::<T>(capacity)),
-            None => Vec::new(),
+            Some(capacity) => Self::with_capacity(clamp_capacity::<T>(capacity)),
+            None => Self::new(),
         }
     }
     #[inline(always)]
@@ -1169,8 +1169,8 @@ impl Accumulate<char> for String {
     #[inline(always)]
     fn initial(capacity: Option<usize>) -> Self {
         match capacity {
-            Some(capacity) => String::with_capacity(clamp_capacity::<char>(capacity)),
-            None => String::new(),
+            Some(capacity) => Self::with_capacity(clamp_capacity::<char>(capacity)),
+            None => Self::new(),
         }
     }
     #[inline(always)]
@@ -1184,8 +1184,8 @@ impl<'i> Accumulate<&'i str> for String {
     #[inline(always)]
     fn initial(capacity: Option<usize>) -> Self {
         match capacity {
-            Some(capacity) => String::with_capacity(clamp_capacity::<char>(capacity)),
-            None => String::new(),
+            Some(capacity) => Self::with_capacity(clamp_capacity::<char>(capacity)),
+            None => Self::new(),
         }
     }
     #[inline(always)]
@@ -1199,8 +1199,8 @@ impl<'i> Accumulate<Cow<'i, str>> for String {
     #[inline(always)]
     fn initial(capacity: Option<usize>) -> Self {
         match capacity {
-            Some(capacity) => String::with_capacity(clamp_capacity::<char>(capacity)),
-            None => String::new(),
+            Some(capacity) => Self::with_capacity(clamp_capacity::<char>(capacity)),
+            None => Self::new(),
         }
     }
     #[inline(always)]
@@ -1210,16 +1210,16 @@ impl<'i> Accumulate<Cow<'i, str>> for String {
 }
 
 #[cfg(feature = "alloc")]
-impl Accumulate<String> for String {
+impl Accumulate<Self> for String {
     #[inline(always)]
     fn initial(capacity: Option<usize>) -> Self {
         match capacity {
-            Some(capacity) => String::with_capacity(clamp_capacity::<char>(capacity)),
-            None => String::new(),
+            Some(capacity) => Self::with_capacity(clamp_capacity::<char>(capacity)),
+            None => Self::new(),
         }
     }
     #[inline(always)]
-    fn accumulate(&mut self, acc: String) {
+    fn accumulate(&mut self, acc: Self) {
         self.push_str(&acc);
     }
 }
@@ -1253,13 +1253,13 @@ impl<'i> Accumulate<&'i str> for Cow<'i, str> {
 }
 
 #[cfg(feature = "alloc")]
-impl<'i> Accumulate<Cow<'i, str>> for Cow<'i, str> {
+impl<'i> Accumulate<Self> for Cow<'i, str> {
     #[inline(always)]
     fn initial(_capacity: Option<usize>) -> Self {
         Cow::Borrowed("")
     }
     #[inline(always)]
-    fn accumulate(&mut self, acc: Cow<'i, str>) {
+    fn accumulate(&mut self, acc: Self) {
         if self.as_ref().is_empty() {
             *self = acc;
         } else {
@@ -1287,7 +1287,7 @@ where
 {
     #[inline(always)]
     fn initial(_capacity: Option<usize>) -> Self {
-        BTreeMap::new()
+        Self::new()
     }
     #[inline(always)]
     fn accumulate(&mut self, (key, value): (K, V)) {
@@ -1305,10 +1305,8 @@ where
     fn initial(capacity: Option<usize>) -> Self {
         let h = S::default();
         match capacity {
-            Some(capacity) => {
-                HashMap::with_capacity_and_hasher(clamp_capacity::<(K, V)>(capacity), h)
-            }
-            None => HashMap::with_hasher(h),
+            Some(capacity) => Self::with_capacity_and_hasher(clamp_capacity::<(K, V)>(capacity), h),
+            None => Self::with_hasher(h),
         }
     }
     #[inline(always)]
@@ -1324,7 +1322,7 @@ where
 {
     #[inline(always)]
     fn initial(_capacity: Option<usize>) -> Self {
-        BTreeSet::new()
+        Self::new()
     }
     #[inline(always)]
     fn accumulate(&mut self, key: K) {
@@ -1342,8 +1340,8 @@ where
     fn initial(capacity: Option<usize>) -> Self {
         let h = S::default();
         match capacity {
-            Some(capacity) => HashSet::with_capacity_and_hasher(clamp_capacity::<K>(capacity), h),
-            None => HashSet::with_hasher(h),
+            Some(capacity) => Self::with_capacity_and_hasher(clamp_capacity::<K>(capacity), h),
+            None => Self::with_hasher(h),
         }
     }
     #[inline(always)]
@@ -1357,8 +1355,8 @@ impl<'i, T: Clone> Accumulate<&'i [T]> for VecDeque<T> {
     #[inline(always)]
     fn initial(capacity: Option<usize>) -> Self {
         match capacity {
-            Some(capacity) => VecDeque::with_capacity(clamp_capacity::<T>(capacity)),
-            None => VecDeque::new(),
+            Some(capacity) => Self::with_capacity(clamp_capacity::<T>(capacity)),
+            None => Self::new(),
         }
     }
     #[inline(always)]
@@ -1656,16 +1654,16 @@ pub trait ContainsToken<T> {
     fn contains_token(&self, token: T) -> bool;
 }
 
-impl ContainsToken<u8> for u8 {
+impl ContainsToken<Self> for u8 {
     #[inline(always)]
-    fn contains_token(&self, token: u8) -> bool {
+    fn contains_token(&self, token: Self) -> bool {
         *self == token
     }
 }
 
-impl ContainsToken<&u8> for u8 {
+impl ContainsToken<&Self> for u8 {
     #[inline(always)]
-    fn contains_token(&self, token: &u8) -> bool {
+    fn contains_token(&self, token: &Self) -> bool {
         self.contains_token(*token)
     }
 }
