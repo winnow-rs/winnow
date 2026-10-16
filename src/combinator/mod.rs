@@ -32,7 +32,7 @@
 //! | combinator | usage | input | new input | output | comment |
 //! |---|---|---|---|---|---|
 //! | [`(...)` (tuples)][crate::Parser] | `("ab", "XY", take(1))` | `"abXYZ!"` | `"!"` | `Ok(("ab", "XY", "Z"))` |Parse a series of values|
-//! | [`seq!`] | `seq!(_: '(', take(2), _: ')')` | `"(ab)cd"` | `"cd"` | `Ok("ab")` |Parse a series of values, discarding those you specify|
+//! | [`seq!`] | `seq!(_: '(', take(2), _: ')')` | `"(ab)cd"` | `"cd"` | `Ok(("ab",))` |Parse a series of values, discarding those you specify|
 //! | [`delimited`] | `delimited('(', take(2), ')')` | `"(ab)cd"` | `"cd"` | `Ok("ab")` |Parse three values, discarding the first and third value|
 //! | [`preceded`] | `preceded("ab", "XY")` | `"abXYZ"` | `"Z"` | `Ok("XY")` |Parse two values, discarding the first value|
 //! | [`terminated`] | `terminated("ab", "XY")` | `"abXYZ"` | `"Z"` | `Ok("ab")` |Parse two values, discarding the second value|
