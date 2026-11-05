@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Support `usize` with `hex_uint`
+
 ## [1.0.4] - 2026-07-13
 
 ### Fixes
