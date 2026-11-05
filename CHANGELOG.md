@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.0.5] - 2026-11-05
+
 ### Fixes
 
 - Support `usize` with `hex_uint`
@@ -2748,7 +2750,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v1.0.4...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v1.0.5...HEAD
+[1.0.5]: https://github.com/winnow-rs/winnow/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/winnow-rs/winnow/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/winnow-rs/winnow/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/winnow-rs/winnow/compare/v1.0.1...v1.0.2
