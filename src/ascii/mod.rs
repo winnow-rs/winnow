@@ -1407,6 +1407,13 @@ impl HexUint for u128 {
     }
 }
 
+impl HexUint for usize {
+    #[inline(always)]
+    fn max_nibbles(_: sealed::SealedMarker) -> usize {
+        core::mem::size_of::<Self>() * 2
+    }
+}
+
 /// Recognizes floating point number in text format and returns a [`f32`] or [`f64`].
 ///
 /// *Complete version*: Can parse until the end of input.
