@@ -22,3 +22,6 @@ path = ".."
 name = "fuzz_arithmetic"
 path = "fuzz_targets/fuzz_arithmetic.rs"
 test = false
+
+[lints]
+workspace = true
