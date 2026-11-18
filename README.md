@@ -1,6 +1,6 @@
 # winnow, making parsing a breeze
 
-[![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE-MIT)
 [![Build Status](https://github.com/winnow-rs/winnow/actions/workflows/ci.yml/badge.svg)](https://github.com/winnow-rs/winnow/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/winnow-rs/winnow/badge.svg?branch=main)](https://coveralls.io/github/winnow-rs/winnow?branch=main)
 [![Crates.io Version](https://img.shields.io/crates/v/winnow.svg)](https://crates.io/crates/winnow)
