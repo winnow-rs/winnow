@@ -1333,6 +1333,13 @@ where
                 .split(|c| *c == b'\n')
                 .nth(line_idx)
                 .expect("valid line number");
+            let content = String::from_utf8_lossy(content);
+            let caret_col = content
+                .chars()
+                .take(col_idx)
+                .map(|c| if c == '\t' { 4 } else { 1 })
+                .sum::<usize>();
+            let content = content.replace('\t', "    ");
 
             writeln!(f, "parse error at line {line_num}, column {col_num}")?;
             //   |
@@ -1343,14 +1350,14 @@ where
 
             // 1 | 00:32:00.a999999
             write!(f, "{line_num} | ")?;
-            writeln!(f, "{}", String::from_utf8_lossy(content))?;
+            writeln!(f, "{content}")?;
 
             //   |          ^
             for _ in 0..gutter {
                 write!(f, " ")?;
             }
             write!(f, " | ")?;
-            for _ in 0..col_idx {
+            for _ in 0..caret_col {
                 write!(f, " ")?;
             }
             // The span will be empty at eof, so we need to make sure we always print at least
@@ -1362,8 +1369,18 @@ where
             writeln!(f)?;
         } else {
             let content = input;
-            writeln!(f, "{}", String::from_utf8_lossy(content))?;
-            for _ in 0..span_start {
+            writeln!(
+                f,
+                "{}",
+                String::from_utf8_lossy(content).replace('\t', "    ")
+            )?;
+            let caret_col = span_start
+                + 3 * content
+                    .iter()
+                    .take(span_start)
+                    .filter(|b| **b == b'\t')
+                    .count();
+            for _ in 0..caret_col {
                 write!(f, " ")?;
             }
             // The span will be empty at eof, so we need to make sure we always print at least
@@ -1474,6 +1491,31 @@ mod test_parse_error {
 0xZ123
   ^
 failed to parse starting at: Z123";
+        assert_eq!(error.to_string(), expected);
+    }
+
+    #[test]
+    fn single_line_tab() {
+        let mut input = "\txyz";
+        let start = input.checkpoint();
+        let _ = input.next_token().unwrap();
+        let _ = input.next_token().unwrap();
+        let inner = InputError::at(input);
+        let error = ParseError::new(input, start, inner);
+        let expected = "    xyz\n     ^\nfailed to parse starting at: yz";
+        assert_eq!(error.to_string(), expected);
+    }
+
+    #[test]
+    fn multiline_tab() {
+        let mut input = "abc\n\txyz";
+        let start = input.checkpoint();
+        for _ in 0..6 {
+            let _ = input.next_token().unwrap();
+        }
+        let inner = InputError::at(input);
+        let error = ParseError::new(input, start, inner);
+        let expected = "parse error at line 2, column 3\n  |\n2 |     xyz\n  |      ^\nfailed to parse starting at: yz";
         assert_eq!(error.to_string(), expected);
     }
 }
